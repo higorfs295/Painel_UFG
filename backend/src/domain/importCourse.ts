@@ -24,59 +24,65 @@ export const matrizSchema = z.object({
 export type Matriz = z.infer<typeof matrizSchema>;
 
 // Cria/atualiza o curso com composições, marcos, disciplinas e requisitos. Reexecutável.
+// Roda em uma única transação (atomicidade: import parcial não deixa o curso inconsistente) e
+// insere os requisitos em lote (createMany) em vez de um-a-um. Requisitos órfãos (seq inexistente
+// na matriz) são ignorados — antes geravam linhas sem alvo nem milestone.
 export async function importCourse(prisma: PrismaClient, raw: unknown) {
   const matriz = matrizSchema.parse(raw);
 
-  const course = await prisma.course.upsert({
-    where: { slug: matriz.course.slug },
-    update: { name: matriz.course.name, totalHours: matriz.totalHours },
-    create: { slug: matriz.course.slug, name: matriz.course.name, totalHours: matriz.totalHours },
-  });
-
-  for (const r of matriz.requirements)
-    await prisma.compositionRequirement.upsert({
-      where: { courseId_key: { courseId: course.id, key: r.key } },
-      update: { label: r.label, hours: r.hours },
-      create: { courseId: course.id, key: r.key, label: r.label, hours: r.hours },
+  return prisma.$transaction(async (tx) => {
+    const course = await tx.course.upsert({
+      where: { slug: matriz.course.slug },
+      update: { name: matriz.course.name, totalHours: matriz.totalHours },
+      create: { slug: matriz.course.slug, name: matriz.course.name, totalHours: matriz.totalHours },
     });
 
-  for (const m of matriz.milestones)
-    await prisma.milestone.upsert({
-      where: { courseId_key: { courseId: course.id, key: m.key } },
-      update: { hours: m.hours, description: m.description },
-      create: { courseId: course.id, key: m.key, hours: m.hours, description: m.description },
-    });
+    for (const r of matriz.requirements)
+      await tx.compositionRequirement.upsert({
+        where: { courseId_key: { courseId: course.id, key: r.key } },
+        update: { label: r.label, hours: r.hours },
+        create: { courseId: course.id, key: r.key, label: r.label, hours: r.hours },
+      });
 
-  // duas passadas: disciplinas primeiro (para resolver requisitos por seq), depois requisitos.
-  const bySeq: Record<number, string> = {};
-  for (const s of matriz.subjects) {
-    const subj = await prisma.subject.upsert({
-      where: { courseId_seq: { courseId: course.id, seq: s.seq } },
-      update: { code: s.code, name: s.name, hours: s.hours, nucleus: s.nucleus, groupOpt: s.groupOpt },
-      create: {
-        courseId: course.id, seq: s.seq, code: s.code, name: s.name,
-        hours: s.hours, nucleus: s.nucleus, groupOpt: s.groupOpt,
-      },
-    });
-    bySeq[s.seq] = subj.id;
-  }
+    for (const m of matriz.milestones)
+      await tx.milestone.upsert({
+        where: { courseId_key: { courseId: course.id, key: m.key } },
+        update: { hours: m.hours, description: m.description },
+        create: { courseId: course.id, key: m.key, hours: m.hours, description: m.description },
+      });
 
-  for (const s of matriz.subjects) {
-    // recria requisitos da disciplina do zero (idempotência sem duplicar linhas)
-    await prisma.requisite.deleteMany({ where: { subjectId: bySeq[s.seq] } });
-    for (const [list, type] of [[s.pre, "PRE"], [s.co, "CO"]] as const) {
-      for (const r of list) {
-        await prisma.requisite.create({
-          data: {
-            subjectId: bySeq[s.seq], type,
-            ...(typeof r === "number"
-              ? { requiresSubjectId: bySeq[r] ?? undefined }
-              : { milestoneKey: r }),
-          },
-        });
+    // duas passadas: disciplinas primeiro (para resolver requisitos por seq), depois requisitos em lote.
+    const bySeq: Record<number, string> = {};
+    for (const s of matriz.subjects) {
+      const subj = await tx.subject.upsert({
+        where: { courseId_seq: { courseId: course.id, seq: s.seq } },
+        update: { code: s.code, name: s.name, hours: s.hours, nucleus: s.nucleus, groupOpt: s.groupOpt },
+        create: {
+          courseId: course.id, seq: s.seq, code: s.code, name: s.name,
+          hours: s.hours, nucleus: s.nucleus, groupOpt: s.groupOpt,
+        },
+      });
+      bySeq[s.seq] = subj.id;
+    }
+
+    // recria os requisitos do zero (idempotente) num único deleteMany + createMany
+    await tx.requisite.deleteMany({ where: { subjectId: { in: Object.values(bySeq) } } });
+    const reqRows: { subjectId: string; type: "PRE" | "CO"; requiresSubjectId?: string; milestoneKey?: string }[] = [];
+    for (const s of matriz.subjects) {
+      for (const [list, type] of [[s.pre, "PRE"], [s.co, "CO"]] as const) {
+        for (const r of list) {
+          if (typeof r === "number") {
+            const requiresSubjectId = bySeq[r];
+            if (!requiresSubjectId) continue; // órfão: seq referenciado não existe na matriz
+            reqRows.push({ subjectId: bySeq[s.seq], type, requiresSubjectId });
+          } else {
+            reqRows.push({ subjectId: bySeq[s.seq], type, milestoneKey: r });
+          }
+        }
       }
     }
-  }
+    if (reqRows.length) await tx.requisite.createMany({ data: reqRows });
 
-  return { slug: course.slug, subjects: matriz.subjects.length };
+    return { slug: course.slug, subjects: matriz.subjects.length };
+  }, { timeout: 30_000, maxWait: 10_000 });
 }

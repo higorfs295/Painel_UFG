@@ -22,6 +22,9 @@ export type RotationResult =
   | { ok: false; reason: "invalid" | "expired" | "reuse" };
 
 // Valida e rotaciona. Em caso de reuso (token já revogado apresentado de novo), revoga a família.
+// O "claim" da rotação é ATÔMICO (update condicional em `revokedAt: null`): sob dois refresh
+// concorrentes com o mesmo token, o lock de linha serializa e só UM vencedor emite o próximo token;
+// o perdedor recebe `reuse`. Isso fecha a corrida de rotação (proliferação de tokens / bypass de reuso).
 export async function rotateRefreshToken(prisma: PrismaClient, plain: string | undefined): Promise<RotationResult> {
   if (!plain) return { ok: false, reason: "invalid" };
   const row = await prisma.refreshToken.findUnique({ where: { tokenHash: hashToken(plain) } });
@@ -38,13 +41,30 @@ export async function rotateRefreshToken(prisma: PrismaClient, plain: string | u
   if (row.expiresAt < new Date()) return { ok: false, reason: "expired" };
 
   const nextPlain = generateToken();
-  await prisma.$transaction([
-    prisma.refreshToken.update({ where: { id: row.id }, data: { revokedAt: new Date() } }),
-    prisma.refreshToken.create({
+  const userId = await prisma.$transaction(async (tx) => {
+    // claim atômico: apenas quem conseguir revogar a linha ainda-não-revogada segue adiante.
+    const claim = await tx.refreshToken.updateMany({
+      where: { id: row.id, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    if (claim.count === 0) return null; // corrida perdida: outro request já rotacionou este token
+    await tx.refreshToken.create({
       data: { userId: row.userId, tokenHash: hashToken(nextPlain), expiresAt: expiryDate() },
-    }),
-  ]);
-  return { ok: true, userId: row.userId, plain: nextPlain };
+    });
+    return row.userId;
+  });
+  if (userId === null) return { ok: false, reason: "reuse" };
+  return { ok: true, userId, plain: nextPlain };
+}
+
+// Expurgo de tokens de refresh vencidos/revogados antigos (a tabela cresce a cada login/rotação).
+// Chame periodicamente (cron/scheduler). Devolve quantos foram removidos.
+export async function pruneRefreshTokens(prisma: PrismaClient, olderThanDays = 30): Promise<number> {
+  const cutoff = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000);
+  const res = await prisma.refreshToken.deleteMany({
+    where: { OR: [{ expiresAt: { lt: new Date() } }, { revokedAt: { lt: cutoff } }] },
+  });
+  return res.count;
 }
 
 // Revoga um refresh específico (logout). Silencioso se não existir.
