@@ -1,0 +1,24 @@
+{
+  "name": "painel_ufg",
+  "version": "1.0.0",
+  "description": "Evolução do protótipo em artefato para uma aplicação real multiusuário, com autenticação, papéis (admin/usuário), múltiplos cursos e os módulos de progresso/optativas/atividades/cronograma. Leia primeiro `ESPECIFICACAO.md`.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/higorfs295/Painel_UFG.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/higorfs295/Painel_UFG/issues"
+  },
+  "homepage": "https://github.com/higorfs295/Painel_UFG#readme",
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
+}

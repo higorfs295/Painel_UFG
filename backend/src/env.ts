@@ -1,4 +1,5 @@
 // Carrega e valida variáveis de ambiente com zod (falha cedo se algo faltar).
+import "dotenv/config";
 import { z } from "zod";
 const schema = z.object({
   DATABASE_URL: z.string().url(),
