@@ -20,6 +20,9 @@ npm-debug.log*
 .vitest/
 coverage/
 
+# tooling local do Claude Code
+.claude/
+
 # editores / SO
 .DS_Store
 Thumbs.db

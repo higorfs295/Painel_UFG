@@ -1,0 +1,24 @@
+# Proxy reverso com TLS. Local: certificado interno (self-signed) via `tls internal`.
+# Produção: troque `localhost` pelo seu domínio e remova `tls internal` — o Caddy emite
+# certificado Let's Encrypt automaticamente (defina um e-mail no bloco global abaixo).
+
+# {
+#   email voce@exemplo.com
+# }
+
+localhost {
+  tls internal
+
+  # Rotas da API vão para o backend; o cookie de refresh (path /auth) casa por ser mesma origem.
+  @api path /auth/* /me /me/* /users /users/* /courses /courses/* /health
+  handle @api {
+    reverse_proxy api:3333
+  }
+
+  # Todo o resto é o SPA (BrowserRouter).
+  handle {
+    reverse_proxy web:80
+  }
+
+  encode gzip
+}

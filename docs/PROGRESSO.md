@@ -1,7 +1,7 @@
 # Progresso da Implementação
 
-Registro do que foi implementado e **verificado em execução real** (Node 24 + Postgres em Docker),
-seguindo o `ROADMAP.md`. Ordem priorizada: Fases 0 e 1.
+Registro do que foi implementado e **verificado em execução real** (Node 24 + Postgres em Docker +
+navegador), seguindo o `ROADMAP.md`.
 
 ## Resumo do estado
 
@@ -9,83 +9,101 @@ seguindo o `ROADMAP.md`. Ordem priorizada: Fases 0 e 1.
 | --- | --- | --- |
 | **0** | Sanidade do ambiente | ✅ Concluída e verificada |
 | **1** | Autenticação ponta a ponta | ✅ Concluída e verificada |
-| 2 | Administração de usuários (RF-01) | ✅ Implementada (rotas + validação) |
-| 3 | Progresso e domínio no servidor (RF-05/06/07) | ✅ Implementada + testada |
-| 4 | Extras / cursos / cronograma (RF-08..13) | ✅ Implementada (falta 4.4 settings/backup) |
-| 5 | Frontend funcional | ⬜ Pendente (M2+) |
-| 6 | Operação e robustez | ⬜ Pendente |
+| **2** | Administração de usuários (RF-01) | ✅ Implementada (rotas + UI admin) |
+| **3** | Progresso e domínio no servidor (RF-05/06/07) | ✅ Concluída + testada |
+| **4** | Extras / cursos / cronograma / backup (RF-08..16) | ✅ Concluída (inclui 4.4) |
+| **5** | Frontend funcional | ✅ Concluída e verificada no navegador |
+| **6** | Operação e robustez | ✅ Artefatos entregues (Docker/proxy/logs/docs) |
 
-> As Fases 2–4 do backend já estavam implementadas no commit anterior; o ROADMAP foi gerado de um
-> índice antigo que ainda as via como `501/TODO`. Aqui elas foram **verificadas rodando** contra o banco.
+**Cobertura de testes:** 34 automatizados verdes — 22 unitários (domínio + crypto, sem banco) e
+12 de integração (rotas via `app.inject` contra Postgres real).
+
+---
 
 ## Fase 0 — Sanidade do ambiente ✅
+- Boot da API (`/health` → `{"ok":true}`), migration `20260707220537_init` aplicada, seed populando
+  curso EngComp (120 disciplinas) + conta `fhigor295@gmail.com` (23 aprovadas, 9 extras).
+- Vitest configurado; erro uniforme (`setErrorHandler`) sem vazar stack (RNF-04); typecheck limpo.
+- Correções: `schema.prisma` reformatado (sintaxe válida), `.env` via `--env-file`, versões fixadas + lockfile.
 
-- **0.1 Boot da API** — `npm run dev` sobe na porta 3333; `GET /health` → `{"ok":true}`. Verificado.
-- **0.2 Migração e seed** — migration `20260707220537_init` criada e aplicada; `npm run seed` popula
-  1 curso (`engcomp-ufg-2021`), 120 disciplinas, a conta `fhigor295@gmail.com` com 23 aprovadas e 9 extras. Verificado.
-- **0.3 Testes** — Vitest configurado (`test/unit` sem banco, `test/integration` via `app.inject`).
-  **31 testes verdes** (22 unit + 9 integração). `npm test` e `npm run test:integration`.
-- **0.4 Erro uniforme** — `setErrorHandler` global em `src/app.ts`: `ZodError`→400 com issues, `OwnershipError`→403/404,
-  `SigaaError`→400, erros conhecidos do Prisma (P2002→409, P2025→404), demais→500 genérico (sem stack trace, RNF-04).
-- **Typecheck** — `npm run typecheck` (tsc --noEmit) passa sem erros; `requireAuth`/`requireAdmin` tipados (fim dos `any`).
+## Fase 1 — Autenticação ✅
+JWT tipado + `requireAuth`/`requireAdmin`; convite→senha (argon2), login, refresh rotativo com
+**detecção de reuso** (revoga a família), logout, reset; rate limit por rota. Coberto por integração.
 
-### Correções de ambiente feitas nesta fase
-1. **`schema.prisma` inválido** — o esqueleto tinha o cabeçalho e os enums em sintaxe inválida
-   (`datasource db { provider=...; url=... }` com `;`, enums numa só linha). Reformatado para sintaxe
-   canônica multi-linha. Sem mudança de semântica; a migration reflete as mesmas tabelas.
-2. **Carregamento de `.env`** — scripts passam a usar `--env-file=.env` (Node 20+); testes de integração
-   carregam via `dotenv` em `test/setup.ts`.
-3. **Versões fixadas** — `package.json` do backend com versões do ecossistema Fastify 5 + `package-lock.json` versionado.
+## Fases 2–4 — Backend de domínio ✅
+- **users** (RF-01), **courses/import** (RF-13), **progress** (RF-05/06/07: somas com teto 100% +
+  excedente, oficial×simulado, marcos, recomendações), **extras** (RF-08/09), **schedules** (RF-10/11/12
+  com validação SIGAA no servidor).
+- **4.4 (novo):** `GET /me`, `PATCH /me/settings` (tema, RF-15), `GET /me/export` + `POST /me/import`
+  (backup JSON portável por `seq`, restauração transacional, RF-16). Coberto por integração (roundtrip export→wipe→import).
 
-### Nota de ambiente da máquina (Avast + TLS)
-O antivírus **Avast** intercepta HTTPS. O `npm install` falhava intermitentemente com
-`UNABLE_TO_VERIFY_LEAF_SIGNATURE` (retries silenciosos → parecia travar). **Solução segura** (sem
-desabilitar verificação): apontar o Node para o CA legítimo do Avast:
+## Fase 5 — Frontend funcional ✅
+Stack: React 18 + Vite 6 + TypeScript + TanStack Query + React Router 6 + Zustand.
+- Fundação: `main.tsx` (QueryClient + Router), `App.tsx` (boot via refresh + guardas de rota/admin).
+- Auth: store Zustand, cliente HTTP com refresh automático em 401, telas de Login e Convite.
+- Páginas de domínio consumindo a API: **Overview** (donut, composições com excedente, marcos, recomendações),
+  **Disciplinas** (tabela + filtros + simulação APPROVED/SIMULATED + projeção), **Extras** (CRUD),
+  **Cronograma** (cenários + disciplinas com SIGAA + grade com pintura), **Ajustes** (tema + export/import),
+  **Admin** (criar/convidar/remover usuários + importar matriz).
+- **Verificado no navegador:** login como Higor → Overview com dados reais (1737/4132h, NL +158h e AC +119h
+  travados em 100%, CH1 ✓) → Disciplinas (status calculado, Cálculo 2A disponível / Cálculo 3A bloqueada) →
+  troca de tema persistida → **reload mantém a sessão** (refresh no boot). CORS e cookie httpOnly OK.
 
+## Fase 6 — Operação e robustez ✅
+- **6.1 Dockerfiles + compose:** `backend/Dockerfile` (multi-stage, migrate deploy no entrypoint, usuário
+  não-root), `frontend/Dockerfile` (build Vite → nginx com fallback SPA), `docker-compose.yml` com
+  `db + api + web + caddy` e healthcheck do Postgres.
+- **6.2 Proxy TLS:** `deploy/Caddyfile` — TLS automático (interno no local, Let's Encrypt em produção),
+  topologia **mesma origem** (roteia `/auth`,`/me`,`/users`,`/courses`,`/health` para a API; resto para o SPA),
+  o que faz o cookie de refresh (path `/auth`) casar e dispensa CORS.
+- **6.3 Logs sem dados sensíveis (RNF-10):** `redact` do pino em `app.ts` (Authorization, cookies,
+  set-cookie, password/hash/token).
+- **6.4 Backup:** documentado abaixo; RF-16 já implementado (export/import por usuário).
+
+---
+
+## Como rodar
+
+### Dev (backend/front no host, Postgres no Docker)
 ```bash
-export NODE_EXTRA_CA_CERTS="C:\\ProgramData\\Avast Software\\Avast\\wscert.pem"
-```
-
-A variável já existia no sistema, mas com barra dupla no caminho (`Avast\\wscert.pem`), o que fazia o
-Node não ler o arquivo. Usar o caminho correto resolve. Considere corrigir a env var do sistema.
-
-## Fase 1 — Autenticação ponta a ponta ✅
-
-Todos os sub-itens implementados e cobertos por teste de integração (`test/integration/auth.test.ts`):
-
-- **1.1** JWT tipado (`declare module "@fastify/jwt"`, payload `{sub, role}`); `requireAuth`/`requireAdmin` como `preHandlerHookHandler`.
-- **1.2** Serviço de tokens (`src/lib/crypto.ts`, `invite.ts`, `session.ts`) — token aleatório, guarda só o hash sha256.
-- **1.3** `POST /auth/invite/accept` — define senha com argon2, marca `usedAt`; token de uso único (testado: reuso → 400).
-- **1.4** `POST /auth/login` — argon2.verify; erro genérico 401 (não revela e-mail vs senha); emite JWT + cookie httpOnly.
-- **1.5** `POST /auth/refresh` — rotação a cada uso; reuso de token revogado → revoga a família inteira (testado: 200 → reuso 401 → novo cookie também 401).
-- **1.6** `POST /auth/logout` — revoga o refresh e limpa o cookie.
-- **1.7** `POST /auth/password/forgot` — reaproveita o fluxo de convite com `purpose=RESET_PASSWORD` (link logado; sem e-mail na v1).
-- **1.8** Rate limit por rota — `config.rateLimit` estrito (10/min) em login/invite/forgot; global 120/min.
-
-## Como rodar (verificado)
-
-```bash
-# 1) Postgres isolado desta branch (o plugin `docker compose` v2 não está instalado; use docker run):
+# Postgres isolado (o plugin `docker compose` v2 não está instalado nesta máquina — use docker run):
 docker run -d --name painel-lovingnash-db -e POSTGRES_USER=painel -e POSTGRES_PASSWORD=painel \
   -e POSTGRES_DB=painel -p 5432:5432 -v painel_lovingnash_dbdata:/var/lib/postgresql/data postgres:16
 
-# 2) Backend
-cd backend
-cp .env.example .env        # ajuste JWT_SECRET (há um comando node no arquivo) e SEED_ADMIN_PASSWORD
-export NODE_EXTRA_CA_CERTS="C:\\ProgramData\\Avast Software\\Avast\\wscert.pem"   # se estiver atrás do Avast
-npm install
-npm run migrate             # aplica a migration
-npm run seed                # popula curso + sua conta
-npm test                    # 22 unit
-npm run test:integration    # 9 integração (precisa do banco)
-npm run dev                 # http://localhost:3333/health
+# backend
+cd backend && cp .env.example .env   # ajuste JWT_SECRET e SEED_ADMIN_PASSWORD
+export NODE_EXTRA_CA_CERTS="C:\\ProgramData\\Avast Software\\Avast\\wscert.pem"   # ver nota Avast
+npm install && npm run migrate && npm run seed
+npm run dev            # http://localhost:3333
+npm test && npm run test:integration
+
+# frontend
+cd ../frontend && npm install
+npm run dev            # http://localhost:5173  (login: fhigor295@gmail.com / a senha do seed)
 ```
 
-## Pendências e próximos passos
+### Stack completa (Docker Compose — requer o plugin v2)
+```bash
+cp .env.example .env   # defina JWT_SECRET
+docker compose up --build
+docker compose run --rm -e SEED_ADMIN_PASSWORD='...' api npm run seed   # semear 1x
+# acesse https://localhost  (aceite o certificado interno do Caddy no local)
+```
 
-- **Fase 4.4** — `PATCH /me/settings` (tema, RF-15) e `GET /me/export` / `POST /me/import` (backup JSON, RF-16). Ainda não implementados.
-- **Testes de integração poluem o banco de dev** — criam usuários/cursos com slugs/e-mails únicos (`*.test.local`)
-  e não limpam. Não afetam a sua conta. Melhoria futura: apontar para um `TEST_DATABASE_URL` separado.
-- **Fase 5 (frontend)** — próximo alvo natural: fundação do app (router + TanStack Query), telas de Login/Convite
-  ligadas à auth já pronta, depois páginas de domínio consumindo a API.
-- **Fase 6 (operação)** — Dockerfiles de api/web + serviços no compose, proxy TLS, logs sem dados sensíveis.
+### Backup (RF-16)
+Em **Ajustes** o usuário exporta um JSON com todos os seus dados (status, extras, cenários, tema) e pode
+reimportar para reconstruir o estado. O backup referencia disciplinas por `seq`, então sobrevive a
+re-seed/reimportação da matriz. Backup do banco: `pg_dump` do volume `dbdata` (documentar rotina no deploy).
+
+## Nota de ambiente (Avast + TLS)
+O Avast intercepta HTTPS; `npm install` falha intermitentemente com `UNABLE_TO_VERIFY_LEAF_SIGNATURE`.
+Correção segura (sem desabilitar verificação): `export NODE_EXTRA_CA_CERTS="C:\\ProgramData\\Avast Software\\Avast\\wscert.pem"`
+(a env var do sistema existe mas com barra dupla no caminho, que quebra a leitura). Dentro do build Docker,
+o mesmo MITM pode afetar o `npm ci` — em rede sem interceptação os Dockerfiles constroem normalmente.
+
+## Pendências / próximos passos sugeridos
+- **6.5 Revisão de segurança final** em produção: confirmar `NODE_ENV=production` (cookies `secure`),
+  segredos fora do repo, CORS/So mesma origem, headers do helmet, e backup automatizado do banco.
+- **Testes de integração poluem o banco de dev** (criam `*.test.local`); ideal apontar para `TEST_DATABASE_URL` separado.
+- **E2E de frontend** (Playwright) e testes de componente seriam o próximo reforço de qualidade.
+- Detecção de conflito de horário na grade (hoje o parser valida SIGAA; o realce de conflito pode ser adicionado na leitura).

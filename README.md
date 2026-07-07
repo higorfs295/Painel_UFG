@@ -50,14 +50,30 @@ npm run test:integration   # integração: rotas via app.inject (precisa do Post
 npm run typecheck          # checagem de tipos (tsc --noEmit)
 ```
 
-## Frontend (próxima fase — M2+)
+## Frontend (React + Vite + TanStack Query)
 
 ```bash
 cd frontend
-npm create vite@latest . -- --template react-ts   # aceite mesclar
-npm i @tanstack/react-query react-router-dom zustand
+npm install
 npm run dev                # http://localhost:5173
+# login com a conta do seed (fhigor295@gmail.com) e a senha definida em SEED_ADMIN_PASSWORD
 ```
+
+Páginas: Login, Convite, Visão geral, Disciplinas (com simulação), Extras, Cronograma, Ajustes e Admin.
+Consome a API via TanStack Query; sessão com refresh automático; tema claro/escuro persistido.
+
+## Stack completa com Docker (opcional)
+
+Requer o plugin Docker Compose v2. Sobe Postgres + API + Web + Caddy (TLS + proxy, mesma origem):
+
+```bash
+cp .env.example .env       # defina JWT_SECRET
+docker compose up --build
+docker compose run --rm -e SEED_ADMIN_PASSWORD='...' api npm run seed
+# acesse https://localhost
+```
+
+> Detalhes do progresso, verificações e nota sobre o Avast/TLS em `docs/PROGRESSO.md`.
 
 ## Estado do código
 

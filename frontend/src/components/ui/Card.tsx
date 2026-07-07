@@ -1,5 +1,8 @@
-// card base com tokens do tema
-// TODO: implementar conforme ESPECIFICACAO.md (§7 contrato de API, §10 componentes).
-export default function Card() {
-  return <div data-todo="Card" />;
+// Painel/cartão base.
+import type { HTMLAttributes } from "react";
+
+type Props = HTMLAttributes<HTMLDivElement> & { tight?: boolean };
+
+export default function Card({ tight, className = "", ...rest }: Props) {
+  return <div className={["card", tight ? "tight" : "", className].filter(Boolean).join(" ")} {...rest} />;
 }
