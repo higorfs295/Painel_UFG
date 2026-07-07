@@ -10,28 +10,67 @@ Leia primeiro `ESPECIFICACAO.md`.
 - `frontend/` — React + Vite + TypeScript (componentes portados do protótipo)
 - `docker-compose.yml` — Postgres local (e, futuramente, API + web)
 
-## Por que não há versões fixadas nos package.json
+## Pré-requisitos
 
-Para não te entregar números de versão que eu não posso verificar hoje, as dependências
-são instaladas pelos comandos abaixo (o npm grava as versões atuais no lockfile). Confira
-sempre a documentação oficial de cada biblioteca — APIs mudam entre versões maiores.
+- **Node.js 20+ LTS** (recomendado 22). Instale: `winget install OpenJS.NodeJS.LTS`
+- **Docker Desktop** rodando (usado apenas para o PostgreSQL nesta fase).
 
-## Subir o ambiente (passo a passo)
+## Subir o ambiente (backend)
 
-1. `docker compose up -d db`
-2. `cd backend && cp ../.env.example .env`
-3. `npm init -y` (se necessário) e instale:
-   `npm i fastify @fastify/cors @fastify/helmet @fastify/rate-limit @fastify/jwt @fastify/cookie zod argon2 @prisma/client`
-   `npm i -D typescript tsx prisma @types/node`
-4. `npx prisma migrate dev --name init`
-5. `SEED_ADMIN_PASSWORD='defina-uma-senha-forte' npx tsx src/seed/seed.ts`
-6. `npx tsx src/server.ts`
-7. `cd ../frontend && npm create vite@latest . -- --template react-ts` (aceite mesclar) e depois
-   `npm i @tanstack/react-query react-router-dom zustand`
-8. `npm run dev`
+```bash
+# 1) Postgres via Docker (na raiz do projeto)
+docker compose up -d db
+#   fallback sem compose:
+#   docker run -d --name painel-db -e POSTGRES_USER=painel -e POSTGRES_PASSWORD=painel \
+#     -e POSTGRES_DB=painel -p 5432:5432 -v painel_dbdata:/var/lib/postgresql/data postgres:16
+
+# 2) Configurar e instalar o backend
+cd backend
+cp .env.example .env
+#   gere um JWT_SECRET forte e cole no .env:
+node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+npm install
+
+# 3) Migrar o schema (gera o Prisma Client e cria as tabelas)
+npm run migrate            # prisma migrate dev --name init (na 1ª vez pede o nome)
+
+# 4) Popular o banco (curso EngComp + sua conta) — senha via env, nunca versionada
+SEED_ADMIN_PASSWORD='defina-uma-senha-forte' npm run seed
+
+# 5) Rodar a API
+npm run dev                # http://localhost:3333  (GET /health -> {"ok":true})
+```
+
+## Testes
+
+```bash
+cd backend
+npm test                   # unitários: domínio puro + crypto (não precisam de banco)
+npm run test:integration   # integração: rotas via app.inject (precisa do Postgres migrado)
+npm run typecheck          # checagem de tipos (tsc --noEmit)
+```
+
+## Frontend (próxima fase — M2+)
+
+```bash
+cd frontend
+npm create vite@latest . -- --template react-ts   # aceite mesclar
+npm i @tanstack/react-query react-router-dom zustand
+npm run dev                # http://localhost:5173
+```
 
 ## Estado do código
 
-Esqueleto compilável com módulos stub: contratos, tipos, schema de dados e lógica de domínio
-(parser SIGAA e grafo de requisitos) estão completos; handlers marcados com TODO seguem a
-especificação (RF-xx) para você implementar como projeto.
+Módulos implementados (handlers antes em TODO):
+
+- **auth** (RF-02/03/04): convite→senha (argon2), login, refresh rotativo com detecção de reuso, logout, reset.
+- **users** (RF-01): CRUD admin, criação sem senha + link de convite, reemissão.
+- **courses** (RF-13): leitura da matriz e `POST /import` idempotente (mesmo formato do seed).
+- **progress** (RF-05/06/07): somas por composição com teto em 100% + excedente, status oficial×simulado, marcos, recomendações por destravamento.
+- **extras** (RF-08/09): CRUD de optativas fora da matriz, NL, AC e registros.
+- **schedules** (RF-10/11/12): cenários, disciplinas com validação SIGAA no servidor, pintura de células.
+
+Lógica de domínio pura em `backend/src/domain/` (portada de `frontend/src/lib/`, testada em `backend/test/unit/`).
+Autorização por posse (RNF-05) em toda rota `/me`; erros centralizados sem vazar stack trace (RNF-04).
+
+O artefato HTML permanece como referência visual/comportamental de cada componente.

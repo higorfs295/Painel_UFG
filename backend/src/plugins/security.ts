@@ -10,5 +10,5 @@ export const securityPlugin = fp(async (app) => {
   await app.register(helmet);
   await app.register(cors, { origin: env.CORS_ORIGIN, credentials: true });
   await app.register(rateLimit, { max: env.RATE_LIMIT_MAX, timeWindow: env.RATE_LIMIT_WINDOW });
-  // TODO: rate limit mais agressivo por rota em /auth/login e /auth/invite (config por rota do plugin)
+  // Limite por rota mais agressivo (login/invite/reset) está em modules/auth/routes.ts via config.rateLimit.
 });

@@ -1,12 +1,39 @@
 // Modelo de dados completo — ver ESPECIFICACAO.md §6
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
 
-enum Role { ADMIN USER }
-enum Nucleus { NC NE }
-enum ReqType { PRE CO }
-enum SubjectState { APPROVED SIMULATED }        // ausência de registro = pendente
-enum ExtraCategory { OPT NL AC NONE }
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum Nucleus {
+  NC
+  NE
+}
+
+enum ReqType {
+  PRE
+  CO
+}
+
+enum SubjectState {
+  APPROVED
+  SIMULATED
+} // ausência de registro = pendente
+
+enum ExtraCategory {
+  OPT
+  NL
+  AC
+  NONE
+}
 
 model User {
   id           String   @id @default(cuid())
