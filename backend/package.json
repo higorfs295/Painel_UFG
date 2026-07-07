@@ -1,0 +1,12 @@
+{
+  "name": "painel-academico-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "seed": "tsx src/seed/seed.ts",
+    "migrate": "prisma migrate dev"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

@@ -1,0 +1,167 @@
+// Modelo de dados completo — ver ESPECIFICACAO.md §6
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+
+enum Role { ADMIN USER }
+enum Nucleus { NC NE }
+enum ReqType { PRE CO }
+enum SubjectState { APPROVED SIMULATED }        // ausência de registro = pendente
+enum ExtraCategory { OPT NL AC NONE }
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String?                          // null até o usuário definir a própria senha (RF-02)
+  role         Role     @default(USER)
+  theme        String   @default("dark")
+  createdAt    DateTime @default(now())
+  invites      InviteToken[]
+  refreshTokens RefreshToken[]
+  enrollments  Enrollment[]
+}
+
+model InviteToken {                              // fluxo: admin cria usuário -> convite -> usuário define senha
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  tokenHash String   @unique                     // armazenar hash, nunca o token puro
+  purpose   String   @default("SET_PASSWORD")    // SET_PASSWORD | RESET_PASSWORD
+  expiresAt DateTime
+  usedAt    DateTime?
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+model Course {
+  id           String  @id @default(cuid())
+  slug         String  @unique
+  name         String
+  totalHours   Int
+  requirements CompositionRequirement[]
+  milestones   Milestone[]
+  subjects     Subject[]
+  enrollments  Enrollment[]
+}
+
+model CompositionRequirement {                   // NC/NEO/OPT/NL/AC... flexível por curso (RF-13)
+  id       String @id @default(cuid())
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String
+  key      String
+  label    String
+  hours    Int
+  @@unique([courseId, key])
+}
+
+model Milestone {                                // CH1/CH2/CH3 (horas integralizadas)
+  id          String @id @default(cuid())
+  course      Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    String
+  key         String
+  hours       Int
+  description String
+  @@unique([courseId, key])
+}
+
+model Subject {
+  id        String   @id @default(cuid())
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  String
+  seq       Int                                   // nº na matriz (referência dos requisitos)
+  code      String
+  name      String
+  hours     Int
+  nucleus   Nucleus
+  groupOpt  Int      @default(0)                  // 0 = obrigatória; 2..5 = grupo de optativa
+  requires  Requisite[] @relation("requires")
+  requiredBy Requisite[] @relation("requiredBy")
+  statuses  SubjectStatus[]
+  @@unique([courseId, seq])
+  @@index([courseId, groupOpt])
+}
+
+model Requisite {
+  id                String   @id @default(cuid())
+  subject           Subject  @relation("requires", fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId         String
+  requiresSubject   Subject? @relation("requiredBy", fields: [requiresSubjectId], references: [id], onDelete: Cascade)
+  requiresSubjectId String?
+  milestoneKey      String?                        // requisito por horas (CH1/CH2/CH3) quando não é disciplina
+  type              ReqType
+}
+
+model Enrollment {                                 // 1 usuário pode ter N cursos (RF-13)
+  id          String  @id @default(cuid())
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  course      Course  @relation(fields: [courseId], references: [id])
+  courseId    String
+  startTerm   String?
+  currentTerm String?
+  statuses    SubjectStatus[]
+  extras      ExtraComponent[]
+  scenarios   Scenario[]
+  @@unique([userId, courseId])
+}
+
+model SubjectStatus {                              // APPROVED = oficial; SIMULATED = planejamento (RF-06)
+  id           String       @id @default(cuid())
+  enrollment   Enrollment   @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollmentId String
+  subject      Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId    String
+  state        SubjectState
+  term         String?
+  @@unique([enrollmentId, subjectId])
+}
+
+model ExtraComponent {                             // optativas fora da matriz, NL, AC, registros (RF-08/09)
+  id           String        @id @default(cuid())
+  enrollment   Enrollment    @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollmentId String
+  name         String
+  code         String?
+  hours        Int           @default(0)
+  category     ExtraCategory
+  done         Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+}
+
+model Scenario {
+  id           String   @id @default(cuid())
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollmentId String
+  name         String
+  disciplines  ScenarioDiscipline[]
+  paints       ScenarioPaint[]
+}
+
+model ScenarioDiscipline {
+  id         String  @id @default(cuid())
+  scenario   Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  scenarioId String
+  name       String
+  sigla      String
+  hours      Int     @default(0)
+  docente    String?
+  sigaaCode  String  @default("")
+  color      String
+}
+
+model ScenarioPaint {
+  id         String  @id @default(cuid())
+  scenario   Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  scenarioId String
+  cellKey    String                                 // ex.: "2-M1", "D-X3"
+  category   String
+  @@unique([scenarioId, cellKey])
+}

@@ -1,0 +1,1484 @@
+{
+ "course": {
+  "slug": "engcomp-ufg-2021",
+  "name": "Engenharia de Computação — UFG (ENGCO-BI-2, 2021.1)"
+ },
+ "requirements": [
+  {
+   "key": "NC",
+   "label": "Núcleo Comum",
+   "hours": 1600
+  },
+  {
+   "key": "NEO",
+   "label": "Núcleo Específico Obrigatório",
+   "hours": 1984
+  },
+  {
+   "key": "OPT",
+   "label": "Núcleo Específico Optativo",
+   "hours": 320
+  },
+  {
+   "key": "NL",
+   "label": "Núcleo Livre",
+   "hours": 128
+  },
+  {
+   "key": "AC",
+   "label": "Atividades Complementares",
+   "hours": 100
+  }
+ ],
+ "totalHours": 4132,
+ "milestones": [
+  {
+   "key": "CH1",
+   "hours": 1200,
+   "description": "Destrava Eng. de Software 1, Ling. Formais, Paradigmas, Eng. de Segurança, Projeto Orientado"
+  },
+  {
+   "key": "CH2",
+   "hours": 2144,
+   "description": "Destrava Estágio Supervisionado"
+  },
+  {
+   "key": "CH3",
+   "hours": 2400,
+   "description": "Destrava Projeto Final de Curso 1"
+  }
+ ],
+ "subjects": [
+  {
+   "seq": 1,
+   "code": "IME0351",
+   "name": "Álgebra Linear",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [],
+   "co": []
+  },
+  {
+   "seq": 2,
+   "code": "EMC0006",
+   "name": "Análise de Sistemas Lineares",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    47
+   ],
+   "co": []
+  },
+  {
+   "seq": 3,
+   "code": "EMC0010",
+   "name": "Arquitetura de Computadores 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    11
+   ],
+   "co": []
+  },
+  {
+   "seq": 4,
+   "code": "INF0395",
+   "name": "Banco de Dados",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    25
+   ],
+   "co": []
+  },
+  {
+   "seq": 5,
+   "code": "IME0350",
+   "name": "Cálculo 1A",
+   "hours": 96,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [],
+   "co": []
+  },
+  {
+   "seq": 6,
+   "code": "IME0080",
+   "name": "Cálculo 2A",
+   "hours": 96,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [
+    5
+   ],
+   "co": []
+  },
+  {
+   "seq": 7,
+   "code": "IME0083",
+   "name": "Cálculo 3A",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [
+    6
+   ],
+   "co": []
+  },
+  {
+   "seq": 8,
+   "code": "IME0062",
+   "name": "Cálculo Numérico",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [
+    1,
+    5,
+    35
+   ],
+   "co": []
+  },
+  {
+   "seq": 9,
+   "code": "EEC0026",
+   "name": "Ciências do Ambiente",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [],
+   "co": []
+  },
+  {
+   "seq": 10,
+   "code": "EMC0021",
+   "name": "Circuitos Elétricos 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    21,
+    30
+   ],
+   "co": []
+  },
+  {
+   "seq": 11,
+   "code": "EMC0025",
+   "name": "Circuitos Lógicos 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    33
+   ],
+   "co": []
+  },
+  {
+   "seq": 12,
+   "code": "INF0033",
+   "name": "Compiladores 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    43,
+    51
+   ],
+   "co": []
+  },
+  {
+   "seq": 13,
+   "code": "EMC0027",
+   "name": "Computação Gráfica",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    51
+   ],
+   "co": []
+  },
+  {
+   "seq": 14,
+   "code": "FAV0139",
+   "name": "Desenho Técnico",
+   "hours": 32,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [],
+   "co": []
+  },
+  {
+   "seq": 15,
+   "code": "FAD0062",
+   "name": "Direito para Engenharia",
+   "hours": 32,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [
+    "CH1"
+   ],
+   "co": []
+  },
+  {
+   "seq": 16,
+   "code": "FAC0439",
+   "name": "Economia B",
+   "hours": 32,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [],
+   "co": []
+  },
+  {
+   "seq": 17,
+   "code": "IFI0027",
+   "name": "Eletromagnetismo",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [
+    7,
+    30
+   ],
+   "co": []
+  },
+  {
+   "seq": 18,
+   "code": "EMC0056",
+   "name": "Eletrônica 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    10,
+    45
+   ],
+   "co": []
+  },
+  {
+   "seq": 19,
+   "code": "INF0058",
+   "name": "Engenharia de Software 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    "CH1"
+   ],
+   "co": []
+  },
+  {
+   "seq": 20,
+   "code": "EMC0072",
+   "name": "Engenharia Econômica",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [
+    16
+   ],
+   "co": []
+  },
+  {
+   "seq": 21,
+   "code": "IME0108",
+   "name": "Equações Diferenciais Ordinárias",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [
+    1,
+    5
+   ],
+   "co": []
+  },
+  {
+   "seq": 22,
+   "code": "EMC0076",
+   "name": "Estágio Supervisionado",
+   "hours": 320,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    "CH2"
+   ],
+   "co": []
+  },
+  {
+   "seq": 23,
+   "code": "IFI0329",
+   "name": "Estática",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [
+    5
+   ],
+   "co": []
+  },
+  {
+   "seq": 24,
+   "code": "INF0063",
+   "name": "Estruturas de Dados I",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    51
+   ],
+   "co": []
+  },
+  {
+   "seq": 25,
+   "code": "INF0064",
+   "name": "Estruturas de Dados II",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    24
+   ],
+   "co": []
+  },
+  {
+   "seq": 26,
+   "code": "EEC0096",
+   "name": "Fenômenos de Transporte",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [
+    21
+   ],
+   "co": []
+  },
+  {
+   "seq": 27,
+   "code": "IFI0326",
+   "name": "Física Experimental I",
+   "hours": 32,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [],
+   "co": [
+    29
+   ]
+  },
+  {
+   "seq": 28,
+   "code": "IFI0332",
+   "name": "Física Experimental IV",
+   "hours": 32,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [],
+   "co": [
+    31
+   ]
+  },
+  {
+   "seq": 29,
+   "code": "IFI0203",
+   "name": "Física I",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [],
+   "co": [
+    5
+   ]
+  },
+  {
+   "seq": 30,
+   "code": "IFI0325",
+   "name": "Física III",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [
+    6
+   ],
+   "co": []
+  },
+  {
+   "seq": 31,
+   "code": "IFI0331",
+   "name": "Física IV",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [
+    30
+   ],
+   "co": []
+  },
+  {
+   "seq": 32,
+   "code": "FAC0440",
+   "name": "Fundamentos da Administração",
+   "hours": 32,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [],
+   "co": []
+  },
+  {
+   "seq": 33,
+   "code": "EMC0085",
+   "name": "Fundamentos de Lógica",
+   "hours": 32,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [],
+   "co": []
+  },
+  {
+   "seq": 34,
+   "code": "INF0092",
+   "name": "Inteligência Computacional",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    25
+   ],
+   "co": []
+  },
+  {
+   "seq": 35,
+   "code": "INF0393",
+   "name": "Introdução a Computação",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [],
+   "co": []
+  },
+  {
+   "seq": 36,
+   "code": "EMC0101",
+   "name": "Introdução à Eng. de Computação",
+   "hours": 32,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [],
+   "co": []
+  },
+  {
+   "seq": 37,
+   "code": "EMC0119",
+   "name": "Lab. de Circuitos Elétricos 1",
+   "hours": 16,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [],
+   "co": [
+    10
+   ]
+  },
+  {
+   "seq": 38,
+   "code": "EMC0122",
+   "name": "Lab. de Circuitos Lógicos",
+   "hours": 16,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [],
+   "co": [
+    11
+   ]
+  },
+  {
+   "seq": 39,
+   "code": "EMC0126",
+   "name": "Lab. de Eletrônica 1",
+   "hours": 16,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [],
+   "co": [
+    18
+   ]
+  },
+  {
+   "seq": 40,
+   "code": "EMC0136",
+   "name": "Lab. de Materiais Elétricos",
+   "hours": 16,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [],
+   "co": [
+    45
+   ]
+  },
+  {
+   "seq": 41,
+   "code": "EMC0117",
+   "name": "Lab. de Microproc. e Microcontroladores",
+   "hours": 16,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [],
+   "co": [
+    48
+   ]
+  },
+  {
+   "seq": 42,
+   "code": "EMC0139",
+   "name": "Lab. de Sistemas de Controle",
+   "hours": 16,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    58
+   ],
+   "co": []
+  },
+  {
+   "seq": 43,
+   "code": "INF0126",
+   "name": "Linguagens Formais",
+   "hours": 32,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    "CH1"
+   ],
+   "co": []
+  },
+  {
+   "seq": 44,
+   "code": "IME0286",
+   "name": "Matemática Discreta",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [],
+   "co": []
+  },
+  {
+   "seq": 45,
+   "code": "EMC0149",
+   "name": "Materiais Elétricos",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    30
+   ],
+   "co": []
+  },
+  {
+   "seq": 46,
+   "code": "EMC0158",
+   "name": "Metodologia Científica",
+   "hours": 32,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [],
+   "co": []
+  },
+  {
+   "seq": 47,
+   "code": "EMC0160",
+   "name": "Métodos Matemáticos Lineares",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [
+    21
+   ],
+   "co": []
+  },
+  {
+   "seq": 48,
+   "code": "EMC0163",
+   "name": "Microproc. e Microcontroladores",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    11,
+    18
+   ],
+   "co": []
+  },
+  {
+   "seq": 49,
+   "code": "EMC0170",
+   "name": "Pesquisa Operacional 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    8
+   ],
+   "co": []
+  },
+  {
+   "seq": 50,
+   "code": "IME0378",
+   "name": "Probabilidade e Estatística A",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [],
+   "co": []
+  },
+  {
+   "seq": 51,
+   "code": "INF0396",
+   "name": "Programação Orientada a Objetos",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [
+    35
+   ],
+   "co": []
+  },
+  {
+   "seq": 52,
+   "code": "EMC0182",
+   "name": "Projeto Final de Curso 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    "CH3"
+   ],
+   "co": []
+  },
+  {
+   "seq": 53,
+   "code": "EMC0183",
+   "name": "Projeto Final de Curso 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    52
+   ],
+   "co": []
+  },
+  {
+   "seq": 54,
+   "code": "INQ0323",
+   "name": "Química Geral B",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [],
+   "co": []
+  },
+  {
+   "seq": 55,
+   "code": "INQ0324",
+   "name": "Química Geral Experimental",
+   "hours": 32,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [],
+   "co": [
+    54
+   ]
+  },
+  {
+   "seq": 56,
+   "code": "EMC0274",
+   "name": "Redes de Computadores 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [],
+   "co": []
+  },
+  {
+   "seq": 57,
+   "code": "EEC0224",
+   "name": "Resistência dos Materiais I",
+   "hours": 64,
+   "nucleus": "NC",
+   "groupOpt": 0,
+   "pre": [
+    23
+   ],
+   "co": []
+  },
+  {
+   "seq": 58,
+   "code": "EMC0214",
+   "name": "Sistemas de Controle",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    2
+   ],
+   "co": []
+  },
+  {
+   "seq": 59,
+   "code": "INF0198",
+   "name": "Sistemas Distribuídos 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    51
+   ],
+   "co": []
+  },
+  {
+   "seq": 60,
+   "code": "INF0202",
+   "name": "Sistemas Operacionais",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    51
+   ],
+   "co": []
+  },
+  {
+   "seq": 61,
+   "code": "EMC0226",
+   "name": "Teoria de Telecomunicações",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 0,
+   "pre": [
+    2
+   ],
+   "co": []
+  },
+  {
+   "seq": 62,
+   "code": "EMC0017",
+   "name": "Automação Industrial",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    48
+   ],
+   "co": []
+  },
+  {
+   "seq": 63,
+   "code": "EMC0034",
+   "name": "Controle Digital",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    58
+   ],
+   "co": []
+  },
+  {
+   "seq": 64,
+   "code": "EMC0035",
+   "name": "Controle Inteligente",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    34,
+    58
+   ],
+   "co": []
+  },
+  {
+   "seq": 65,
+   "code": "EMC0037",
+   "name": "Controle Moderno",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    58
+   ],
+   "co": []
+  },
+  {
+   "seq": 66,
+   "code": "EMC0098",
+   "name": "Instrumentação, Sensores e Atuadores",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    58
+   ],
+   "co": []
+  },
+  {
+   "seq": 67,
+   "code": "EMC0105",
+   "name": "Introdução à Robótica de Manipuladores",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    58
+   ],
+   "co": []
+  },
+  {
+   "seq": 68,
+   "code": "EMC0128",
+   "name": "Lab. de Inovação e Automação 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    35
+   ],
+   "co": []
+  },
+  {
+   "seq": 69,
+   "code": "EMC0129",
+   "name": "Lab. de Inovação e Automação 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    10,
+    18,
+    68
+   ],
+   "co": []
+  },
+  {
+   "seq": 70,
+   "code": "EMC0130",
+   "name": "Lab. de Inovação e Automação 3",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    68
+   ],
+   "co": []
+  },
+  {
+   "seq": 71,
+   "code": "EMC0202",
+   "name": "Robótica Avançada",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    58
+   ],
+   "co": []
+  },
+  {
+   "seq": 72,
+   "code": "EMC0204",
+   "name": "Robótica Móvel",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    58
+   ],
+   "co": []
+  },
+  {
+   "seq": 73,
+   "code": "EMC0242",
+   "name": "Tóp. Eng. Controle e Automação 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    58
+   ],
+   "co": []
+  },
+  {
+   "seq": 74,
+   "code": "EMC0243",
+   "name": "Tóp. Eng. Controle e Automação 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    58
+   ],
+   "co": []
+  },
+  {
+   "seq": 75,
+   "code": "EMC0244",
+   "name": "Tóp. Eng. Controle e Automação 3",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    58
+   ],
+   "co": []
+  },
+  {
+   "seq": 76,
+   "code": "EMC0245",
+   "name": "Tóp. Eng. Controle e Automação 4",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 2,
+   "pre": [
+    58
+   ],
+   "co": []
+  },
+  {
+   "seq": 77,
+   "code": "INF0027",
+   "name": "Banco de Dados 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    4
+   ],
+   "co": []
+  },
+  {
+   "seq": 78,
+   "code": "INF0035",
+   "name": "Compiladores 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    12
+   ],
+   "co": []
+  },
+  {
+   "seq": 79,
+   "code": "INF0060",
+   "name": "Engenharia de Software 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    19
+   ],
+   "co": []
+  },
+  {
+   "seq": 80,
+   "code": "INF0080",
+   "name": "Gestão de Projetos de Software",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    79
+   ],
+   "co": []
+  },
+  {
+   "seq": 81,
+   "code": "EMC0131",
+   "name": "Lab. de Inovação e Programação 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    35
+   ],
+   "co": []
+  },
+  {
+   "seq": 82,
+   "code": "EMC0132",
+   "name": "Lab. de Inovação e Programação 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    81
+   ],
+   "co": []
+  },
+  {
+   "seq": 83,
+   "code": "EMC0133",
+   "name": "Lab. de Inovação e Programação 3",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    82
+   ],
+   "co": []
+  },
+  {
+   "seq": 84,
+   "code": "INF0146",
+   "name": "Paradigmas de Linguagens de Programação",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    "CH1"
+   ],
+   "co": []
+  },
+  {
+   "seq": 85,
+   "code": "INF0160",
+   "name": "Programação de Sistemas Distribuídos",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    59
+   ],
+   "co": []
+  },
+  {
+   "seq": 86,
+   "code": "EMC0180",
+   "name": "Programação para Sistemas Móveis",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    25
+   ],
+   "co": []
+  },
+  {
+   "seq": 87,
+   "code": "EMC0246",
+   "name": "Tóp. Eng. Sistemas de Informação 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    25
+   ],
+   "co": []
+  },
+  {
+   "seq": 88,
+   "code": "EMC0247",
+   "name": "Tóp. Eng. Sistemas de Informação 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    25
+   ],
+   "co": []
+  },
+  {
+   "seq": 89,
+   "code": "EMC0248",
+   "name": "Tóp. Eng. Sistemas de Informação 3",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    25
+   ],
+   "co": []
+  },
+  {
+   "seq": 90,
+   "code": "EMC0249",
+   "name": "Tóp. Eng. Sistemas de Informação 4",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    25
+   ],
+   "co": []
+  },
+  {
+   "seq": 91,
+   "code": "INF0162",
+   "name": "Programação de Sistemas em Tempo Real",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    25
+   ],
+   "co": []
+  },
+  {
+   "seq": 92,
+   "code": "INF0200",
+   "name": "Sistemas Distribuídos 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 3,
+   "pre": [
+    59
+   ],
+   "co": []
+  },
+  {
+   "seq": 93,
+   "code": "EMC0008",
+   "name": "Antenas",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 4,
+   "pre": [
+    8
+   ],
+   "co": []
+  },
+  {
+   "seq": 94,
+   "code": "EMC0029",
+   "name": "Comunicações Digitais",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 4,
+   "pre": [
+    61
+   ],
+   "co": []
+  },
+  {
+   "seq": 95,
+   "code": "EMC0196",
+   "name": "Propagação em Microondas",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 4,
+   "pre": [
+    61
+   ],
+   "co": []
+  },
+  {
+   "seq": 96,
+   "code": "EMC0275",
+   "name": "Redes de Computadores 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 4,
+   "pre": [
+    56
+   ],
+   "co": []
+  },
+  {
+   "seq": 97,
+   "code": "EMC0210",
+   "name": "Sistemas de Comunicações",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 4,
+   "pre": [
+    61
+   ],
+   "co": []
+  },
+  {
+   "seq": 98,
+   "code": "EMC0212",
+   "name": "Sistemas de Comunicações Móveis",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 4,
+   "pre": [
+    61
+   ],
+   "co": []
+  },
+  {
+   "seq": 99,
+   "code": "EMC0224",
+   "name": "Teoria da Informação e Codificação",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 4,
+   "pre": [
+    61
+   ],
+   "co": []
+  },
+  {
+   "seq": 100,
+   "code": "EMC0251",
+   "name": "Tóp. Eng. Telecomunicações 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 4,
+   "pre": [
+    61
+   ],
+   "co": []
+  },
+  {
+   "seq": 101,
+   "code": "EMC0253",
+   "name": "Tóp. Eng. Telecomunicações 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 4,
+   "pre": [
+    61
+   ],
+   "co": []
+  },
+  {
+   "seq": 102,
+   "code": "EMC0255",
+   "name": "Tóp. Eng. Telecomunicações 3",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 4,
+   "pre": [
+    61
+   ],
+   "co": []
+  },
+  {
+   "seq": 103,
+   "code": "EMC0257",
+   "name": "Tóp. Eng. Telecomunicações 4",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 4,
+   "pre": [
+    61
+   ],
+   "co": []
+  },
+  {
+   "seq": 104,
+   "code": "EMC0012",
+   "name": "Arquitetura de Computadores 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [
+    3
+   ],
+   "co": []
+  },
+  {
+   "seq": 105,
+   "code": "EMC0023",
+   "name": "Circuitos Elétricos 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [
+    10
+   ],
+   "co": []
+  },
+  {
+   "seq": 106,
+   "code": "EMC0026",
+   "name": "Circuitos Lógicos 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [
+    11
+   ],
+   "co": []
+  },
+  {
+   "seq": 107,
+   "code": "EMC0040",
+   "name": "Conversão Eletromecânica de Energia 1",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [
+    10,
+    17
+   ],
+   "co": []
+  },
+  {
+   "seq": 108,
+   "code": "EMC0058",
+   "name": "Eletrônica 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [
+    18
+   ],
+   "co": []
+  },
+  {
+   "seq": 109,
+   "code": "EMC0054",
+   "name": "Eletrônica Digital",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [
+    10,
+    18
+   ],
+   "co": []
+  },
+  {
+   "seq": 110,
+   "code": "EMC0067",
+   "name": "Engenharia de Segurança",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [
+    "CH1"
+   ],
+   "co": []
+  },
+  {
+   "seq": 111,
+   "code": "EMC0093",
+   "name": "Instalações Elétricas",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [
+    14,
+    10
+   ],
+   "co": []
+  },
+  {
+   "seq": 112,
+   "code": "EMC0120",
+   "name": "Lab. de Circuitos Elétricos 2",
+   "hours": 16,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [],
+   "co": [
+    105
+   ]
+  },
+  {
+   "seq": 113,
+   "code": "EMC0123",
+   "name": "Lab. de Conversão Eletromecânica 1",
+   "hours": 16,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [],
+   "co": [
+    107
+   ]
+  },
+  {
+   "seq": 114,
+   "code": "EMC0134",
+   "name": "Lab. de Instalações Elétricas",
+   "hours": 32,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [],
+   "co": [
+    111
+   ]
+  },
+  {
+   "seq": 115,
+   "code": "EMC0172",
+   "name": "Pesquisa Operacional 2",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [
+    49
+   ],
+   "co": []
+  },
+  {
+   "seq": 116,
+   "code": "EMC0173",
+   "name": "Processamento Digital de Imagens",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [
+    47,
+    51
+   ],
+   "co": []
+  },
+  {
+   "seq": 117,
+   "code": "EMC0174",
+   "name": "Processamento Digital de Sinais",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [
+    10,
+    11,
+    47
+   ],
+   "co": []
+  },
+  {
+   "seq": 118,
+   "code": "EMC0192",
+   "name": "Projeto Orientado de Eng. de Computação",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [
+    "CH1"
+   ],
+   "co": []
+  },
+  {
+   "seq": 119,
+   "code": "EMC0194",
+   "name": "Projetos com Microcontroladores",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [
+    41,
+    48
+   ],
+   "co": []
+  },
+  {
+   "seq": 120,
+   "code": "EMC0219",
+   "name": "Sistemas Embarcados",
+   "hours": 64,
+   "nucleus": "NE",
+   "groupOpt": 5,
+   "pre": [
+    10,
+    11
+   ],
+   "co": []
+  }
+ ]
+}

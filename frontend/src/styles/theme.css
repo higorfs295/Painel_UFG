@@ -1,0 +1,13 @@
+/* Design tokens do protótipo (dark/light). Alternância via html[data-theme]. */
+:root, html[data-theme="dark"] {
+  --bg:#0B1015; --panel:#121B24; --panel2:#192531; --line:#25333F; --lineHi:#3A4E5F;
+  --tx:#EAF0F5; --mut:#8FA3B2; --dim:#5E7180;
+  --done:#4FD6A9; --avail:#E9B45A; --co:#6FB3E8; --lock:#E06C6C; --sim:#B08CFF;
+  --copper:#E9B45A; --trace:#2C3E4D;
+}
+html[data-theme="light"] {
+  --bg:#F2F5F8; --panel:#FFFFFF; --panel2:#EDF2F6; --line:#D7E0E8; --lineHi:#B9C8D4;
+  --tx:#1B2833; --mut:#546876; --dim:#7C8D9A;
+  --done:#149C74; --avail:#B4771F; --co:#2E74B5; --lock:#C74E4E; --sim:#7A5CD6;
+  --copper:#C4842A; --trace:#DCE4EB;
+}

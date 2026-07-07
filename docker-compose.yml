@@ -1,0 +1,12 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: painel
+      POSTGRES_PASSWORD: painel
+      POSTGRES_DB: painel
+    ports: ["5432:5432"]
+    volumes: [dbdata:/var/lib/postgresql/data]
+  # TODO (M5): serviços api e web com Dockerfile próprios + proxy reverso com TLS
+volumes:
+  dbdata:
