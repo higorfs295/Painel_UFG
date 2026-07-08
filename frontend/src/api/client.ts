@@ -11,7 +11,9 @@ function buildInit(init: RequestInit): RequestInit {
     credentials: "include",
     ...init,
     headers: {
-      "Content-Type": "application/json",
+      // Content-Type só quando há corpo: DELETE/POST sem body com "application/json"
+      // fazem o Fastify rejeitar com 400 (JSON vazio não é JSON válido).
+      ...(init.body ? { "Content-Type": "application/json" } : {}),
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       ...init.headers,
     },
