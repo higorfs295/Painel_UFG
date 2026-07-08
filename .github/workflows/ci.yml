@@ -88,6 +88,7 @@ jobs:
           npm ci
           npx prisma generate
           npx prisma migrate deploy
+          touch .env   # npm run seed usa --env-file=.env; as vars reais vêm do env do job
           SEED_ADMIN_PASSWORD="$E2E_USER_PASSWORD" npm run seed
       - name: Sobe a API em background
         working-directory: backend
