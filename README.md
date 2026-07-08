@@ -4,6 +4,17 @@ Evolução do protótipo em artefato para uma aplicação real multiusuário, co
 papéis (admin/usuário), múltiplos cursos e os módulos de progresso/optativas/atividades/cronograma.
 Leia primeiro `ESPECIFICACAO.md`.
 
+## Documentação
+
+| Documento | Conteúdo |
+| --- | --- |
+| [`ESPECIFICACAO.md`](ESPECIFICACAO.md) | Requisitos funcionais (RF) e não-funcionais (RNF), escopo. |
+| [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | Diagramas (componentes, autenticação, modelo de dados, progresso), camadas e decisões de projeto. |
+| [`docs/API.md`](docs/API.md) | Referência de endpoints com exemplos de `curl` e JSON. |
+| [`docs/MODULOS.md`](docs/MODULOS.md) | Referência arquivo a arquivo / função a função (backend e frontend). |
+| [`docs/PROGRESSO.md`](docs/PROGRESSO.md) | Estado por fase e como rodar. |
+| [`docs/REVISAO.md`](docs/REVISAO.md) | Revisão técnica (escala/concorrência/persistência/desempenho) + backlog. |
+
 ## Estrutura
 
 - `backend/` — API Node.js + TypeScript (Fastify) + Prisma + PostgreSQL
