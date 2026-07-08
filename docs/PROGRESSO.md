@@ -101,9 +101,20 @@ Correção segura (sem desabilitar verificação): `export NODE_EXTRA_CA_CERTS="
 (a env var do sistema existe mas com barra dupla no caminho, que quebra a leitura). Dentro do build Docker,
 o mesmo MITM pode afetar o `npm ci` — em rede sem interceptação os Dockerfiles constroem normalmente.
 
+## E2E (Playwright) e CI — feitos
+- **E2E**: `frontend/e2e/` cobre auth (erro uniforme + login), simulação de disciplina (projeção) e a
+  grade por teclado (setas + Enter pinta/limpa + exclusão). Rodam em série contra a conta semeada e se
+  auto-limpam. Local (Windows/git-bash): `E2E_USER_PASSWORD='<senha do seed>' node node_modules/@playwright/test/cli.js test`
+  (o wrapper `npx.cmd` descarta prefixos de env). No CI: job `e2e` com Postgres, seed e API em background.
+- **Primeira execução do CI**: verde nos 3 jobs (backend/typecheck+37 testes, frontend/build, e2e/4 testes).
+- A suíte E2E encontrou e motivou o fix de um **bug real**: o cliente enviava `Content-Type: application/json`
+  sem corpo e o Fastify respondia 400 em todos os DELETEs da UI.
+
 ## Pendências / próximos passos sugeridos
-- **6.5 Revisão de segurança final** em produção: confirmar `NODE_ENV=production` (cookies `secure`),
-  segredos fora do repo, CORS/So mesma origem, headers do helmet, e backup automatizado do banco.
-- **Testes de integração poluem o banco de dev** (criam `*.test.local`); ideal apontar para `TEST_DATABASE_URL` separado.
-- **E2E de frontend** (Playwright) e testes de componente seriam o próximo reforço de qualidade.
-- Detecção de conflito de horário na grade (hoje o parser valida SIGAA; o realce de conflito pode ser adicionado na leitura).
+- **Levar à `main`**: a branch já contém o merge da main (com limpeza do node_modules commitado e
+  unificação da lineage de migração). Abra o PR e mescle — atenção: o banco do checkout principal
+  usa a migração antiga; após atualizar, rode `npx prisma migrate reset` + seed.
+- **6.5 Revisão de segurança final** em produção: `NODE_ENV=production` (cookies `secure`),
+  segredos fora do repo, backup automatizado do banco.
+- Testes de integração ainda usam o banco de dev por padrão (`TEST_DATABASE_URL` opcional já suportado).
+- Detecção de conflito de horário na grade (o parser valida SIGAA; falta o realce visual).
