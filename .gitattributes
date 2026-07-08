@@ -1,0 +1,7 @@
+# Impede que o Git/checkout no Windows converta scripts shell para CRLF.
+# Sem isto, docker-entrypoint.sh volta a quebrar com "exec: not found" dentro do container.
+*.sh text eol=lf
+docker-entrypoint.sh text eol=lf
+Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

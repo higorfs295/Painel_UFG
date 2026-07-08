@@ -6,7 +6,7 @@
 # Subir a stack inteira:
 #   JWT_SECRET=... docker compose up --build
 # Semear (uma vez, após a stack no ar):
-#   docker compose run --rm -e SEED_ADMIN_PASSWORD=... api npm run seed
+#   docker compose run --rm -e SEED_ADMIN_PASSWORD=... api npx tsx src/seed/seed.ts
 services:
   db:
     image: postgres:16
@@ -28,8 +28,8 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgresql://painel:${POSTGRES_PASSWORD:-painel}@db:5432/painel?schema=public
       JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env}
-      APP_URL: ${APP_URL:-https://localhost}
-      CORS_ORIGIN: ${CORS_ORIGIN:-https://localhost}
+      APP_URL: ${APP_URL:-http://localhost:8081}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8081}
     depends_on:
       db:
         condition: service_healthy
@@ -44,7 +44,8 @@ services:
 
   caddy:
     image: caddy:2
-    ports: ["80:80", "443:443"]
+    # portas 80 (PID 4/http.sys) e 8080 (PID 7088) já ocupadas no host → usar 8081/8443
+    ports: ["8081:80", "8443:443"]
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddydata:/data

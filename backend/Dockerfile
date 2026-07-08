@@ -20,7 +20,8 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY package*.json ./
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
-RUN chmod +x docker-entrypoint.sh
+# normaliza fim de linha (defende contra CRLF vindo de checkout no Windows) e torna executável
+RUN sed -i 's/\r$//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh
 # roda como usuário não-root (RNF de segurança)
 USER node
 EXPOSE 3333
