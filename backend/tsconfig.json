@@ -1,8 +1,33 @@
 {
+  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    "target": "ES2022", "module": "ES2022", "moduleResolution": "bundler",
-    "strict": true, "esModuleInterop": true, "skipLibCheck": true,
-    "outDir": "dist", "rootDir": "src", "types": ["node"]
+    // Environment Settings
+    "module": "nodenext",
+    "target": "esnext",
+    "lib": ["esnext"],
+    "types": ["node"],            // <-- necessário: seed.ts/plugins usam node:fs, node:url, process, etc.
+
+    // resolveJsonModule só é preciso se algum .ts fizer `import x from "*.json"`.
+    // O seed usa readFileSync (não importa JSON), então NÃO é obrigatório.
+    // Deixe habilitado se preferir importar JSON diretamente em algum ponto:
+    // "resolveJsonModule": true,
+
+    // Outputs
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // Typechecking mais estrito
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // Recomendadas
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true
   },
   "include": ["src"]
 }

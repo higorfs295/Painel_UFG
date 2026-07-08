@@ -1,4 +1,5 @@
 // Carrega e valida variáveis de ambiente com zod (falha cedo se algo faltar).
+import "dotenv/config";
 import { z } from "zod";
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
