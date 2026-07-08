@@ -13,6 +13,8 @@
     // "resolveJsonModule": true,
 
     // Outputs
+    "outDir": "dist",             // <-- npm run build / Dockerfile esperam dist/server.js
+    "rootDir": "src",
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,

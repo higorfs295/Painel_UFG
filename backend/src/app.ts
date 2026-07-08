@@ -1,6 +1,7 @@
-// Fábrica da aplicação Fastify: plugins de segurança + módulos de rotas.
-// Verifique a documentação oficial dos plugins @fastify/* — opções podem variar entre versões.
-import Fastify from "fastify";
+// Fábrica da aplicação Fastify: plugins de segurança + módulos de rotas + erro centralizado.
+import Fastify, { type FastifyError } from "fastify";
+import { ZodError } from "zod";
+import { Prisma } from "@prisma/client";
 import { securityPlugin } from "./plugins/security.js";
 import { prismaPlugin } from "./plugins/prisma.js";
 import { authPlugin } from "./plugins/auth.js";
@@ -9,13 +10,46 @@ import { userRoutes } from "./modules/users/routes.js";
 import { courseRoutes } from "./modules/courses/routes.js";
 import { progressRoutes } from "./modules/progress/routes.js";
 import { extraRoutes } from "./modules/extras/routes.js";
-import { scheduleRoutes } from "./modules/schedules/routes.js";
+import { scheduleRoutes, SigaaError } from "./modules/schedules/routes.js";
+import { accountRoutes } from "./modules/account/routes.js";
+import { OwnershipError } from "./lib/ownership.js";
+import { isProd } from "./env.js";
 
 export async function buildApp() {
-  const app = Fastify({ logger: true });
+  const app = Fastify({
+    logger: {
+      level: isProd ? "info" : "debug",
+      // RNF-10: nunca registrar segredos (Authorization, cookies, senhas, tokens) nos logs.
+      redact: {
+        paths: [
+          "req.headers.authorization", "req.headers.cookie", "res.headers[\"set-cookie\"]",
+          "*.password", "*.passwordHash", "*.token", "*.tokenHash", "*.accessToken",
+        ],
+        remove: true,
+      },
+    },
+  });
   await app.register(securityPlugin);   // helmet + cors + rate limit (RNF-01..03)
   await app.register(prismaPlugin);
   await app.register(authPlugin);       // jwt + decorators requireAuth/requireAdmin
+
+  // Erro centralizado: validação, posse e conflitos viram status claros; nada de stack trace (RNF-04).
+  app.setErrorHandler((err: FastifyError, req, reply) => {
+    if (err instanceof ZodError)
+      return reply.code(400).send({ error: "payload inválido", issues: err.issues });
+    if (err instanceof OwnershipError)
+      return reply.code(err.status).send({ error: err.message });
+    if (err instanceof SigaaError)
+      return reply.code(400).send({ error: "código SIGAA inválido", tokens: err.errs });
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      if (err.code === "P2002") return reply.code(409).send({ error: "registro duplicado" });
+      if (err.code === "P2025") return reply.code(404).send({ error: "registro não encontrado" });
+    }
+    if (err.statusCode && err.statusCode < 500) return reply.code(err.statusCode).send({ error: err.message });
+    req.log.error(err);
+    return reply.code(500).send({ error: "erro interno" });
+  });
+
   app.get("/health", async () => ({ ok: true }));
   await app.register(authRoutes,    { prefix: "/auth" });
   await app.register(userRoutes,    { prefix: "/users" });      // admin (RF-01)
@@ -23,5 +57,6 @@ export async function buildApp() {
   await app.register(progressRoutes,{ prefix: "/me" });
   await app.register(extraRoutes,   { prefix: "/me" });
   await app.register(scheduleRoutes,{ prefix: "/me" });
+  await app.register(accountRoutes, { prefix: "/me" });      // perfil, tema, backup (RF-15/16)
   return app;
 }

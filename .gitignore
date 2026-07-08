@@ -1,0 +1,36 @@
+# dependências
+node_modules/
+
+# build
+dist/
+build/
+
+# ambiente (NUNCA versionar segredos)
+.env
+.env.local
+.env.*.local
+
+# prisma
+backend/prisma/migrations/**/migration.sql.bak
+*.db
+
+# logs e caches
+*.log
+npm-debug.log*
+.vitest/
+coverage/
+
+# playwright
+playwright-report/
+test-results/
+.playwright/
+
+# tooling local do Claude Code
+.claude/
+
+# editores / SO
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

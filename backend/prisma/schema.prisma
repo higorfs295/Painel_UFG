@@ -1,5 +1,4 @@
 // Modelo de dados completo — ver ESPECIFICACAO.md §6
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -27,7 +26,7 @@ enum ReqType {
 enum SubjectState {
   APPROVED
   SIMULATED
-}
+} // ausência de registro = pendente
 
 enum ExtraCategory {
   OPT
@@ -37,41 +36,44 @@ enum ExtraCategory {
 }
 
 model User {
-  id            String          @id @default(cuid())
-  name          String
-  email         String          @unique
-  passwordHash  String?
-  role          Role            @default(USER)
-  theme         String          @default("dark")
-  createdAt     DateTime        @default(now())
-  invites       InviteToken[]
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String?                          // null até o usuário definir a própria senha (RF-02)
+  role         Role     @default(USER)
+  theme        String   @default("dark")          // validado como "dark"|"light" no zod da rota
+  createdAt    DateTime @default(now())
+  invites      InviteToken[]
   refreshTokens RefreshToken[]
-  enrollments   Enrollment[]
+  enrollments  Enrollment[]
 }
 
-model InviteToken {
+model InviteToken {                              // fluxo: admin cria usuário -> convite -> usuário define senha
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  tokenHash String   @unique                     // armazenar hash, nunca o token puro
+  purpose   String   @default("SET_PASSWORD")    // SET_PASSWORD | RESET_PASSWORD
+  expiresAt DateTime
+  usedAt    DateTime?
+  @@index([userId])                              // reemissão/cascade filtram por userId
+}
+
+model RefreshToken {
   id        String   @id @default(cuid())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   tokenHash String   @unique
-  purpose   String   @default("SET_PASSWORD")
   expiresAt DateTime
-  usedAt    DateTime?
-}
-
-model RefreshToken {
-  id         String   @id @default(cuid())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String
-  tokenHash  String   @unique
-  expiresAt  DateTime
-  revokedAt  DateTime?
-  createdAt  DateTime @default(now())
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([userId])                              // revogação de família + cascade filtram por userId
+  @@index([expiresAt])                            // expurgo de tokens vencidos
 }
 
 model Course {
-  id           String                   @id @default(cuid())
-  slug         String                   @unique
+  id           String  @id @default(cuid())
+  slug         String  @unique
   name         String
   totalHours   Int
   requirements CompositionRequirement[]
@@ -80,42 +82,39 @@ model Course {
   enrollments  Enrollment[]
 }
 
-model CompositionRequirement {
+model CompositionRequirement {                   // NC/NEO/OPT/NL/AC... flexível por curso (RF-13)
   id       String @id @default(cuid())
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId String
   key      String
   label    String
   hours    Int
-
   @@unique([courseId, key])
 }
 
-model Milestone {
+model Milestone {                                // CH1/CH2/CH3 (horas integralizadas)
   id          String @id @default(cuid())
   course      Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId    String
   key         String
   hours       Int
   description String
-
   @@unique([courseId, key])
 }
 
 model Subject {
-  id         String          @id @default(cuid())
-  course     Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId   String
-  seq        Int
-  code       String
-  name       String
-  hours      Int
-  nucleus    Nucleus
-  groupOpt   Int             @default(0)
-  requires   Requisite[]     @relation("requires")
-  requiredBy Requisite[]     @relation("requiredBy")
-  statuses   SubjectStatus[]
-
+  id        String   @id @default(cuid())
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  String
+  seq       Int                                   // nº na matriz (referência dos requisitos)
+  code      String
+  name      String
+  hours     Int
+  nucleus   Nucleus
+  groupOpt  Int      @default(0)                  // 0 = obrigatória; 2..5 = grupo de optativa
+  requires  Requisite[] @relation("requires")
+  requiredBy Requisite[] @relation("requiredBy")
+  statuses  SubjectStatus[]
   @@unique([courseId, seq])
   @@index([courseId, groupOpt])
 }
@@ -126,76 +125,78 @@ model Requisite {
   subjectId         String
   requiresSubject   Subject? @relation("requiredBy", fields: [requiresSubjectId], references: [id], onDelete: Cascade)
   requiresSubjectId String?
-  milestoneKey      String?
+  milestoneKey      String?                        // requisito por horas (CH1/CH2/CH3) quando não é disciplina
   type              ReqType
+  @@index([subjectId])                             // loadCourseGraph faz join por subjectId; import faz deleteMany
+  @@index([requiresSubjectId])
 }
 
-model Enrollment {
-  id          String           @id @default(cuid())
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Enrollment {                                 // 1 usuário pode ter N cursos (RF-13)
+  id          String  @id @default(cuid())
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
-  course      Course           @relation(fields: [courseId], references: [id])
+  course      Course  @relation(fields: [courseId], references: [id])
   courseId    String
   startTerm   String?
   currentTerm String?
   statuses    SubjectStatus[]
   extras      ExtraComponent[]
   scenarios   Scenario[]
-
   @@unique([userId, courseId])
 }
 
-model SubjectStatus {
-  id           String        @id @default(cuid())
-  enrollment   Enrollment    @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+model SubjectStatus {                              // APPROVED = oficial; SIMULATED = planejamento (RF-06)
+  id           String       @id @default(cuid())
+  enrollment   Enrollment   @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
   enrollmentId String
-  subject      Subject       @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subject      Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   subjectId    String
   state        SubjectState
   term         String?
-
   @@unique([enrollmentId, subjectId])
 }
 
-model ExtraComponent {
-  id           String         @id @default(cuid())
-  enrollment   Enrollment     @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+model ExtraComponent {                             // optativas fora da matriz, NL, AC, registros (RF-08/09)
+  id           String        @id @default(cuid())
+  enrollment   Enrollment    @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
   enrollmentId String
   name         String
   code         String?
-  hours        Int            @default(0)
+  hours        Int           @default(0)
   category     ExtraCategory
-  done         Boolean        @default(true)
-  createdAt    DateTime       @default(now())
+  done         Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  @@index([enrollmentId])                          // list/delete filtram por enrollmentId
 }
 
 model Scenario {
-  id           String               @id @default(cuid())
-  enrollment   Enrollment           @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
   enrollmentId String
   name         String
   disciplines  ScenarioDiscipline[]
   paints       ScenarioPaint[]
+  @@index([enrollmentId])                          // list de cenários filtra por enrollmentId
 }
 
 model ScenarioDiscipline {
-  id         String   @id @default(cuid())
+  id         String  @id @default(cuid())
   scenario   Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
   scenarioId String
   name       String
   sigla      String
-  hours      Int      @default(0)
+  hours      Int     @default(0)
   docente    String?
-  sigaaCode  String   @default("")
+  sigaaCode  String  @default("")
   color      String
+  @@index([scenarioId])
 }
 
 model ScenarioPaint {
-  id         String   @id @default(cuid())
+  id         String  @id @default(cuid())
   scenario   Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
   scenarioId String
-  cellKey    String
+  cellKey    String                                 // ex.: "2-M1", "D-X3"
   category   String
-
   @@unique([scenarioId, cellKey])
 }

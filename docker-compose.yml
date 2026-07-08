@@ -1,12 +1,57 @@
+# Stack completa: Postgres + API (Fastify) + Web (nginx) + Caddy (TLS + proxy).
+# Requer o plugin Docker Compose v2 (`docker compose ...`). Variáveis em .env (veja .env.example).
+#
+# Subir só o banco (fluxo de dev, backend/front rodando no host):
+#   docker compose up -d db
+# Subir a stack inteira:
+#   JWT_SECRET=... docker compose up --build
+# Semear (uma vez, após a stack no ar):
+#   docker compose run --rm -e SEED_ADMIN_PASSWORD=... api npm run seed
 services:
   db:
     image: postgres:16
     environment:
       POSTGRES_USER: painel
-      POSTGRES_PASSWORD: painel
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-painel}
       POSTGRES_DB: painel
-    ports: ["5432:5432"]
+    ports: ["5432:5432"] # exposto para o fluxo de dev; em produção remova
     volumes: [dbdata:/var/lib/postgresql/data]
-  # TODO (M5): serviços api e web com Dockerfile próprios + proxy reverso com TLS
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U painel -d painel"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://painel:${POSTGRES_PASSWORD:-painel}@db:5432/painel?schema=public
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env}
+      APP_URL: ${APP_URL:-https://localhost}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://localhost}
+    depends_on:
+      db:
+        condition: service_healthy
+    expose: ["3333"]
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: "" # mesma origem: o Caddy roteia as rotas de API
+    expose: ["80"]
+
+  caddy:
+    image: caddy:2
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    depends_on: [api, web]
+
 volumes:
   dbdata:
+  caddydata:
+  caddyconfig:

@@ -1,13 +1,43 @@
-/* Design tokens do protótipo (dark/light). Alternância via html[data-theme]. */
+/* Design tokens — paleta "cerrado, pôr do sol e povos nativos".
+   Terra laterítica/urucum, ocre e capim seco, entardecer (índigo→magenta→ouro) e jenipapo.
+   Alternância via html[data-theme]. */
 :root, html[data-theme="dark"] {
-  --bg:#0B1015; --panel:#121B24; --panel2:#192531; --line:#25333F; --lineHi:#3A4E5F;
-  --tx:#EAF0F5; --mut:#8FA3B2; --dim:#5E7180;
-  --done:#4FD6A9; --avail:#E9B45A; --co:#6FB3E8; --lock:#E06C6C; --sim:#B08CFF;
-  --copper:#E9B45A; --trace:#2C3E4D;
+  /* entardecer no cerrado: fundo terroso quente e escuro */
+  --bg:#160F0C; --panel:#221812; --panel2:#2C201A; --line:#3B2C22; --lineHi:#5C4535;
+  --tx:#F3E7D6; --mut:#BBA089; --dim:#8B715C;
+
+  /* acentos da terra e do poente */
+  --copper:#DB6B33;   /* urucum / terracota — cor primária */
+  --sun:#F0A83C;      /* ouro de pôr do sol */
+  --ember:#D25440;    /* brasa / laterita */
+  --dusk:#8C63B0;     /* roxo do entardecer (ipê-roxo) */
+  --savanna:#9DB05A;  /* capim seco / verde-oliva */
+  --jenipapo:#4E93A6; /* azul-jenipapo */
+
+  /* status das disciplinas */
+  --done:#9DB05A; --avail:#F0A83C; --co:#5F9DB2; --lock:#D8604C; --sim:#A87BD0;
+
+  --trace:#332017;
+  --shadow:0 10px 30px rgba(0,0,0,.38);
+  --radius:14px;
+  /* faixa de pôr do sol para detalhes (topo do header, foco) */
+  --sunset:linear-gradient(90deg,#8C63B0 0%,#D25440 42%,#DB6B33 68%,#F0A83C 100%);
+  --dawnwash:radial-gradient(1200px 380px at 78% -8%, rgba(219,107,51,.16), transparent 60%),
+             radial-gradient(900px 320px at 8% -6%, rgba(140,99,176,.14), transparent 62%);
 }
 html[data-theme="light"] {
-  --bg:#F2F5F8; --panel:#FFFFFF; --panel2:#EDF2F6; --line:#D7E0E8; --lineHi:#B9C8D4;
-  --tx:#1B2833; --mut:#546876; --dim:#7C8D9A;
-  --done:#149C74; --avail:#B4771F; --co:#2E74B5; --lock:#C74E4E; --sim:#7A5CD6;
-  --copper:#C4842A; --trace:#DCE4EB;
+  /* cerrado ao meio-dia: barro claro, areia e céu de fim de tarde suave */
+  --bg:#F4ECDD; --panel:#FFFDF7; --panel2:#EFE4D3; --line:#E1D3BE; --lineHi:#C7B196;
+  --tx:#2B2018; --mut:#6E5B49; --dim:#9A836C;
+
+  --copper:#B85427; --sun:#C07C18; --ember:#B23A2E; --dusk:#6C4A94; --savanna:#6F8135; --jenipapo:#2E7286;
+
+  --done:#5F7A2C; --avail:#B0741A; --co:#2E7286; --lock:#B23A2E; --sim:#7A4FA6;
+
+  --trace:#E7DAC6;
+  --shadow:0 10px 26px rgba(76,52,30,.14);
+  --radius:14px;
+  --sunset:linear-gradient(90deg,#6C4A94 0%,#B23A2E 42%,#B85427 68%,#C07C18 100%);
+  --dawnwash:radial-gradient(1200px 380px at 78% -10%, rgba(184,84,39,.10), transparent 60%),
+             radial-gradient(900px 320px at 8% -8%, rgba(108,74,148,.08), transparent 62%);
 }
