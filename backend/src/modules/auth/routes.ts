@@ -40,8 +40,14 @@ export async function authRoutes(app: FastifyInstance) {
     }).parse(req.body);
 
     const user = await app.prisma.user.findUnique({ where: { email } });
-    // resposta uniforme: não revela se o e-mail existe nem se a senha ainda não foi definida
-    if (!user || !user.passwordHash || !(await argon2.verify(user.passwordHash, password)))
+    // resposta uniforme: não revela se o e-mail existe nem se a senha ainda não foi definida.
+    // Quando não há usuário/senha, gastamos ~o mesmo tempo de um verify (argon2.hash) para não
+    // vazar a existência da conta por timing (enumeração).
+    if (!user || !user.passwordHash) {
+      await argon2.hash(password);
+      return reply.code(401).send({ error: "credenciais inválidas" });
+    }
+    if (!(await argon2.verify(user.passwordHash, password)))
       return reply.code(401).send({ error: "credenciais inválidas" });
 
     const refresh = await issueRefreshToken(app.prisma, user.id);

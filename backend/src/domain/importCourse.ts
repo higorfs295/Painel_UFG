@@ -3,6 +3,7 @@
 // onde subject = { seq, code, name, hours, nucleus, groupOpt, pre:[seq|CHx], co:[seq|CHx] }.
 import type { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import { invalidateCourseGraph } from "./loadCourse.js";
 
 export const matrizSchema = z.object({
   course: z.object({ slug: z.string().min(1), name: z.string().min(1) }),
@@ -30,7 +31,7 @@ export type Matriz = z.infer<typeof matrizSchema>;
 export async function importCourse(prisma: PrismaClient, raw: unknown) {
   const matriz = matrizSchema.parse(raw);
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const course = await tx.course.upsert({
       where: { slug: matriz.course.slug },
       update: { name: matriz.course.name, totalHours: matriz.totalHours },
@@ -83,6 +84,9 @@ export async function importCourse(prisma: PrismaClient, raw: unknown) {
     }
     if (reqRows.length) await tx.requisite.createMany({ data: reqRows });
 
-    return { slug: course.slug, subjects: matriz.subjects.length };
+    return { slug: course.slug, subjects: matriz.subjects.length, courseId: course.id };
   }, { timeout: 30_000, maxWait: 10_000 });
+
+  invalidateCourseGraph(result.courseId); // matriz mudou: derruba o cache do grafo
+  return { slug: result.slug, subjects: result.subjects };
 }

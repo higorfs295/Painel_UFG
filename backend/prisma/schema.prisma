@@ -41,7 +41,7 @@ model User {
   email        String   @unique
   passwordHash String?                          // null até o usuário definir a própria senha (RF-02)
   role         Role     @default(USER)
-  theme        String   @default("dark")
+  theme        String   @default("dark")          // validado como "dark"|"light" no zod da rota
   createdAt    DateTime @default(now())
   invites      InviteToken[]
   refreshTokens RefreshToken[]

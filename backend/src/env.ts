@@ -11,6 +11,7 @@ const schema = z.object({
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
   RATE_LIMIT_MAX: z.coerce.number().default(120),
   RATE_LIMIT_WINDOW: z.string().default("1 minute"),
+  REDIS_URL: z.string().url().optional(), // se definido, store distribuído do rate limit (réplicas)
 });
 export const env = schema.parse(process.env);
 export const isProd = env.NODE_ENV === "production";

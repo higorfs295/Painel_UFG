@@ -12,7 +12,27 @@ export type CourseGraph = {
   requirements: Requirement[];
 };
 
+// Cache em memória do grafo do curso (imutável entre importações). Overview dispara progress +
+// recommendations, que antes recarregavam o curso inteiro 2x por request. TTL curto limita a
+// staleness entre réplicas; toda mutação de matriz chama invalidateCourseGraph().
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const cache = new Map<string, { at: number; graph: CourseGraph }>();
+
+export function invalidateCourseGraph(courseId?: string) {
+  if (courseId) cache.delete(courseId);
+  else cache.clear();
+}
+
 export async function loadCourseGraph(prisma: PrismaClient, courseId: string): Promise<CourseGraph | null> {
+  const hit = cache.get(courseId);
+  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.graph;
+
+  const graph = await loadCourseGraphUncached(prisma, courseId);
+  if (graph) cache.set(courseId, { at: Date.now(), graph });
+  return graph;
+}
+
+async function loadCourseGraphUncached(prisma: PrismaClient, courseId: string): Promise<CourseGraph | null> {
   const course = await prisma.course.findUnique({
     where: { id: courseId },
     include: {
