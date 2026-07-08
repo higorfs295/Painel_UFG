@@ -3,6 +3,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { assertEnrollmentOwner, assertExtraOwner } from "../../lib/ownership.js";
+import { stripUndefined } from "../../lib/strip.js";
 
 const extraSchema = z.object({
   name: z.string().min(2), code: z.string().optional(),
@@ -35,7 +36,7 @@ export async function extraRoutes(app: FastifyInstance) {
     await assertExtraOwner(app.prisma, extraId, req.user.sub);
     return app.prisma.extraComponent.update({
       where: { id: extraId },
-      data: { ...patch, ...(patch.code !== undefined ? { code: patch.code ?? null } : {}) },
+      data: { ...stripUndefined(patch), ...(patch.code !== undefined ? { code: patch.code ?? null } : {}) },
     });
   });
 

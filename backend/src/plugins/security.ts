@@ -13,7 +13,7 @@ export const securityPlugin = fp(async (app) => {
   // réplicas — sem isso o limite efetivo vira N×max e a proteção de brute-force enfraquece, RNF-07).
   let redis: import("ioredis").Redis | undefined;
   if (env.REDIS_URL) {
-    const { default: Redis } = await import("ioredis");
+    const { Redis } = await import("ioredis"); // export nomeado: o default CJS não é construível sob nodenext
     redis = new Redis(env.REDIS_URL, { connectTimeout: 800, maxRetriesPerRequest: 1, lazyConnect: false });
     app.log.info("rate limit: usando store Redis");
   }

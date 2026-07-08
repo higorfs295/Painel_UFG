@@ -9,7 +9,7 @@ export function parseSIGAA(str: string): { slots: SlotKey[]; errs: string[] } {
   for (const t of toks) {
     const m = t.match(/^([2-7]+)([MTN])([1-6]+)$/);
     if (!m) { errs.push(t); continue; }
-    for (const d of m[1]) for (const h of m[3]) {
+    for (const d of m[1]!) for (const h of m[3]!) { // grupos garantidos pelo próprio match
       if (m[2] === "N" && +h > 5) { errs.push(`${t} (noturno vai até N5)`); continue; }
       out.push(`${d}-${m[2]}${h}`);
     }

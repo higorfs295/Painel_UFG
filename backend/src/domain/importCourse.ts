@@ -70,14 +70,16 @@ export async function importCourse(prisma: PrismaClient, raw: unknown) {
     await tx.requisite.deleteMany({ where: { subjectId: { in: Object.values(bySeq) } } });
     const reqRows: { subjectId: string; type: "PRE" | "CO"; requiresSubjectId?: string; milestoneKey?: string }[] = [];
     for (const s of matriz.subjects) {
+      const subjectId = bySeq[s.seq];
+      if (!subjectId) continue; // impossível na prática: acabou de ser upsertado acima
       for (const [list, type] of [[s.pre, "PRE"], [s.co, "CO"]] as const) {
         for (const r of list) {
           if (typeof r === "number") {
             const requiresSubjectId = bySeq[r];
             if (!requiresSubjectId) continue; // órfão: seq referenciado não existe na matriz
-            reqRows.push({ subjectId: bySeq[s.seq], type, requiresSubjectId });
+            reqRows.push({ subjectId, type, requiresSubjectId });
           } else {
-            reqRows.push({ subjectId: bySeq[s.seq], type, milestoneKey: r });
+            reqRows.push({ subjectId, type, milestoneKey: r });
           }
         }
       }

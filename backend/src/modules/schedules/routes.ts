@@ -3,6 +3,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { assertEnrollmentOwner, assertScenarioOwner } from "../../lib/ownership.js";
+import { stripUndefined } from "../../lib/strip.js";
 import { parseSIGAA } from "../../domain/sigaa.js";
 
 const disciplineSchema = z.object({
@@ -98,7 +99,7 @@ export async function scheduleRoutes(app: FastifyInstance) {
     if (patch.sigaaCode !== undefined) validateSigaa(patch.sigaaCode);
     const updated = await app.prisma.scenarioDiscipline.update({
       where: { id: did },
-      data: { ...patch, ...(patch.docente !== undefined ? { docente: patch.docente ?? null } : {}) },
+      data: { ...stripUndefined(patch), ...(patch.docente !== undefined ? { docente: patch.docente ?? null } : {}) },
     });
     return reply.send(updated);
   });

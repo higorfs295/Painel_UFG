@@ -2,6 +2,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { exportUser, importUser } from "../../lib/backup.js";
+import { stripUndefined } from "../../lib/strip.js";
 
 export async function accountRoutes(app: FastifyInstance) {
   // Perfil do usuário autenticado (o frontend usa após login/refresh).
@@ -21,7 +22,7 @@ export async function accountRoutes(app: FastifyInstance) {
       name: z.string().min(2).optional(),
     }).parse(req.body);
     return app.prisma.user.update({
-      where: { id: req.user.sub }, data: patch,
+      where: { id: req.user.sub }, data: stripUndefined(patch),
       select: { id: true, name: true, email: true, role: true, theme: true },
     });
   });

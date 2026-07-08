@@ -73,6 +73,9 @@ export async function progressRoutes(app: FastifyInstance) {
       where: { enrollmentId: id }, include: { subject: { select: { seq: true } } },
     });
     const statuses: StatusRecord[] = statusRows.map(s => ({ seq: s.subject.seq, state: s.state }));
-    return recommend({ subjects: graph.subjects, milestones: graph.milestones, statuses, limit });
+    return recommend({
+      subjects: graph.subjects, milestones: graph.milestones, statuses,
+      ...(limit !== undefined ? { limit } : {}),
+    });
   });
 }
