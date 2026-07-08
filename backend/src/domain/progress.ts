@@ -1,18 +1,18 @@
 // Cálculo de progresso e recomendações (RF-05/07) — puro, sem dependência de Prisma/HTTP,
 // para ser testável isoladamente. As rotas apenas carregam os dados e chamam estas funções.
 import { statusOf, buildDeps, unlockCount, type Subject, type Milestone, type Status } from "./graph.js";
-import { sums, cappedPct, type Extra, type Requirement } from "./sums.js";
+import { sums, cappedPct, type Extra, type Requirement, type Minimums } from "./sums.js";
 
 export type StatusRecord = { seq: number; state: "APPROVED" | "SIMULATED" };
 
 export type SubjectProgress = Subject & {
   state: "APPROVED" | "SIMULATED" | null;
-  status: Status;               // calculado com o conjunto oficial (aprovadas)
+  status: Status;
 };
 
 export type Composition = {
   key: string; label: string; required: number;
-  hours: number; pct: number; over: number;   // over = horas além do mínimo (registradas, não exibidas na barra)
+  hours: number; pct: number; over: number;
 };
 
 export type ProgressResult = {
@@ -20,12 +20,26 @@ export type ProgressResult = {
   compositions: Composition[];
   totals: { hours: number; required: number; pct: number };
   milestones: (Milestone & { reached: boolean })[];
-  projected: {                                  // inclui SIMULATED (planejamento)
+  projected: {
     compositions: Composition[];
     totals: { hours: number; required: number };
     milestones: Record<string, boolean>;
   };
 };
+
+// Deriva os mínimos {nc,neo,opt,nl,ac} a partir das requirements do curso (multi-curso: nada fixo).
+// Chaves ausentes viram 0. Confira que os `key` no banco são NC/NEO/OPT/NL/AC.
+function minimumsFrom(reqs: Requirement[]): Minimums {
+  const byKey: Record<string, number> = {};
+  for (const r of reqs) byKey[r.key] = r.hours;
+  return {
+    nc:  byKey["NC"]  ?? 0,
+    neo: byKey["NEO"] ?? 0,
+    opt: byKey["OPT"] ?? 0,
+    nl:  byKey["NL"]  ?? 0,
+    ac:  byKey["AC"]  ?? 0,
+  };
+}
 
 function compositions(
   reqs: Requirement[],
@@ -50,17 +64,18 @@ export function computeProgress(input: {
   requirements: Requirement[];
   statuses: StatusRecord[];
   extras: Extra[];
-  totalHours: number;           // carga horária total do curso (Course.totalHours)
+  totalHours: number;
 }): ProgressResult {
   const { subjects, milestones, requirements, statuses, extras, totalHours } = input;
   const bySeq = new Map(subjects.map(s => [s.seq, s]));
   const stateBySeq = new Map(statuses.map(st => [st.seq, st.state]));
+  const minimums = minimumsFrom(requirements);
 
   const approved = new Set(statuses.filter(s => s.state === "APPROVED").map(s => s.seq));
-  const projected = new Set(statuses.map(s => s.seq)); // APPROVED ∪ SIMULATED
+  const projected = new Set(statuses.map(s => s.seq));
 
-  const official = sums(subjects, approved, extras);
-  const proj = sums(subjects, projected, extras);
+  const official = sums(subjects, approved, extras, minimums);
+  const proj = sums(subjects, projected, extras, minimums);
 
   const subjectProgress: SubjectProgress[] = subjects.map(s => ({
     ...s,
@@ -86,17 +101,18 @@ export function computeProgress(input: {
 
 export type Recommendation = { seq: number; code: string; name: string; hours: number; ob: number; tot: number };
 
-// RF-07: disciplinas disponíveis ranqueadas pelo destravamento transitivo (obrigatórias primeiro).
 export function recommend(input: {
   subjects: Subject[];
   milestones: Milestone[];
+  requirements: Requirement[];      // <-- agora precisa das requirements p/ os mínimos
   statuses: StatusRecord[];
   limit?: number;
 }): Recommendation[] {
-  const { subjects, milestones, statuses } = input;
+  const { subjects, milestones, requirements, statuses } = input;
   const bySeq = new Map(subjects.map(s => [s.seq, s]));
   const approved = new Set(statuses.filter(s => s.state === "APPROVED").map(s => s.seq));
-  const integralized = sums(subjects, approved, []).tot; // horas oficiais p/ liberar marcos CH1..CH3
+  const minimums = minimumsFrom(requirements);
+  const integralized = sums(subjects, approved, [], minimums).tot;
   const deps = buildDeps(subjects);
 
   const recs: Recommendation[] = [];

@@ -183,7 +183,16 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "InviteToken_tokenHash_key" ON "InviteToken"("tokenHash");
 
 -- CreateIndex
+CREATE INDEX "InviteToken_userId_idx" ON "InviteToken"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "RefreshToken_tokenHash_key" ON "RefreshToken"("tokenHash");
+
+-- CreateIndex
+CREATE INDEX "RefreshToken_userId_idx" ON "RefreshToken"("userId");
+
+-- CreateIndex
+CREATE INDEX "RefreshToken_expiresAt_idx" ON "RefreshToken"("expiresAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Course_slug_key" ON "Course"("slug");
@@ -201,10 +210,25 @@ CREATE INDEX "Subject_courseId_groupOpt_idx" ON "Subject"("courseId", "groupOpt"
 CREATE UNIQUE INDEX "Subject_courseId_seq_key" ON "Subject"("courseId", "seq");
 
 -- CreateIndex
+CREATE INDEX "Requisite_subjectId_idx" ON "Requisite"("subjectId");
+
+-- CreateIndex
+CREATE INDEX "Requisite_requiresSubjectId_idx" ON "Requisite"("requiresSubjectId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Enrollment_userId_courseId_key" ON "Enrollment"("userId", "courseId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "SubjectStatus_enrollmentId_subjectId_key" ON "SubjectStatus"("enrollmentId", "subjectId");
+
+-- CreateIndex
+CREATE INDEX "ExtraComponent_enrollmentId_idx" ON "ExtraComponent"("enrollmentId");
+
+-- CreateIndex
+CREATE INDEX "Scenario_enrollmentId_idx" ON "Scenario"("enrollmentId");
+
+-- CreateIndex
+CREATE INDEX "ScenarioDiscipline_scenarioId_idx" ON "ScenarioDiscipline"("scenarioId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ScenarioPaint_scenarioId_cellKey_key" ON "ScenarioPaint"("scenarioId", "cellKey");

@@ -74,7 +74,7 @@ export async function progressRoutes(app: FastifyInstance) {
     });
     const statuses: StatusRecord[] = statusRows.map(s => ({ seq: s.subject.seq, state: s.state }));
     return recommend({
-      subjects: graph.subjects, milestones: graph.milestones, statuses,
+      subjects: graph.subjects, milestones: graph.milestones, requirements: graph.requirements, statuses,
       ...(limit !== undefined ? { limit } : {}),
     });
   });
