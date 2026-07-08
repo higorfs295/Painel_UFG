@@ -32,15 +32,16 @@ export default function AppLayout() {
 
   return (
     <div className="app">
+      <a href="#conteudo" className="skiplink">Pular para o conteúdo</a>
       <AppHeader
         enrollments={enrollments ?? []}
         selectedId={enrollmentId}
         onSelect={setEnrollment}
         onLogout={logout}
       />
-      <div className="container page">
+      <main id="conteudo" className="container page">
         {isLoading ? (
-          <div className="spinner">Carregando cursos…</div>
+          <div className="spinner" role="status" aria-live="polite">Carregando cursos…</div>
         ) : !enrollments || enrollments.length === 0 ? (
           <div className="muted-box">
             Sua conta ainda não está matriculada em nenhum curso. Peça a um administrador para vincular um curso.
@@ -48,7 +49,7 @@ export default function AppLayout() {
         ) : (
           <Outlet />
         )}
-      </div>
+      </main>
     </div>
   );
 }

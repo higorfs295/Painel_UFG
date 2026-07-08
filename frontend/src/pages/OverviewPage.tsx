@@ -11,8 +11,9 @@ function Donut({ pct, label }: { pct: number; label: string }) {
     <div className="donut">
       <svg width="140" height="140" viewBox="0 0 140 140">
         <circle cx="70" cy="70" r={r} fill="none" stroke="var(--panel2)" strokeWidth="14" />
-        <circle cx="70" cy="70" r={r} fill="none" stroke="var(--copper)" strokeWidth="14"
+        <circle className="donut-ring" cx="70" cy="70" r={r} fill="none" stroke="var(--copper)" strokeWidth="14"
           strokeLinecap="round" strokeDasharray={c} strokeDashoffset={off}
+          style={{ ["--circ" as string]: String(c) } as React.CSSProperties}
           transform="rotate(-90 70 70)" />
         <text x="70" y="66" textAnchor="middle" className="val" fill="var(--tx)" fontSize="26" fontWeight="750">
           {Math.round(pct)}%
@@ -37,14 +38,20 @@ function CompBar({ c }: { c: Composition }) {
 
 export default function OverviewPage() {
   const enrollmentId = useApp((s) => s.enrollmentId);
-  const { data: prog, isLoading } = useQuery({
+  const { data: prog, isLoading, isError, refetch } = useQuery({
     queryKey: ["progress", enrollmentId], queryFn: () => me.progress(enrollmentId!), enabled: !!enrollmentId,
   });
   const { data: recs } = useQuery({
     queryKey: ["recs", enrollmentId], queryFn: () => me.recommendations(enrollmentId!, 8), enabled: !!enrollmentId,
   });
 
-  if (isLoading || !prog) return <div className="spinner">Carregando progresso…</div>;
+  if (isError) return (
+    <div className="muted-box" role="alert">
+      Não foi possível carregar o progresso.{" "}
+      <button className="btn sm" onClick={() => refetch()}>Tentar novamente</button>
+    </div>
+  );
+  if (isLoading || !prog) return <div className="spinner" role="status" aria-live="polite">Carregando progresso…</div>;
 
   const doneCount = prog.subjects.filter((s) => s.status === "done").length;
 
@@ -59,7 +66,7 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: "220px 1fr" }}>
+      <div className="grid-2">
         <Card className="center">
           <Donut pct={prog.totals.pct} label="integralizado" />
         </Card>

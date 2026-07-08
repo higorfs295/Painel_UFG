@@ -21,14 +21,15 @@ export default function AppHeader({ enrollments, selectedId, onSelect, onLogout 
         <NavTabs />
         <div className="row" style={{ gap: 10 }}>
           {enrollments.length > 1 && (
-            <select value={selectedId ?? ""} onChange={(e) => onSelect(e.target.value)} title="Curso">
+            <select value={selectedId ?? ""} onChange={(e) => onSelect(e.target.value)}
+              title="Curso" aria-label="Selecionar curso">
               {enrollments.map((e) => (
                 <option key={e.id} value={e.id}>{e.course.name}</option>
               ))}
             </select>
           )}
           <ThemeToggle />
-          <span className="mut" title={user?.email}>{user?.name}</span>
+          <span className="mut hide-sm" title={user?.email}>{user?.name}</span>
           <Button variant="ghost" size="sm" onClick={onLogout}>Sair</Button>
         </div>
       </div>

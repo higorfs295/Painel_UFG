@@ -166,13 +166,29 @@ migração para o React Router 7.
 **Verificação:** 37 testes verdes (22 unit + 15 integração), typecheck limpo, migration aplicada,
 re-seed com a matriz completa OK.
 
-## Backlog priorizado (recomendado)
-| Prio | Item | Lente |
-| --- | --- | --- |
-| P1 | Cache do grafo de curso em memória invalidado no import (3.2) | Desempenho |
-| P1 | CI (typecheck+test+build) (5.1) | Processo |
-| P1 | Rate-limit com store Redis para réplicas (4.1) | Escalabilidade |
-| P2 | Agendar `pruneRefreshTokens` (5.3) | Persistência |
-| P2 | Headers de segurança no SPA (5.2); PgBouncer/pool (4.2) | Segurança/Escala |
-| P2 | `TEST_DATABASE_URL` separado (testes poluem o banco de dev) | Processo |
-| P3 | Timing de login (5.4), error boundary (5.6), code-split (3.4), theme enum (2.4) | Diversos |
+## Backlog priorizado — status após aplicação
+| Prio | Item | Lente | Status |
+| --- | --- | --- | --- |
+| P1 | Cache do grafo de curso invalidado no import (3.2) | Desempenho | ✅ aplicado |
+| P1 | CI typecheck+test+build (5.1) | Processo | ✅ `.github/workflows/ci.yml` |
+| P1 | Rate-limit com store Redis para réplicas (4.1) | Escalabilidade | ✅ condicional em `REDIS_URL` |
+| P2 | Agendar `pruneRefreshTokens` (5.3) | Persistência | ✅ intervalo no boot |
+| P2 | Headers de segurança no SPA (5.2) | Segurança | ✅ Caddy + nginx |
+| P2 | `TEST_DATABASE_URL` separado (testes) | Processo | ✅ setup do vitest + .env.example |
+| P2 | PgBouncer/pool (4.2) | Escala | 📄 documentado no .env.example |
+| P3 | Timing de login (5.4) | Segurança | ✅ argon2.hash no miss |
+| P3 | Error boundary (5.6) | Robustez | ✅ `ErrorBoundary` + estados de erro nas queries |
+| P3 | Code-splitting (3.4) | Desempenho | ✅ `React.lazy` por rota |
+| P3 | `theme` como enum (2.4) | Persistência | ⏸️ deferido (migração dropava a coluna; zod já valida) |
+| P3 | Flags do React Router 7 (5.7) | Modernidade | 🔷 recomendado (warnings inofensivos) |
+
+## Design, acessibilidade e responsividade (rodada de UX)
+- **Paleta redesenhada** (`styles/theme.css`) com tema "cerrado / pôr do sol / povos nativos": terra/urucum,
+  ocre, capim seco (oliva), entardecer (índigo→magenta→ouro) e azul-jenipapo, em dark e light, com bom contraste.
+- **Acessibilidade:** foco visível (`:focus-visible`), skip link, landmark `<main>`, `role=status/alert`,
+  `aria-label` em controles só-ícone, `prefers-reduced-motion` desliga animações. (Limitação conhecida: as
+  células pintáveis da grade são clique-apenas, não navegáveis por teclado — é um auxílio visual.)
+- **Animações** (com guarda de reduced-motion): entrada escalonada de cards, desenho do donut, preenchimento
+  das barras, filete de pôr do sol animado, pulso do brand, underline das abas, hovers e spinner.
+- **Responsividade mobile:** grids empilham, header com nav em linha própria rolável, nome do usuário oculto
+  em telas pequenas, tabelas com scroll horizontal. Verificado em 1280px e 375px, dark e light.

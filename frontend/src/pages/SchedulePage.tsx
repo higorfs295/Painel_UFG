@@ -109,7 +109,9 @@ export default function SchedulePage() {
                 {active.disciplines.map((d) => (
                   <span key={d.id} className="chip" style={{ color: d.color, borderColor: d.color }}>
                     <span className="swatch" style={{ background: d.color }} />{d.sigla} · {d.sigaaCode || "sem horário"}
-                    <button className="btn ghost sm" style={{ padding: "0 4px", marginLeft: 4 }} onClick={() => delDisc.mutate({ sid: active.id, did: d.id })}>×</button>
+                    <button className="btn ghost sm" style={{ padding: "0 4px", marginLeft: 4 }}
+                      aria-label={`Remover ${d.sigla}`} title={`Remover ${d.sigla}`}
+                      onClick={() => delDisc.mutate({ sid: active.id, did: d.id })}>×</button>
                   </span>
                 ))}
               </div>

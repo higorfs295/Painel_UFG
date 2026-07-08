@@ -19,7 +19,7 @@ export default function SubjectsPage() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<GraphStatus | "all">("all");
 
-  const { data: prog, isLoading } = useQuery({
+  const { data: prog, isLoading, isError, refetch } = useQuery({
     queryKey: ["progress", enrollmentId], queryFn: () => me.progress(enrollmentId), enabled: !!enrollmentId,
   });
 
@@ -57,7 +57,13 @@ export default function SubjectsPage() {
     );
   }, [prog, q, filter]);
 
-  if (isLoading || !prog) return <div className="spinner">Carregando disciplinas…</div>;
+  if (isError) return (
+    <div className="muted-box" role="alert">
+      Não foi possível carregar as disciplinas.{" "}
+      <button className="btn sm" onClick={() => refetch()}>Tentar novamente</button>
+    </div>
+  );
+  if (isLoading || !prog) return <div className="spinner" role="status" aria-live="polite">Carregando disciplinas…</div>;
 
   const simulating = prog.projected.totals.hours !== prog.totals.hours;
 
