@@ -256,8 +256,45 @@ flowchart TD
 | Cookie `httpOnly` + JWT em memória | Access token não fica em `localStorage` (mitiga XSS); refresh não é acessível por JS. |
 | Backup portável por `seq` | Sobrevive a re-seed/reimportação da matriz (ids mudam, `seq` não). |
 
-## 10. Operação
+## 10. Deploy (Compose + Caddy)
 
-`docker-compose.yml` sobe `db + api + web + caddy`. A API aplica migrações no boot
-(`prisma migrate deploy`), roda como usuário não-root e encerra graciosamente em `SIGTERM`. Ver
-[`PROGRESSO.md`](PROGRESSO.md) e [`REVISAO.md`](REVISAO.md) para estado, verificações e backlog.
+O `docker-compose.yml` descreve a stack completa. O Caddy é o único serviço com portas públicas
+(80/443); API e web só são alcançáveis pela rede interna do Compose (`expose`, sem `ports`).
+
+```mermaid
+flowchart TB
+  Internet([Internet]) -->|":80 / :443 (TLS)"| Caddy
+
+  subgraph Host["Host Docker — rede interna do Compose"]
+    Caddy["caddy:2<br/>TLS automático · headers de segurança<br/>volumes: Caddyfile (ro), caddydata, caddyconfig"]
+    Web["web (nginx:1.27-alpine)<br/>build: frontend/Dockerfile (Vite → estáticos)<br/>fallback SPA · expose :80"]
+    Api["api (node:22-bookworm-slim)<br/>build: backend/Dockerfile (multi-stage, não-root)<br/>entrypoint: migrate deploy → node dist/server.js<br/>expose :3333"]
+    Db[("db (postgres:16)<br/>healthcheck pg_isready<br/>volume dbdata")]
+  end
+
+  Caddy -->|"/auth /me /users /courses /health"| Api
+  Caddy -->|"/* (SPA)"| Web
+  Api -->|"DATABASE_URL (rede interna)"| Db
+  Api -.->|"espera healthcheck<br/>(depends_on: service_healthy)"| Db
+```
+
+Sequência de subida e pontos de atenção:
+
+1. **`db`** sobe primeiro; o healthcheck (`pg_isready`) segura a API até o Postgres aceitar conexões.
+2. **`api`** roda `prisma migrate deploy` no entrypoint (aplica migrações pendentes, nunca cria novas)
+   e então inicia o servidor; encerra graciosamente em `SIGTERM` (drena requests, desconecta o Prisma).
+3. **`web`** é só nginx servindo o build do Vite com fallback para `index.html` (BrowserRouter).
+4. **`caddy`** termina TLS (interno em `localhost`; Let's Encrypt automático com domínio real),
+   injeta os headers de segurança (HSTS/CSP/XFO) e roteia por caminho — mesma origem, sem CORS.
+
+```bash
+cp .env.example .env            # defina JWT_SECRET (e POSTGRES_PASSWORD em produção)
+docker compose up --build -d
+docker compose run --rm -e SEED_ADMIN_PASSWORD='...' api npm run seed   # 1ª vez
+docker compose logs -f api     # acompanhar migrações/boot
+```
+
+Backup do banco em produção: `docker compose exec db pg_dump -U painel painel > backup.sql`
+(agendar via cron; o volume `dbdata` persiste os dados entre recriações de container).
+
+Estado do projeto, verificações e backlog: [`PROGRESSO.md`](PROGRESSO.md) e [`REVISAO.md`](REVISAO.md).
