@@ -1,5 +1,5 @@
 // Cronograma (RF-10/11/12): cenários, disciplinas com código SIGAA (validado no servidor) e pintura da grade.
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { schedules } from "../api/endpoints";
 import { useApp } from "../store/app";
@@ -68,6 +68,35 @@ export default function SchedulePage() {
   }
   const catColor = (cat: string) => PAINT.find((p) => p.key === cat)?.color ?? "var(--panel2)";
 
+  // Navegação por teclado da grade (padrão ARIA "grid" com roving tabindex).
+  // Uma célula fica no tab order; setas movem o foco; Enter/Espaço pinta a célula focada.
+  const [cursor, setCursor] = useState({ r: 0, c: 0 });
+  const gridRef = useRef<HTMLTableSectionElement>(null);
+  function moveCursor(r: number, c: number) {
+    const rr = Math.max(0, Math.min(SLOTS.length - 1, r));
+    const cc = Math.max(0, Math.min(DAYS.length - 1, c));
+    setCursor({ r: rr, c: cc });
+    gridRef.current?.querySelector<HTMLElement>(`[data-r="${rr}"][data-c="${cc}"]`)?.focus();
+  }
+  function onGridKey(e: React.KeyboardEvent) {
+    // lê a posição da célula realmente focada (DOM), evitando closure defasado sob teclas rápidas
+    const cell = (e.target as HTMLElement).closest<HTMLElement>("[data-r]");
+    if (!cell) return;
+    const r = Number(cell.dataset.r), c = Number(cell.dataset.c);
+    switch (e.key) {
+      case "ArrowUp": e.preventDefault(); moveCursor(r - 1, c); break;
+      case "ArrowDown": e.preventDefault(); moveCursor(r + 1, c); break;
+      case "ArrowLeft": e.preventDefault(); moveCursor(r, c - 1); break;
+      case "ArrowRight": e.preventDefault(); moveCursor(r, c + 1); break;
+      case "Home": e.preventDefault(); moveCursor(r, 0); break;
+      case "End": e.preventDefault(); moveCursor(r, DAYS.length - 1); break;
+      case "Enter": case " ":
+        e.preventDefault();
+        clickCell(`${DAYS[c].n}-${SLOTS[r].id}`);
+        break;
+    }
+  }
+
   return (
     <div className="stack">
       <h1>Cronograma</h1>
@@ -132,23 +161,36 @@ export default function SchedulePage() {
               </div>
             </div>
             <div className="tablewrap mt">
-              <table className="sched">
+              <table className="sched" role="grid" aria-label="Grade semanal de horários" onKeyDown={onGridKey}>
                 <thead>
-                  <tr><th>Horário</th>{DAYS.map((d) => <th key={d.n}>{d.label}</th>)}</tr>
+                  <tr role="row">
+                    <th role="columnheader" scope="col">Horário</th>
+                    {DAYS.map((d) => <th key={d.n} role="columnheader" scope="col">{d.label}</th>)}
+                  </tr>
                 </thead>
-                <tbody>
-                  {SLOTS.map((slot) => (
-                    <tr key={slot.id}>
-                      <td className="mut" title={slot.lab}>{slot.id}</td>
-                      {DAYS.map((d) => {
+                <tbody ref={gridRef}>
+                  {SLOTS.map((slot, ri) => (
+                    <tr key={slot.id} role="row">
+                      <th role="rowheader" scope="row" className="mut" title={slot.lab} style={{ fontWeight: 500 }}>{slot.id}</th>
+                      {DAYS.map((d, ci) => {
                         const cellKey = `${d.n}-${slot.id}`;
                         const occ = occupancy.get(cellKey);
                         const pc = paintMap.get(cellKey);
-                        if (occ) return <td key={cellKey} className="busy" style={{ background: occ.color, color: "#12100A" }}>{occ.sigla}</td>;
+                        const label = occ
+                          ? `${d.label} ${slot.id}: ${occ.sigla}`
+                          : `${d.label} ${slot.id}, ${pc ? `pintado ${pc}` : "vazio"}`;
                         return (
-                          <td key={cellKey} className="cell" onClick={() => clickCell(cellKey)}
-                            style={{ background: pc ? catColor(pc) : undefined, opacity: pc ? 0.85 : 1 }}
-                            title={pc ?? "clique para pintar"} />
+                          <td key={cellKey} role="gridcell" data-r={ri} data-c={ci}
+                            className={occ ? "busy" : "cell"}
+                            tabIndex={cursor.r === ri && cursor.c === ci ? 0 : -1}
+                            aria-label={label}
+                            onFocus={() => setCursor({ r: ri, c: ci })}
+                            onClick={() => { setCursor({ r: ri, c: ci }); clickCell(cellKey); }}
+                            style={occ
+                              ? { background: occ.color, color: "#1B1109" }
+                              : { background: pc ? catColor(pc) : undefined, opacity: pc ? 0.85 : 1 }}>
+                            {occ ? occ.sigla : ""}
+                          </td>
                         );
                       })}
                     </tr>
@@ -156,6 +198,9 @@ export default function SchedulePage() {
                 </tbody>
               </table>
             </div>
+            <p className="mut" style={{ fontSize: ".8rem", marginTop: 8 }}>
+              Clique numa célula livre para pintar, ou navegue com as setas do teclado e pinte com Enter/Espaço.
+            </p>
           </Card>
         </>
       )}

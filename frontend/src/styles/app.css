@@ -177,6 +177,10 @@ tr:hover td { background: var(--panel2); }
 .sched td.cell { cursor: pointer; height: 28px; transition: background .12s ease, box-shadow .12s ease; }
 .sched td.cell:hover { box-shadow: inset 0 0 0 2px var(--lineHi); }
 .sched td.busy { font-weight: 680; }
+/* foco do teclado na grade (roving tabindex) — anel interno bem visível */
+.sched td:focus, .sched td:focus-visible {
+  outline: none; box-shadow: inset 0 0 0 3px var(--sun); position: relative; z-index: 1;
+}
 
 .badge { font-size: .72rem; padding: 2px 7px; border-radius: 7px; background: var(--panel2); border: 1px solid var(--line); color: var(--mut); }
 .center { text-align: center; }
