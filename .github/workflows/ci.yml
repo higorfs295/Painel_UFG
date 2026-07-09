@@ -21,6 +21,7 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       DATABASE_URL: postgresql://painel:painel@localhost:5432/painel_test?schema=public
+      DIRECT_URL: postgresql://painel:painel@localhost:5432/painel_test?schema=public
       JWT_SECRET: ci-secret-please-change-me-0123456789abcdef
     defaults:
       run:
@@ -69,6 +70,7 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       DATABASE_URL: postgresql://painel:painel@localhost:5432/painel_e2e?schema=public
+      DIRECT_URL: postgresql://painel:painel@localhost:5432/painel_e2e?schema=public
       JWT_SECRET: ci-secret-please-change-me-0123456789abcdef
       E2E_USER_EMAIL: fhigor295@gmail.com
       E2E_USER_PASSWORD: ci-e2e-password-123

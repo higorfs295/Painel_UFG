@@ -6,6 +6,7 @@ import { useAuth, applyTheme } from "./store/auth";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AppLayout from "./components/layout/AppLayout";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import InvitePage from "./pages/InvitePage";
 
 // páginas autenticadas carregadas sob demanda (code-splitting)
@@ -50,6 +51,7 @@ export default function App() {
       <Suspense fallback={<div className="spinner" role="status" aria-live="polite">Carregando…</div>}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/cadastro" element={<RegisterPage />} />
           <Route path="/convite/:token" element={<InvitePage />} />
           <Route path="/reset/:token" element={<InvitePage />} />
           <Route

@@ -1,11 +1,18 @@
 // Tipos das respostas da API (espelham o backend).
 export type Role = "ADMIN" | "USER";
 export type Theme = "dark" | "light";
-export type SubjectState = "APPROVED" | "SIMULATED";
+export type SubjectState = "APPROVED" | "SIMULATED" | "ENROLLED";
 export type GraphStatus = "done" | "avail" | "co" | "lock";
 export type ExtraCategory = "OPT" | "NL" | "AC" | "NONE";
 
-export type User = { id: string; name: string; email: string; role: Role; theme: Theme; createdAt?: string };
+// RF-20 — sugestão de período letivo calculada pelo servidor (heurística; o valor
+// persistido em Enrollment.currentTerm é a fonte de verdade editável).
+export type PeriodInfo = { term: string | null; onBreak: boolean; label: string; nextTerm: string };
+
+export type User = {
+  id: string; name: string; email: string; role: Role; theme: Theme;
+  createdAt?: string; period?: PeriodInfo;
+};
 
 export type Enrollment = {
   id: string; userId: string; courseId: string;
@@ -52,5 +59,12 @@ export type Scenario = { id: string; enrollmentId: string; name: string; discipl
 
 export type AdminUser = {
   id: string; name: string; email: string; role: Role; createdAt: string;
-  active: boolean; courses: { slug: string; name: string }[];
+  active: boolean; courses: { enrollmentId: string; slug: string; name: string }[];
+};
+
+export type AdminStats = {
+  users: { total: number; admins: number; pendingInvites: number };
+  courses: number;
+  enrollments: number;
+  activity: { subjectStatuses: number; extras: number; scenarios: number };
 };

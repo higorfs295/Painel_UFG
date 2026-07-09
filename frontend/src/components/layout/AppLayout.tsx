@@ -1,12 +1,48 @@
 // Casca autenticada: carrega enrollments, mantém o curso selecionado e renderiza a página ativa.
-import { useEffect } from "react";
+// Sem matrícula (conta recém-criada via cadastro público), oferece a escolha de curso (RF-17).
+import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { me, auth } from "../../api/endpoints";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { me, auth, courses } from "../../api/endpoints";
 import { setAccessToken } from "../../api/client";
 import { useAuth } from "../../store/auth";
 import { useApp } from "../../store/app";
 import AppHeader from "./AppHeader";
+import Card from "../ui/Card";
+import Button from "../ui/Button";
+
+function CoursePicker() {
+  const qc = useQueryClient();
+  const { data: list } = useQuery({ queryKey: ["courses"], queryFn: courses.list });
+  const [slug, setSlug] = useState("");
+  const enroll = useMutation({
+    mutationFn: (s: string) => me.selfEnroll(s),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["enrollments"] }),
+  });
+  return (
+    <Card className="authcard" style={{ margin: "48px auto" }}>
+      <h2>Escolha seu curso</h2>
+      <p className="mut">Sua conta está pronta — selecione a matriz curricular para começar a acompanhar.</p>
+      {!list ? <div className="spinner" role="status">Carregando cursos…</div> : list.length === 0 ? (
+        <div className="muted-box">Nenhum curso cadastrado nesta instância ainda. Peça a um administrador
+          para importar uma matriz.</div>
+      ) : (
+        <div className="stack mt">
+          <label className="field">Curso
+            <select value={slug} onChange={(e) => setSlug(e.target.value)}>
+              <option value="">— selecione —</option>
+              {list.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+            </select>
+          </label>
+          {enroll.isError && <div className="err" role="alert">Não foi possível matricular. Tente novamente.</div>}
+          <Button variant="prim" disabled={!slug || enroll.isPending} onClick={() => enroll.mutate(slug)}>
+            {enroll.isPending ? "Matriculando…" : "Começar"}
+          </Button>
+        </div>
+      )}
+    </Card>
+  );
+}
 
 export default function AppLayout() {
   const navigate = useNavigate();
@@ -43,9 +79,7 @@ export default function AppLayout() {
         {isLoading ? (
           <div className="spinner" role="status" aria-live="polite">Carregando cursos…</div>
         ) : !enrollments || enrollments.length === 0 ? (
-          <div className="muted-box">
-            Sua conta ainda não está matriculada em nenhum curso. Peça a um administrador para vincular um curso.
-          </div>
+          <CoursePicker />
         ) : (
           <Outlet />
         )}

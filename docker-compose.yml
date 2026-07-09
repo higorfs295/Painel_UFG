@@ -27,6 +27,7 @@ services:
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://painel:${POSTGRES_PASSWORD:-painel}@db:5432/painel?schema=public
+      DIRECT_URL: postgresql://painel:${POSTGRES_PASSWORD:-painel}@db:5432/painel?schema=public
       JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env}
       APP_URL: ${APP_URL:-http://localhost:8081}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8081}

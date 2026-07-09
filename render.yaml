@@ -1,0 +1,35 @@
+# Blueprint do Render (https://render.com/docs/blueprint-spec) — backend no plano FREE.
+# Banco: use o Neon (tier gratuito permanente com pooler embutido) em vez do Postgres do
+# Render (que expira em ~30 dias no free). Passo a passo completo em docs/DEPLOY.md.
+#
+# Variáveis marcadas com `sync: false` são preenchidas no dashboard na primeira sincronização:
+#   DATABASE_URL -> string POOLED do Neon (…-pooler…/painel?sslmode=require&pgbouncer=true)
+#   DIRECT_URL   -> string DIRETA do Neon (sem -pooler) — usada pelas migrações
+#   APP_URL      -> URL do frontend na Vercel (ex.: https://painel.vercel.app)
+#   CORS_ORIGIN  -> mesma URL (ou lista separada por vírgula com os previews)
+services:
+  - type: web
+    name: painel-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci && npx prisma generate && npm run build
+    startCommand: npx prisma migrate deploy && node dist/server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: APP_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: COOKIE_SAMESITE
+        value: none          # frontend (Vercel) e API (Render) são origens diferentes
+      - key: TRUST_PROXY
+        value: "true"

@@ -141,6 +141,7 @@ input::placeholder { color: var(--dim); }
 .chip.co { color: var(--co); border-color: color-mix(in srgb, var(--co) 45%, transparent); background: color-mix(in srgb, var(--co) 12%, var(--panel2)); }
 .chip.lock { color: var(--lock); border-color: color-mix(in srgb, var(--lock) 45%, transparent); background: color-mix(in srgb, var(--lock) 12%, var(--panel2)); }
 .chip.sim { color: var(--sim); border-color: color-mix(in srgb, var(--sim) 45%, transparent); background: color-mix(in srgb, var(--sim) 12%, var(--panel2)); }
+.chip.cursando { color: var(--jenipapo); border-color: color-mix(in srgb, var(--jenipapo) 45%, transparent); background: color-mix(in srgb, var(--jenipapo) 12%, var(--panel2)); }
 
 /* barras de progresso — animam o preenchimento */
 .bar { height: 10px; background: var(--panel2); border-radius: 999px; overflow: hidden; border: 1px solid var(--line); }
@@ -192,7 +193,72 @@ tr:hover td { background: var(--panel2); }
   animation: spin 0.9s linear infinite;
 }
 
+/* ---- design v2: formas, grafismos e variações ---- */
+/* título de página com "traço de urucum" (barra curta em gradiente) */
+h1 {
+  position: relative;
+  background: linear-gradient(100deg, var(--tx) 30%, var(--copper) 85%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+h1::after {
+  content: ""; display: block; width: 56px; height: 4px; margin-top: 6px;
+  border-radius: 2px; background: var(--sunset);
+  -webkit-text-fill-color: initial;
+}
+
+/* grafismo geométrico inspirado em cerâmica/tecelagem indígena: banda de zigzag */
+.tribal {
+  height: 10px; margin: 4px 0;
+  background:
+    repeating-linear-gradient(135deg, var(--copper) 0 6px, transparent 6px 12px),
+    repeating-linear-gradient(45deg, var(--dusk) 0 6px, transparent 6px 12px);
+  opacity: .5; border-radius: 2px;
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+/* cards de estatística (admin): número em gradiente, canto marcado */
+.stat { position: relative; overflow: hidden; }
+.stat::before {
+  content: ""; position: absolute; top: 0; right: 0; width: 34px; height: 34px;
+  background: linear-gradient(225deg, color-mix(in srgb, var(--copper) 30%, transparent) 0 50%, transparent 50%);
+}
+.stat-val {
+  font-size: 1.7rem; font-weight: 800;
+  background: linear-gradient(120deg, var(--sun), var(--copper), var(--ember));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* telas de auth: horizonte de pôr do sol em camadas + sol flutuando */
+.authwrap {
+  background:
+    radial-gradient(720px 300px at 50% 108%, color-mix(in srgb, var(--copper) 26%, transparent), transparent 70%),
+    radial-gradient(1100px 520px at 50% 118%, color-mix(in srgb, var(--dusk) 20%, transparent), transparent 72%);
+}
+.authcard .dot { animation: float 5s ease-in-out infinite, pulse 3.2s ease-in-out infinite; }
+
+/* brilho ocasional nas barras cheias (shimmer discreto) */
+.bar > span { position: relative; overflow: hidden; }
+.bar > span::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.28) 50%, transparent 60%);
+  background-size: 220% 100%;
+  animation: shimmer 4.5s ease-in-out infinite;
+}
+
+/* donut flutua suavemente */
+.donut svg { animation: float 6s ease-in-out infinite; }
+
+/* linhas de tabela entram em cascata sutil */
+tbody tr { animation: rowIn .35s ease both; }
+tbody tr:nth-child(1) { animation-delay: .02s; } tbody tr:nth-child(2) { animation-delay: .05s; }
+tbody tr:nth-child(3) { animation-delay: .08s; } tbody tr:nth-child(4) { animation-delay: .11s; }
+tbody tr:nth-child(5) { animation-delay: .14s; }
+
 /* ---- keyframes ---- */
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes shimmer { 0%, 55% { background-position: 220% 0; } 90%, 100% { background-position: -60% 0; } }
+@keyframes rowIn { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: none; } }
 @keyframes reveal { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes popIn { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 @keyframes growBar { from { width: 0 !important; } }

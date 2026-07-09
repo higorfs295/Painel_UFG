@@ -102,11 +102,13 @@ export default function SubjectsPage() {
                     <td>{s.name}{s.groupOpt > 0 && <span className="badge" style={{ marginLeft: 6 }}>optativa</span>}</td>
                     <td>{s.hours}h</td>
                     <td className="mut">{s.nucleus}</td>
-                    <td><StatusChip status={s.status} sim={s.state === "SIMULATED"} /></td>
+                    <td><StatusChip status={s.status} state={s.state} /></td>
                     <td>
                       <div className="row" style={{ gap: 6, justifyContent: "flex-end" }}>
                         <Button size="sm" variant={s.state === "APPROVED" ? "prim" : "default"} disabled={!sid || mutate.isPending}
                           onClick={() => sid && mutate.mutate({ subjectId: sid, state: "APPROVED" })}>Aprovada</Button>
+                        <Button size="sm" variant={s.state === "ENROLLED" ? "prim" : "default"} disabled={!sid || mutate.isPending}
+                          onClick={() => sid && mutate.mutate({ subjectId: sid, state: "ENROLLED" })}>Cursando</Button>
                         <Button size="sm" variant={s.state === "SIMULATED" ? "prim" : "default"} disabled={!sid || mutate.isPending}
                           onClick={() => sid && mutate.mutate({ subjectId: sid, state: "SIMULATED" })}>Simular</Button>
                         <Button size="sm" variant="ghost" disabled={!sid || !s.state || mutate.isPending}

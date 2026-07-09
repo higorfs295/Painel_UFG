@@ -1,6 +1,6 @@
 // Login (POST /auth/login) + "esqueci a senha" (POST /auth/password/forgot).
 import { useState } from "react";
-import { useNavigate, useLocation, Navigate } from "react-router-dom";
+import { useNavigate, useLocation, Navigate, Link } from "react-router-dom";
 import { auth } from "../api/endpoints";
 import { setAccessToken } from "../api/client";
 import { useAuth, applyTheme } from "../store/auth";
@@ -61,6 +61,9 @@ export default function LoginPage() {
           {msg && <div className="ok">{msg}</div>}
           <Button type="submit" variant="prim" disabled={busy}>{busy ? "Entrando…" : "Entrar"}</Button>
           <button type="button" className="btn ghost sm" onClick={forgot}>Esqueci minha senha</button>
+          <p className="mut center" style={{ margin: 0 }}>
+            Não tem conta? <Link to="/cadastro">Criar conta</Link>
+          </p>
         </form>
       </Card>
     </div>

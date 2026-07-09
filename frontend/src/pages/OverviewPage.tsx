@@ -65,6 +65,7 @@ export default function OverviewPage() {
           </p>
         </div>
       </div>
+      <div className="tribal" aria-hidden="true" />
 
       <div className="grid-2">
         <Card className="center">

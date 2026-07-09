@@ -1,31 +1,59 @@
-// Admin (RF-01/13): criar/convidar/remover usuários e importar matrizes de curso.
+// Admin (RF-01/13/21): estatísticas, criar/convidar/remover usuários, papéis, matrículas
+// e importação de matrizes de curso.
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { admin, courses } from "../api/endpoints";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 
+function Stat({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="card tight center stat">
+      <div className="stat-val">{value}</div>
+      <div className="mut" style={{ fontSize: ".8rem" }}>{label}</div>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const qc = useQueryClient();
   const [form, setForm] = useState({ name: "", email: "", role: "USER" as "USER" | "ADMIN", courseSlug: "" });
-  const [lastLink, setLastLink] = useState("");
+  const [lastLink, setLastLink] = useState<{ link: string; emailed: boolean } | null>(null);
   const [matriz, setMatriz] = useState("");
   const [importMsg, setImportMsg] = useState("");
   const [importErr, setImportErr] = useState("");
+  const [enrollPick, setEnrollPick] = useState<Record<string, string>>({}); // userId -> slug
 
+  const stats = useQuery({ queryKey: ["admin-stats"], queryFn: admin.stats });
   const users = useQuery({ queryKey: ["admin-users"], queryFn: admin.listUsers });
   const courseList = useQuery({ queryKey: ["courses"], queryFn: courses.list });
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["admin-users"] });
+    qc.invalidateQueries({ queryKey: ["admin-stats"] });
+  };
 
   const create = useMutation({
     mutationFn: () => admin.createUser({ ...form, courseSlug: form.courseSlug || undefined }),
-    onSuccess: (res) => { setLastLink(res.invite.link); setForm({ name: "", email: "", role: "USER", courseSlug: "" }); qc.invalidateQueries({ queryKey: ["admin-users"] }); },
+    onSuccess: (res) => { setLastLink(res.invite); setForm({ name: "", email: "", role: "USER", courseSlug: "" }); invalidate(); },
   });
-  const reinvite = useMutation({ mutationFn: (id: string) => admin.reinvite(id), onSuccess: (res) => setLastLink(res.invite.link) });
-  const remove = useMutation({ mutationFn: (id: string) => admin.removeUser(id), onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-users"] }) });
+  const reinvite = useMutation({ mutationFn: (id: string) => admin.reinvite(id), onSuccess: (res) => setLastLink(res.invite) });
+  const remove = useMutation({ mutationFn: (id: string) => admin.removeUser(id), onSuccess: invalidate });
+  const patchRole = useMutation({
+    mutationFn: (v: { id: string; role: "ADMIN" | "USER" }) => admin.patchUser(v.id, { role: v.role }),
+    onSuccess: invalidate,
+  });
+  const enroll = useMutation({
+    mutationFn: (v: { id: string; slug: string }) => admin.enrollUser(v.id, v.slug),
+    onSuccess: invalidate,
+  });
+  const unenroll = useMutation({
+    mutationFn: (v: { id: string; enrollmentId: string }) => admin.unenrollUser(v.id, v.enrollmentId),
+    onSuccess: invalidate,
+  });
 
   const doImport = useMutation({
     mutationFn: () => courses.import(JSON.parse(matriz)),
-    onSuccess: (res) => { setImportMsg(`Curso "${res.slug}" importado (${res.subjects} disciplinas).`); setImportErr(""); setMatriz(""); qc.invalidateQueries({ queryKey: ["courses"] }); },
+    onSuccess: (res) => { setImportMsg(`Curso "${res.slug}" importado (${res.subjects} disciplinas).`); setImportErr(""); setMatriz(""); qc.invalidateQueries({ queryKey: ["courses"] }); invalidate(); },
     onError: () => { setImportErr("JSON inválido ou erro na importação."); setImportMsg(""); },
   });
 
@@ -33,8 +61,19 @@ export default function AdminPage() {
     <div className="stack">
       <h1>Administração</h1>
 
+      {stats.data && (
+        <div className="cards">
+          <Stat label="Usuários" value={stats.data.users.total} />
+          <Stat label="Admins" value={stats.data.users.admins} />
+          <Stat label="Convites pendentes" value={stats.data.users.pendingInvites} />
+          <Stat label="Cursos" value={stats.data.courses} />
+          <Stat label="Matrículas" value={stats.data.enrollments} />
+          <Stat label="Disciplinas marcadas" value={stats.data.activity.subjectStatuses} />
+        </div>
+      )}
+
       <Card>
-        <h3>Criar usuário</h3>
+        <h3>Criar usuário (com convite)</h3>
         <form className="row wrap" style={{ gap: 10, alignItems: "flex-end" }}
           onSubmit={(e) => { e.preventDefault(); create.mutate(); }}>
           <label className="field" style={{ flex: "1 1 180px" }}>Nome<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required minLength={2} /></label>
@@ -50,19 +89,19 @@ export default function AdminPage() {
               {courseList.data?.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
             </select>
           </label>
-          <Button type="submit" variant="prim" disabled={create.isPending}>Criar + gerar convite</Button>
+          <Button type="submit" variant="prim" disabled={create.isPending}>Criar + convite</Button>
         </form>
         {lastLink && (
           <div className="ok mt">
-            Link de convite (repasse ao usuário): <br />
-            <code style={{ wordBreak: "break-all" }}>{lastLink}</code>
+            {lastLink.emailed ? "Convite enviado por e-mail ✉️ — link (backup):" : "SMTP não configurado — repasse o link:"}<br />
+            <code style={{ wordBreak: "break-all" }}>{lastLink.link}</code>
           </div>
         )}
       </Card>
 
       <Card tight>
         <h3 style={{ padding: "6px 8px 0" }}>Usuários</h3>
-        {users.isLoading ? <div className="spinner">Carregando…</div> : (
+        {users.isLoading ? <div className="spinner" role="status">Carregando…</div> : (
           <div className="tablewrap">
             <table>
               <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Situação</th><th>Cursos</th><th style={{ textAlign: "right" }}>Ações</th></tr></thead>
@@ -71,9 +110,35 @@ export default function AdminPage() {
                   <tr key={u.id}>
                     <td>{u.name}</td>
                     <td className="mut">{u.email}</td>
-                    <td><span className="badge">{u.role}</span></td>
+                    <td>
+                      <select value={u.role} aria-label={`Papel de ${u.name}`}
+                        onChange={(e) => patchRole.mutate({ id: u.id, role: e.target.value as "ADMIN" | "USER" })}>
+                        <option value="USER">USER</option><option value="ADMIN">ADMIN</option>
+                      </select>
+                    </td>
                     <td>{u.active ? <span className="chip done"><span className="swatch" />ativo</span> : <span className="chip avail"><span className="swatch" />convite pendente</span>}</td>
-                    <td className="mut">{u.courses.map((c) => c.slug).join(", ") || "—"}</td>
+                    <td>
+                      <div className="row wrap" style={{ gap: 4 }}>
+                        {u.courses.map((c) => (
+                          <span key={c.enrollmentId} className="badge" title={c.name}>
+                            {c.slug}
+                            <button className="btn ghost sm" style={{ padding: "0 3px", marginLeft: 2 }}
+                              aria-label={`Desmatricular de ${c.slug}`}
+                              onClick={() => { if (confirm(`Remover a matrícula de ${u.name} em ${c.name}? Os dados dela serão apagados.`)) unenroll.mutate({ id: u.id, enrollmentId: c.enrollmentId }); }}>×</button>
+                          </span>
+                        ))}
+                        <select value={enrollPick[u.id] ?? ""} aria-label={`Matricular ${u.name} em curso`}
+                          onChange={(e) => {
+                            const slug = e.target.value;
+                            setEnrollPick((p) => ({ ...p, [u.id]: "" }));
+                            if (slug) enroll.mutate({ id: u.id, slug });
+                          }}>
+                          <option value="">+ curso</option>
+                          {courseList.data?.filter((c) => !u.courses.some((x) => x.slug === c.slug))
+                            .map((c) => <option key={c.slug} value={c.slug}>{c.slug}</option>)}
+                        </select>
+                      </div>
+                    </td>
                     <td>
                       <div className="row" style={{ gap: 6, justifyContent: "flex-end" }}>
                         <Button size="sm" onClick={() => reinvite.mutate(u.id)}>Reenviar convite</Button>
@@ -96,7 +161,7 @@ export default function AdminPage() {
           <Button variant="prim" disabled={!matriz.trim() || doImport.isPending} onClick={() => doImport.mutate()}>Importar</Button>
         </div>
         {importMsg && <div className="ok mt">{importMsg}</div>}
-        {importErr && <div className="err mt">{importErr}</div>}
+        {importErr && <div className="err mt" role="alert">{importErr}</div>}
       </Card>
     </div>
   );

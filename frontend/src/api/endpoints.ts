@@ -2,7 +2,7 @@
 import { api, setAccessToken } from "./client";
 import type {
   User, Enrollment, Progress, Recommendation, Extra, CourseSummary, Scenario, AdminUser,
-  SubjectState, ExtraCategory, Theme,
+  AdminStats, SubjectState, ExtraCategory, Theme,
 } from "./types";
 
 // ---- auth ----
@@ -10,6 +10,10 @@ export const auth = {
   login: (email: string, password: string) =>
     api<{ accessToken: string; user: User }>("/auth/login", {
       method: "POST", body: JSON.stringify({ email, password }),
+    }),
+  register: (name: string, email: string, password: string) =>
+    api<{ accessToken: string; user: User }>("/auth/register", {
+      method: "POST", body: JSON.stringify({ name, email, password }),
     }),
   logout: () => api<void>("/auth/logout", { method: "POST" }),
   acceptInvite: (token: string, password: string) =>
@@ -35,7 +39,13 @@ export const me = {
   profile: () => api<User>("/me"),
   updateSettings: (patch: { theme?: Theme; name?: string }) =>
     api<User>("/me/settings", { method: "PATCH", body: JSON.stringify(patch) }),
+  changePassword: (current: string, next: string) =>
+    api<void>("/me/password", { method: "POST", body: JSON.stringify({ current, next }) }),
   enrollments: () => api<Enrollment[]>("/me/enrollments"),
+  selfEnroll: (courseSlug: string) =>
+    api<Enrollment>("/me/enrollments", { method: "POST", body: JSON.stringify({ courseSlug }) }),
+  updateEnrollment: (enrollmentId: string, patch: { currentTerm?: string | null; startTerm?: string | null }) =>
+    api<Enrollment>(`/me/enrollments/${enrollmentId}`, { method: "PATCH", body: JSON.stringify(patch) }),
   progress: (enrollmentId: string) => api<Progress>(`/me/enrollments/${enrollmentId}/progress`),
   recommendations: (enrollmentId: string, limit = 12) =>
     api<Recommendation[]>(`/me/enrollments/${enrollmentId}/recommendations?limit=${limit}`),
@@ -92,12 +102,19 @@ export const schedules = {
     api<unknown>(`/me/scenarios/${sid}/paint`, { method: "PUT", body: JSON.stringify({ cellKey, category }) }),
 };
 
-// ---- admin (RF-01) ----
+// ---- admin (RF-01/21) ----
 export const admin = {
   listUsers: () => api<AdminUser[]>("/users"),
   createUser: (data: { name: string; email: string; role?: "ADMIN" | "USER"; courseSlug?: string }) =>
-    api<{ user: User; invite: { link: string; expiresAt: string } }>("/users", { method: "POST", body: JSON.stringify(data) }),
+    api<{ user: User; invite: { link: string; expiresAt: string; emailed: boolean } }>("/users", { method: "POST", body: JSON.stringify(data) }),
   reinvite: (id: string) =>
-    api<{ invite: { link: string; expiresAt: string; purpose: string } }>(`/users/${id}/invite`, { method: "POST" }),
+    api<{ invite: { link: string; expiresAt: string; purpose: string; emailed: boolean } }>(`/users/${id}/invite`, { method: "POST" }),
+  patchUser: (id: string, patch: { role?: "ADMIN" | "USER"; name?: string }) =>
+    api<{ id: string; role: "ADMIN" | "USER" }>(`/users/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
+  enrollUser: (id: string, courseSlug: string) =>
+    api<{ enrollmentId: string }>(`/users/${id}/enrollments`, { method: "POST", body: JSON.stringify({ courseSlug }) }),
+  unenrollUser: (id: string, enrollmentId: string) =>
+    api<void>(`/users/${id}/enrollments/${enrollmentId}`, { method: "DELETE" }),
   removeUser: (id: string) => api<void>(`/users/${id}`, { method: "DELETE" }),
+  stats: () => api<AdminStats>("/admin/stats"),
 };
