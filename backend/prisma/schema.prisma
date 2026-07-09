@@ -4,8 +4,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")   // em produção Neon: string COM pooler (…-pooler…?pgbouncer=true)
+  directUrl = env("DIRECT_URL")     // conexão direta (sem pooler) p/ migrações; local = igual à de cima
 }
 
 enum Role {
@@ -26,7 +27,8 @@ enum ReqType {
 enum SubjectState {
   APPROVED
   SIMULATED
-} // ausência de registro = pendente
+  ENROLLED
+} // APPROVED=oficial · ENROLLED=cursando agora · SIMULATED=planejada · ausência = pendente
 
 enum ExtraCategory {
   OPT

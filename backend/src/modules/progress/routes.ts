@@ -4,7 +4,9 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { assertEnrollmentOwner } from "../../lib/ownership.js";
+import { stripUndefined } from "../../lib/strip.js";
 import { loadCourseGraph } from "../../domain/loadCourse.js";
+import { TERM_RE } from "../../domain/period.js";
 import { computeProgress, recommend, type StatusRecord } from "../../domain/progress.js";
 
 export async function progressRoutes(app: FastifyInstance) {
@@ -13,6 +15,36 @@ export async function progressRoutes(app: FastifyInstance) {
       where: { userId: req.user.sub },
       include: { course: { select: { slug: true, name: true, totalHours: true } } },
     }));
+
+  // RF-17: auto-matrícula — quem se cadastrou sozinho escolhe o curso (idempotente).
+  app.post("/enrollments", { preHandler: app.requireAuth }, async (req, reply) => {
+    const { courseSlug } = z.object({ courseSlug: z.string() }).parse(req.body);
+    const course = await app.prisma.course.findUnique({ where: { slug: courseSlug } });
+    if (!course) return reply.code(400).send({ error: "curso inexistente" });
+    const enr = await app.prisma.enrollment.upsert({
+      where: { userId_courseId: { userId: req.user.sub, courseId: course.id } },
+      update: {},
+      create: { userId: req.user.sub, courseId: course.id },
+      include: { course: { select: { slug: true, name: true, totalHours: true } } },
+    });
+    return reply.code(201).send(enr);
+  });
+
+  // RF-20: período letivo — o usuário mantém startTerm/currentTerm da própria matrícula.
+  app.patch("/enrollments/:id", { preHandler: app.requireAuth }, async (req, reply) => {
+    const { id } = z.object({ id: z.string() }).parse(req.params);
+    const patch = z.object({
+      currentTerm: z.string().regex(TERM_RE, "formato AAAA.S (ex.: 2026.2)").nullable().optional(),
+      startTerm: z.string().regex(TERM_RE, "formato AAAA.S (ex.: 2022.2)").nullable().optional(),
+    }).parse(req.body);
+    await assertEnrollmentOwner(app.prisma, id, req.user.sub);
+    const enr = await app.prisma.enrollment.update({
+      where: { id },
+      data: stripUndefined(patch), // null limpa; chave ausente não toca — semântica de PATCH
+      include: { course: { select: { slug: true, name: true, totalHours: true } } },
+    });
+    return reply.send(enr);
+  });
 
   // RF-05: somas por composição + status calculado por disciplina + marcos.
   app.get("/enrollments/:id/progress", { preHandler: app.requireAuth }, async (req, reply) => {
@@ -37,10 +69,11 @@ export async function progressRoutes(app: FastifyInstance) {
     return { enrollment: { id: enr.id, courseId: enr.courseId }, ...progress };
   });
 
-  // RF-06: marca disciplina (APPROVED/SIMULATED) ou volta a pendente (state = null).
+  // RF-06/19: marca disciplina — APPROVED (oficial), ENROLLED (cursando), SIMULATED
+  // (planejamento) — ou volta a pendente (state = null).
   app.put("/enrollments/:id/subjects/:subjectId", { preHandler: app.requireAuth }, async (req, reply) => {
     const { id, subjectId } = z.object({ id: z.string(), subjectId: z.string() }).parse(req.params);
-    const { state } = z.object({ state: z.enum(["APPROVED", "SIMULATED"]).nullable() }).parse(req.body);
+    const { state } = z.object({ state: z.enum(["APPROVED", "SIMULATED", "ENROLLED"]).nullable() }).parse(req.body);
     const enr = await assertEnrollmentOwner(app.prisma, id, req.user.sub);
 
     // a disciplina precisa pertencer ao curso do enrollment

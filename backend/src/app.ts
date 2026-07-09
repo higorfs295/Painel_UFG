@@ -13,10 +13,14 @@ import { extraRoutes } from "./modules/extras/routes.js";
 import { scheduleRoutes, SigaaError } from "./modules/schedules/routes.js";
 import { accountRoutes } from "./modules/account/routes.js";
 import { OwnershipError } from "./lib/ownership.js";
-import { isProd } from "./env.js";
+import { env, isProd } from "./env.js";
+import { adminRoutes } from "./modules/admin/routes.js";
 
 export async function buildApp() {
   const app = Fastify({
+    // atrás de proxy/CDN (Render, Caddy): respeita X-Forwarded-For para req.ip
+    // (rate limit por IP correto) e X-Forwarded-Proto (cookies Secure).
+    trustProxy: env.TRUST_PROXY === "true",
     logger: {
       level: isProd ? "info" : "debug",
       // RNF-10: nunca registrar segredos (Authorization, cookies, senhas, tokens) nos logs.
@@ -58,5 +62,6 @@ export async function buildApp() {
   await app.register(extraRoutes,   { prefix: "/me" });
   await app.register(scheduleRoutes,{ prefix: "/me" });
   await app.register(accountRoutes, { prefix: "/me" });      // perfil, tema, backup (RF-15/16)
+  await app.register(adminRoutes,   { prefix: "/admin" });   // estatísticas e visão geral (RF-21)
   return app;
 }

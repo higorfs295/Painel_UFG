@@ -44,12 +44,16 @@ export const authPlugin = fp(async (app) => {
   });
 });
 
-// opções do cookie de refresh — httpOnly + sameSite; secure só em produção (localhost é http).
+// Opções do cookie de refresh — httpOnly sempre. sameSite vem do ambiente:
+//  - "lax" (padrão): mesma origem (Caddy) ou dev local;
+//  - "none": deploy cross-site (ex.: frontend na Vercel + API no Render) — navegadores
+//    exigem Secure junto, então secure é forçado nesse modo.
 export function refreshCookieOptions() {
+  const sameSite = env.COOKIE_SAMESITE;
   return {
     httpOnly: true,
-    secure: isProd,
-    sameSite: "lax" as const,
+    secure: sameSite === "none" ? true : isProd,
+    sameSite,
     path: "/auth",
     maxAge: env.REFRESH_EXPIRES_DAYS * 24 * 60 * 60, // segundos
   };

@@ -5,6 +5,8 @@ import { z } from "zod";
 import argon2 from "argon2";
 import { consumeInvite, issueInvite } from "../../lib/invite.js";
 import { issueRefreshToken, rotateRefreshToken, revokeRefreshToken } from "../../lib/session.js";
+import { sendInviteEmail } from "../../lib/mailer.js";
+import { allowRegistration } from "../../env.js";
 import { REFRESH_COOKIE, refreshCookieOptions, type AccessClaims } from "../../plugins/auth.js";
 
 export async function authRoutes(app: FastifyInstance) {
@@ -31,6 +33,31 @@ export async function authRoutes(app: FastifyInstance) {
       app.prisma.inviteToken.update({ where: { id: invite.id }, data: { usedAt: new Date() } }),
     ]);
     return reply.code(204).send();
+  });
+
+  // RF-17: cadastro público (auto-registro). Desligável por instância via ALLOW_REGISTRATION=false.
+  // Já autentica na resposta (mesmo shape do login) para a UX de "cadastrar e entrar".
+  app.post("/register", strict, async (req, reply) => {
+    if (!allowRegistration)
+      return reply.code(403).send({ error: "cadastro público desabilitado nesta instância" });
+    const body = z.object({
+      name: z.string().min(2).max(120),
+      email: z.string().email(),
+      password: z.string().min(10),
+    }).parse(req.body);
+
+    const exists = await app.prisma.user.findUnique({ where: { email: body.email } });
+    if (exists) return reply.code(409).send({ error: "e-mail já cadastrado" });
+
+    const user = await app.prisma.user.create({
+      data: { name: body.name, email: body.email, role: "USER", passwordHash: await argon2.hash(body.password) },
+    });
+    const refresh = await issueRefreshToken(app.prisma, user.id);
+    reply.setCookie(REFRESH_COOKIE, refresh, refreshCookieOptions());
+    return reply.code(201).send({
+      accessToken: signAccess(user),
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, theme: user.theme },
+    });
   });
 
   // RF-03: login -> access JWT (curto) + refresh opaco em cookie httpOnly.
@@ -85,8 +112,8 @@ export async function authRoutes(app: FastifyInstance) {
     const user = await app.prisma.user.findUnique({ where: { email } });
     if (user) {
       const { link } = await issueInvite(app.prisma, user.id, "RESET_PASSWORD");
-      // Sem serviço de e-mail na v1: em dev, logamos o link; em produção, enviar por e-mail.
-      req.log.info({ resetLink: link, userId: user.id }, "link de reset gerado");
+      // RF-18: envia por e-mail quando SMTP está configurado; senão o link fica no log.
+      await sendInviteEmail(req.log, user.email, link, "RESET_PASSWORD");
     }
     return reply.send({ ok: true });
   });

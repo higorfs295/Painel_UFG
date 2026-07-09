@@ -1,18 +1,41 @@
 // RF-15/16 — conta do próprio usuário: perfil, tema e backup JSON. Tudo escopado a req.user.sub.
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
+import argon2 from "argon2";
 import { exportUser, importUser } from "../../lib/backup.js";
 import { stripUndefined } from "../../lib/strip.js";
+import { periodInfo } from "../../domain/period.js";
 
 export async function accountRoutes(app: FastifyInstance) {
   // Perfil do usuário autenticado (o frontend usa após login/refresh).
+  // Inclui a sugestão de período letivo corrente/férias (RF-20) calculada pelo relógio do servidor.
   app.get("/", { preHandler: app.requireAuth }, async (req, reply) => {
     const user = await app.prisma.user.findUnique({
       where: { id: req.user.sub },
       select: { id: true, name: true, email: true, role: true, theme: true, createdAt: true },
     });
     if (!user) return reply.code(404).send({ error: "usuário não encontrado" });
-    return user;
+    return { ...user, period: periodInfo() };
+  });
+
+  // Troca de senha autenticada (exige a senha atual; revoga as outras sessões por segurança).
+  app.post("/password", { preHandler: app.requireAuth }, async (req, reply) => {
+    const { current, next } = z.object({
+      current: z.string(), next: z.string().min(10),
+    }).parse(req.body);
+    const user = await app.prisma.user.findUnique({ where: { id: req.user.sub } });
+    if (!user?.passwordHash || !(await argon2.verify(user.passwordHash, current)))
+      return reply.code(401).send({ error: "senha atual incorreta" });
+    await app.prisma.$transaction([
+      app.prisma.user.update({
+        where: { id: user.id }, data: { passwordHash: await argon2.hash(next) },
+      }),
+      // revoga todos os refresh ativos: sessões antigas precisam logar de novo
+      app.prisma.refreshToken.updateMany({
+        where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() },
+      }),
+    ]);
+    return reply.code(204).send();
   });
 
   // RF-15: tema (e nome) por usuário, persistido.

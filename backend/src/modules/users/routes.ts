@@ -1,8 +1,11 @@
-// RF-01 — administração de usuários (somente ADMIN). O admin cria o usuário SEM senha;
-// o sistema gera um convite e o próprio usuário define a senha (RF-02).
+// RF-01/21 — administração de usuários (somente ADMIN). O admin cria o usuário SEM senha;
+// o sistema gera um convite (enviado por e-mail quando SMTP configurado, RF-18) e o próprio
+// usuário define a senha (RF-02). RF-21 amplia: troca de papel e gestão de matrículas.
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { issueInvite } from "../../lib/invite.js";
+import { sendInviteEmail } from "../../lib/mailer.js";
+import { stripUndefined } from "../../lib/strip.js";
 
 export async function userRoutes(app: FastifyInstance) {
   app.get("/", { preHandler: app.requireAdmin }, async () => {
@@ -11,13 +14,13 @@ export async function userRoutes(app: FastifyInstance) {
       select: {
         id: true, name: true, email: true, role: true, createdAt: true,
         passwordHash: true, // usado só para derivar `active`; não é retornado
-        enrollments: { select: { course: { select: { slug: true, name: true } } } },
+        enrollments: { select: { id: true, course: { select: { slug: true, name: true } } } },
       },
     });
     return users.map(({ passwordHash, enrollments, ...u }) => ({
       ...u,
       active: passwordHash !== null,               // já definiu senha?
-      courses: enrollments.map(e => e.course),
+      courses: enrollments.map(e => ({ enrollmentId: e.id, ...e.course })),
     }));
   });
 
@@ -45,13 +48,35 @@ export async function userRoutes(app: FastifyInstance) {
       },
     });
     const { link, expiresAt } = await issueInvite(app.prisma, user.id, "SET_PASSWORD");
+    const emailed = await sendInviteEmail(req.log, user.email, link, "SET_PASSWORD");
     return reply.code(201).send({
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
-      invite: { link, expiresAt },
+      invite: { link, expiresAt, emailed },        // link sempre disponível p/ repasse manual
     });
   });
 
-  // Reemitir convite (ou reset). Invalida convites SET_PASSWORD anteriores ainda não usados.
+  // RF-21: editar papel/nome de um usuário. Protege contra remover o próprio ADMIN
+  // (evita a instância ficar sem administrador por acidente).
+  app.patch("/:id", { preHandler: app.requireAdmin }, async (req, reply) => {
+    const { id } = z.object({ id: z.string() }).parse(req.params);
+    const patch = z.object({
+      role: z.enum(["ADMIN", "USER"]).optional(),
+      name: z.string().min(2).optional(),
+    }).parse(req.body);
+    if (id === req.user.sub && patch.role === "USER")
+      return reply.code(400).send({ error: "não é possível rebaixar a própria conta" });
+    try {
+      const user = await app.prisma.user.update({
+        where: { id }, data: stripUndefined(patch),
+        select: { id: true, name: true, email: true, role: true },
+      });
+      return user;
+    } catch {
+      return reply.code(404).send({ error: "usuário não encontrado" });
+    }
+  });
+
+  // Reemitir convite (ou reset). Invalida convites do mesmo tipo ainda não usados.
   app.post("/:id/invite", { preHandler: app.requireAdmin }, async (req, reply) => {
     const { id } = z.object({ id: z.string() }).parse(req.params);
     const user = await app.prisma.user.findUnique({ where: { id } });
@@ -63,7 +88,35 @@ export async function userRoutes(app: FastifyInstance) {
       data: { usedAt: new Date() },                // invalida os pendentes do mesmo tipo
     });
     const { link, expiresAt } = await issueInvite(app.prisma, id, purpose);
-    return reply.send({ invite: { link, expiresAt, purpose } });
+    const emailed = await sendInviteEmail(req.log, user.email, link, purpose);
+    return reply.send({ invite: { link, expiresAt, purpose, emailed } });
+  });
+
+  // RF-21: matricular usuário em um curso.
+  app.post("/:id/enrollments", { preHandler: app.requireAdmin }, async (req, reply) => {
+    const { id } = z.object({ id: z.string() }).parse(req.params);
+    const { courseSlug } = z.object({ courseSlug: z.string() }).parse(req.body);
+    const [user, course] = await Promise.all([
+      app.prisma.user.findUnique({ where: { id } }),
+      app.prisma.course.findUnique({ where: { slug: courseSlug } }),
+    ]);
+    if (!user) return reply.code(404).send({ error: "usuário não encontrado" });
+    if (!course) return reply.code(400).send({ error: "curso inexistente" });
+    const enr = await app.prisma.enrollment.upsert({
+      where: { userId_courseId: { userId: id, courseId: course.id } },
+      update: {},
+      create: { userId: id, courseId: course.id },
+    });
+    return reply.code(201).send({ enrollmentId: enr.id, courseSlug });
+  });
+
+  // RF-21: desmatricular (remove o enrollment e, por cascade, status/extras/cenários dele).
+  app.delete("/:id/enrollments/:enrollmentId", { preHandler: app.requireAdmin }, async (req, reply) => {
+    const { id, enrollmentId } = z.object({ id: z.string(), enrollmentId: z.string() }).parse(req.params);
+    const enr = await app.prisma.enrollment.findUnique({ where: { id: enrollmentId } });
+    if (!enr || enr.userId !== id) return reply.code(404).send({ error: "matrícula não encontrada" });
+    await app.prisma.enrollment.delete({ where: { id: enrollmentId } });
+    return reply.code(204).send();
   });
 
   app.delete("/:id", { preHandler: app.requireAdmin }, async (req, reply) => {

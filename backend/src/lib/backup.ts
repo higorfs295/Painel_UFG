@@ -19,7 +19,7 @@ export const backupSchema = z.object({
     currentTerm: z.string().nullable().optional(),
     subjects: z.array(z.object({
       seq: z.number().int(),
-      state: z.enum(["APPROVED", "SIMULATED"]),
+      state: z.enum(["APPROVED", "SIMULATED", "ENROLLED"]),
     })).default([]),
     extras: z.array(z.object({
       name: z.string(), code: z.string().nullable().optional(),

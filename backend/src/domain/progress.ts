@@ -3,10 +3,13 @@
 import { statusOf, buildDeps, unlockCount, type Subject, type Milestone, type Status } from "./graph.js";
 import { sums, cappedPct, type Extra, type Requirement, type Minimums } from "./sums.js";
 
-export type StatusRecord = { seq: number; state: "APPROVED" | "SIMULATED" };
+// RF-06/19 — três estados persistidos: APPROVED (oficial), ENROLLED (cursando agora)
+// e SIMULATED (planejamento). Ausência de registro = pendente.
+export type SubjectStateKind = "APPROVED" | "SIMULATED" | "ENROLLED";
+export type StatusRecord = { seq: number; state: SubjectStateKind };
 
 export type SubjectProgress = Subject & {
-  state: "APPROVED" | "SIMULATED" | null;
+  state: SubjectStateKind | null;
   status: Status;
 };
 
@@ -72,6 +75,7 @@ export function computeProgress(input: {
   const minimums = minimumsFrom(requirements);
 
   const approved = new Set(statuses.filter(s => s.state === "APPROVED").map(s => s.seq));
+  // projeção: oficial ∪ cursando ∪ simuladas ("como fico se tudo der certo")
   const projected = new Set(statuses.map(s => s.seq));
 
   const official = sums(subjects, approved, extras, minimums);
@@ -115,9 +119,13 @@ export function recommend(input: {
   const integralized = sums(subjects, approved, [], minimums).tot;
   const deps = buildDeps(subjects);
 
+  // pula qualquer disciplina já marcada (aprovada, cursando ou simulada):
+  // não faz sentido recomendar o que o aluno já cursa ou planejou.
+  const statused = new Set(statuses.map(s => s.seq));
+
   const recs: Recommendation[] = [];
   for (const s of subjects) {
-    if (approved.has(s.seq)) continue;
+    if (statused.has(s.seq)) continue;
     if (statusOf(s, approved, integralized, milestones, bySeq) !== "avail") continue;
     const { ob, tot } = unlockCount(s.seq, deps, approved, bySeq);
     recs.push({ seq: s.seq, code: s.code, name: s.name, hours: s.hours, ob, tot });

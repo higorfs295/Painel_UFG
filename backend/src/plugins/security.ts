@@ -3,11 +3,15 @@ import fp from "fastify-plugin";
 import helmet from "@fastify/helmet";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
-import { env } from "../env.js";
+import { env, corsOrigins } from "../env.js";
 
 export const securityPlugin = fp(async (app) => {
   await app.register(helmet);
-  await app.register(cors, { origin: env.CORS_ORIGIN, credentials: true });
+  // CORS_ORIGIN aceita lista separada por vírgula (produção + previews do frontend).
+  await app.register(cors, {
+    origin: corsOrigins.length === 1 ? corsOrigins[0]! : corsOrigins,
+    credentials: true,
+  });
 
   // Store do rate limit: em memória por padrão; com REDIS_URL, usa Redis (compartilhado entre
   // réplicas — sem isso o limite efetivo vira N×max e a proteção de brute-force enfraquece, RNF-07).
