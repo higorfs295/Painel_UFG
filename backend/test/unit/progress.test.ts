@@ -36,18 +36,20 @@ const statuses: StatusRecord[] = [
   { seq: 3, state: "SIMULATED" },
 ];
 
-describe("computeProgress", () => {
+describe("computeProgress (integralização limitada ao mínimo por composição)", () => {
   const r = computeProgress({ subjects, milestones, requirements, statuses, extras, totalHours: 1148 });
 
-  it("soma apenas aprovadas + extras concluídos (oficial)", () => {
-    expect(r.totals.hours).toBe(428); // 200 NC + 100 NEO + 128 NL
+  it("total integralizado soma contribuições LIMITADAS ao mínimo (excedente não adianta)", () => {
+    // NC: raw 200 / min 100 -> conta 100 · NEO: raw 100 / min 500 -> conta 100
+    // NL: raw 128 / min 128 -> conta 128 · OPT 0 · AC 0  => 328 (não 428)
+    expect(r.totals.hours).toBe(328);
   });
 
-  it("trava a barra em 100% mas registra o excedente (RF-05)", () => {
+  it("barra trava em 100% mas o valor REAL e o excedente ficam registrados (RF-05)", () => {
     const nc = r.compositions.find(c => c.key === "NC")!;
-    expect(nc.hours).toBe(200);
-    expect(nc.pct).toBe(100);   // capado
-    expect(nc.over).toBe(100);  // 100h além do mínimo, registradas
+    expect(nc.hours).toBe(200); // valor real preservado
+    expect(nc.pct).toBe(100);   // exibição capada
+    expect(nc.over).toBe(100);  // +100h além do mínimo
   });
 
   it("planejado (done=false) não conta", () => {
@@ -62,18 +64,20 @@ describe("computeProgress", () => {
     expect(byId.get(4)!.status).toBe("avail"); // pré (2) aprovada
   });
 
-  it("marcos: oficial cruza CH1 mas não CH2; projeção cruza os dois", () => {
+  it("marcos usam o total LIMITADO: oficial 328 não cruza CH1(400); projeção 428 cruza CH1 e não CH2", () => {
     const m = new Map(r.milestones.map(x => [x.key, x.reached]));
-    expect(m.get("CH1")).toBe(true);
+    expect(m.get("CH1")).toBe(false); // 328 < 400 (antes da regra do teto seria 428)
     expect(m.get("CH2")).toBe(false);
-    expect(r.projected.totals.hours).toBe(528); // + optativa simulada (100 OPT)
-    expect(r.projected.milestones.CH2).toBe(true);
+    // projetado: + optativa simulada (100h OPT, min 320 -> conta 100) => 428
+    expect(r.projected.totals.hours).toBe(428);
+    expect(r.projected.milestones.CH1).toBe(true);
+    expect(r.projected.milestones.CH2).toBe(false);
   });
 });
 
 describe("recommend", () => {
   it("ranqueia disponíveis por destravamento (obrigatórias primeiro)", () => {
-    const recs = recommend({ subjects, milestones, statuses });
+    const recs = recommend({ subjects, milestones, requirements, statuses });
     const seqs = recs.map(r => r.seq);
     expect(seqs).toContain(4); // avail
     expect(seqs).not.toContain(1); // já aprovada

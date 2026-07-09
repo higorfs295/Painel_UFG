@@ -76,9 +76,12 @@ describe("backup export/import (RF-16)", () => {
     expect(imp.statusCode).toBe(200);
     expect(imp.json().restored).toBe(1);
 
-    // estado reconstruído
+    // estado reconstruído (total limitado: NC conta 100; NL sem mínimo no curso -> conta 0)
     const prog = await app.inject({ method: "GET", url: `/me/enrollments/${enr.id}/progress`, headers: authHeader(accessToken) });
-    expect(prog.json().totals.hours).toBe(140); // 100 (aprovada) + 40 (extra NL)
+    expect(prog.json().totals.hours).toBe(100);
+    // mas o extra NL existe e é visível na lista
+    const extrasRes = await app.inject({ method: "GET", url: `/me/enrollments/${enr.id}/extras`, headers: authHeader(accessToken) });
+    expect(extrasRes.json()).toHaveLength(1);
   });
 
   it("ignora cursos inexistentes no servidor sem quebrar", async () => {

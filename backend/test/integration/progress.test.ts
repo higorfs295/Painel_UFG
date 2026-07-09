@@ -57,11 +57,14 @@ describe("progresso e posse (RF-05/06, RNF-05)", () => {
     const res = await app.inject({ method: "GET", url: `/me/enrollments/${enr.id}/progress`, headers: authHeader(accessToken) });
     expect(res.statusCode).toBe(200);
     const body = res.json();
-    expect(body.totals.hours).toBe(200);
+    // integralização limitada ao mínimo: NC raw 200 / min 100 -> conta 100
+    expect(body.totals.hours).toBe(100);
     const nc = body.compositions.find((c: any) => c.key === "NC");
-    expect(nc.pct).toBe(100);      // 200/100 travado
-    expect(nc.over).toBe(100);     // excedente registrado
-    expect(body.milestones.find((m: any) => m.key === "CH1").reached).toBe(true);
+    expect(nc.hours).toBe(100 + 100); // valor real preservado (200)
+    expect(nc.pct).toBe(100);         // exibição travada
+    expect(nc.over).toBe(100);        // excedente registrado
+    // CH1 (150h) usa o total LIMITADO (100) -> ainda não atingido
+    expect(body.milestones.find((m: any) => m.key === "CH1").reached).toBe(false);
     expect(body.subjects.find((s: any) => s.seq === 2).status).toBe("avail"); // pré aprovada
   });
 
