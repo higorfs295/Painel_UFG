@@ -297,4 +297,42 @@ docker compose logs -f api     # acompanhar migrações/boot
 Backup do banco em produção: `docker compose exec db pg_dump -U painel painel > backup.sql`
 (agendar via cron; o volume `dbdata` persiste os dados entre recriações de container).
 
+## 11. Deploy custo-zero (Render + Vercel + Neon)
+
+A alternativa hospedada sem servidor próprio — passo a passo operacional em
+[`DEPLOY.md`](DEPLOY.md); aqui, a topologia e o que muda arquiteturalmente:
+
+```mermaid
+flowchart LR
+  User([Usuário]) -->|HTTPS| Vercel
+  subgraph Vercel["Vercel (free) — CDN global"]
+    SPA["SPA estático (build Vite)<br/>VITE_API_URL embutida no build<br/>vercel.json: SPA rewrites + headers"]
+  end
+  SPA -->|"fetch cross-site<br/>Authorization: Bearer + cookie SameSite=None"| Render
+  subgraph Render["Render (free) — hiberna s/ tráfego"]
+    API2["painel-api (render.yaml)<br/>start: migrate deploy → node dist<br/>healthCheckPath /health"]
+  end
+  Render -->|"DATABASE_URL (pooled, pgbouncer=true)"| Neon
+  Render -.->|"DIRECT_URL (só migrações)"| Neon
+  subgraph Neon["Neon (free permanente)"]
+    PG[("Postgres 16<br/>pooler embutido · autosuspend ~1s")]
+  end
+  Ping["UptimeRobot (opcional)"] -.->|"GET /health a cada 10min<br/>evita hibernação"| Render
+```
+
+Diferenças em relação à topologia mesma-origem (Compose):
+
+| Aspecto | Compose (mesma origem) | Trio free (cross-site) |
+| --- | --- | --- |
+| Cookie de refresh | `SameSite=Lax` | **`SameSite=None; Secure`** (`COOKIE_SAMESITE=none`) |
+| CORS | dispensável (Caddy roteia) | obrigatório: `CORS_ORIGIN` = origem(ns) da Vercel |
+| TLS | Caddy (interno/Let's Encrypt) | nativo nas três plataformas |
+| Migrações | entrypoint do container | `startCommand` do Render, via `DIRECT_URL` (sem pooler) |
+| Latência fria | nenhuma | cold start do Render (~30–60s) — mitigável com ping |
+| Persistência | volume Docker local | Neon (free permanente; o PG do Render free expiraria em 30d) |
+
+O código é idêntico nas duas topologias — a diferença inteira vive em variáveis de ambiente
+(`COOKIE_SAMESITE`, `CORS_ORIGIN`, `APP_URL`, `DATABASE_URL`/`DIRECT_URL`), o que mantém o
+deploy como decisão de operação, não de arquitetura.
+
 Estado do projeto, verificações e backlog: [`PROGRESSO.md`](PROGRESSO.md) e [`REVISAO.md`](REVISAO.md).

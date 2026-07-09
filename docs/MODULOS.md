@@ -46,13 +46,16 @@ test/{unit,integration}/  # Vitest
 | `invite.ts` | `issueInvite()`, `consumeInvite()` | cria token de convite/reset (hash + expiração) e devolve o link; valida (não usado/expirado) |
 | `ownership.ts` | `assertEnrollmentOwner()`, `assertExtraOwner()`, `assertScenarioOwner()`, `OwnershipError` | autorização por posse (RNF-05): lança 403/404 se o recurso não é do usuário |
 | `backup.ts` | `exportUser()`, `importUser()`, `backupSchema` | monta e restaura (transacional) o backup do usuário, portável por `seq` |
+| `mailer.ts` | `sendInviteEmail()` | RF-18: envia convite/reset via SMTP (nodemailer, lazy); sem `SMTP_HOST` só loga o link; **nunca lança** (fluxo manual continua) |
+| `strip.ts` | `stripUndefined()` | remove chaves `undefined` de patches parciais do zod antes do Prisma (`exactOptionalPropertyTypes`) |
 
 ## Domínio (`src/domain/`) — puro, testado
 
 | Arquivo | Funções | O que faz |
 | --- | --- | --- |
 | `graph.ts` | `statusOf()`, `buildDeps()`, `unlockCount()` | status de disciplina (done/avail/co/lock) a partir de pré/co e marcos; grafo de dependências; destravamento transitivo |
-| `sums.ts` | `sums()`, `cappedPct()` | soma horas por composição (NC/NEO/OPT/NL/AC); percentual travado em 100% |
+| `sums.ts` | `sums()`, `cappedPct()`, tipos `Minimums`/`CompositionSum` | somas por composição com **contribuição limitada ao mínimo** (raw/counted/excess) — a regra do teto explicada em `DOMINIO.md` §2 |
+| `period.ts` | `periodInfo()`, `compareTerms()`, `TERM_RE` | RF-20: período letivo corrente/férias por heurística de calendário (sugestão; `currentTerm` persistido prevalece) |
 | `sigaa.ts` | `parseSIGAA()`, `conflicts()`, `SLOTS` | parser de código de horário (`"56M23456"`→slots), detecção de conflito |
 | `progress.ts` | `computeProgress()`, `recommend()` | agrega composições+status+marcos+projeção; ranqueia recomendações |
 | `loadCourse.ts` | `loadCourseGraph()`, `invalidateCourseGraph()` | ponte Prisma→domínio com **cache** por curso (TTL 5 min) |
@@ -64,13 +67,14 @@ Cada função registra os handlers da área. Contrato detalhado em [`API.md`](AP
 
 | Módulo | RF | Endpoints |
 | --- | --- | --- |
-| `auth` | 02/03/04 | `POST /auth/{invite/accept, login, refresh, logout, password/forgot}` (rate limit por rota nas de segredo) |
-| `users` | 01 | `GET/POST /users`, `POST /users/:id/invite`, `DELETE /users/:id` (ADMIN) |
+| `auth` | 02/03/04/**17** | `POST /auth/{register, invite/accept, login, refresh, logout, password/forgot}` (rate limit por rota nas de segredo; register gated por `ALLOW_REGISTRATION`) |
+| `users` | 01/**21** | `GET/POST /users`, `PATCH /users/:id` (papel/nome), `POST /users/:id/invite`, `POST/DELETE /users/:id/enrollments[/:enrId]`, `DELETE /users/:id` (ADMIN; convites enviados por e-mail quando há SMTP) |
 | `courses` | 13 | `GET /courses`, `GET /courses/:slug`, `POST /courses/import` |
-| `progress` | 05/06/07 | `GET /me/enrollments`, `GET .../progress`, `PUT .../subjects/:id`, `GET .../recommendations` |
+| `progress` | 05/06/07/**17/19/20** | `GET/POST /me/enrollments`, `PATCH /me/enrollments/:id` (períodos), `GET .../progress`, `PUT .../subjects/:id` (APPROVED/ENROLLED/SIMULATED), `GET .../recommendations` |
 | `extras` | 08/09 | `GET/POST /me/enrollments/:id/extras`, `PATCH/DELETE /me/extras/:id` |
 | `schedules` | 10/11/12 | CRUD de `scenarios`/`disciplines` (valida SIGAA) + `PUT .../paint`; exporta `SigaaError` |
-| `account` | 15/16 | `GET /me`, `PATCH /me/settings`, `GET /me/export`, `POST /me/import` |
+| `account` | 15/16/**20** | `GET /me` (+período), `PATCH /me/settings`, `POST /me/password`, `GET /me/export`, `POST /me/import` |
+| `admin` | **21** | `GET /admin/stats` (números agregados da instância) |
 
 ## Dados e testes
 
@@ -123,14 +127,19 @@ src/
 
 | Página | Rota | Faz |
 | --- | --- | --- |
-| `LoginPage` | `/login` | login + "esqueci a senha"; aplica tema no sucesso |
+| `LoginPage` | `/login` | login + "esqueci a senha" + link para cadastro |
+| `RegisterPage` | `/cadastro` | RF-17: auto-registro (autentica na resposta; trata instância fechada/409) |
 | `InvitePage` | `/convite/:token`, `/reset/:token` | define a própria senha |
-| `OverviewPage` | `/` | donut, composições (teto+excedente), marcos, recomendações; estados de erro |
-| `SubjectsPage` | `/disciplinas` | tabela com status, filtros e **simulação** (mapeia `seq`→`id` via `courses.detail`) |
+| `OverviewPage` | `/` | donut, composições (teto+excedente), marcos, recomendações; grafismo tribal |
+| `SubjectsPage` | `/disciplinas` | tabela com status, filtros e os três estados (Aprovada/**Cursando**/Simular) |
 | `ExtrasPage` | `/extras` | CRUD de extras; alterna concluído/planejado |
 | `SchedulePage` | `/cronograma` | cenários, disciplinas (SIGAA), grade **navegável por teclado** (roving tabindex) + pintura |
-| `SettingsPage` | `/config` | tema + exportar/importar backup |
-| `AdminPage` | `/admin` | criar/convidar/remover usuários + importar matriz (ADMIN) |
+| `SettingsPage` | `/config` | nome, **troca de senha**, **período letivo** (com sugestão), **matrículas**, tema, backup |
+| `AdminPage` | `/admin` | **cards de estatísticas**, criar/convidar, **papel por select**, **matricular/desmatricular**, remover, importar matriz |
+
+Camada de layout: `AppLayout` mostra o **seletor de curso** (auto-matrícula) quando a conta não
+tem matrícula; `AppHeader` exibe o **chip de período/férias** (currentTerm persistido > heurística
+do servidor via `GET /me`).
 
 ## Estilos e acessibilidade
 
@@ -138,3 +147,41 @@ src/
   (terra/urucum, ocre, oliva, entardecer, jenipapo) + gradientes (`--sunset`, `--dawnwash`).
 - `styles/app.css`: componentes, **animações** (com `prefers-reduced-motion`), **responsividade**
   (breakpoints 820/520px) e **acessibilidade** (`:focus-visible`, `.skiplink`, `.sr-only`, foco da grade).
+
+---
+
+# Anatomia de uma requisição (rastreamento completo)
+
+Para fixar como as peças conversam, o caminho exato de `GET /me/enrollments/:id/progress` —
+da tecla F5 ao JSON na tela:
+
+1. **`OverviewPage`** monta → `useQuery(["progress", enrollmentId])` chama
+   `me.progress()` (`api/endpoints.ts`), que delega a `api()` (`api/client.ts`).
+2. **`api/client.ts`** injeta `Authorization: Bearer <token em memória>` e `credentials:include`.
+   Se o token expirou, o 401 dispara **um** `POST /auth/refresh` (deduplicado entre chamadas
+   concorrentes por uma promise compartilhada) e repete a requisição original.
+3. No servidor, a requisição atravessa os **plugins** na ordem de registro:
+   `securityPlugin` (helmet → CORS → rate limit por IP) → `authPlugin.requireAuth`
+   (verifica o JWT; popula `req.user = { sub, role }`).
+4. **`modules/progress/routes.ts`**: zod valida `:id` → `assertEnrollmentOwner(prisma, id,
+   req.user.sub)` (`lib/ownership.ts`) resolve a matrícula e lança `OwnershipError` 403/404 se
+   não for do usuário.
+5. **`domain/loadCourse.ts`**: `loadCourseGraph(courseId)` — *cache hit* (TTL 5 min) devolve o
+   grafo pronto; *miss* faz UMA query com `include` (disciplinas + requisitos + composições +
+   marcos) e converte ids→`seq` para as formas puras do domínio.
+6. Duas queries paralelas (`Promise.all`): `SubjectStatus` (com o `seq` de cada disciplina) e
+   `ExtraComponent` da matrícula.
+7. **`domain/progress.ts`**: `computeProgress()` — monta os conjuntos `approved`/`projected`,
+   chama `sums()` duas vezes (oficial e projeção, com os mínimos de `minimumsFrom()`), calcula
+   `statusOf()` por disciplina e o estado dos marcos. **Zero I/O** neste passo.
+8. A rota devolve o agregado; em erro, o `setErrorHandler` central (`app.ts`) já teria mapeado
+   Zod→400 / Ownership→403/404 / Prisma→409/404 / resto→500 sem stack.
+9. De volta no cliente, o TanStack Query guarda em cache por `queryKey`; as **mutações**
+   (`PUT .../subjects/:id`, extras, etc.) invalidam `["progress", id]` e `["recs", id]` — a UI
+   re-renderiza com os números novos sem gestão manual de estado.
+
+Variação de escrita (`PUT .../subjects/:subjectId`): passos 1–4 iguais; o handler valida que a
+disciplina pertence ao curso da matrícula, faz `upsert`/`deleteMany` do `SubjectStatus` e
+responde — o recálculo do progresso acontece na **próxima leitura** (nada é materializado; com
+~10² disciplinas o cálculo puro custa microssegundos, e é por isso que não há coluna "total"
+para dessincronizar).

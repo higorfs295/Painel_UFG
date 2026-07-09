@@ -1,5 +1,36 @@
 # Progresso da Implementação
 
+## Rodada "preparação open source" (2026-07-09, branch claude/os-prep)
+
+Nove pedidos atendidos sobre a main pós-merge:
+
+1. **Cadastro público (RF-17)** — `POST /auth/register` (gated por `ALLOW_REGISTRATION`) + página
+   `/cadastro` + auto-matrícula (`POST /me/enrollments` e seletor de curso no primeiro acesso).
+2. **Convite por e-mail (RF-18)** — `lib/mailer` (nodemailer/SMTP opcional) em convite/reset;
+   diagnóstico do caso Docker (link montado com `APP_URL` errado) documentado em DEPLOY §7.1.
+3. **Design v2** — mais formas/cores/animações: título com traço de pôr do sol, grafismo tribal,
+   stats em gradiente, horizonte nas telas de auth, shimmer/float/cascata (com reduced-motion).
+4. **Período/férias (RF-20)** — `domain/period` + chip no header + editor em Ajustes
+   (`PATCH /me/enrollments/:id`).
+5. **Estado CURSANDO (RF-19)** — enum `ENROLLED` + migração; oficial não conta, projeção conta,
+   recomendações pulam; botão/chip na UI.
+6. **Ajustes ricos** — nome, troca de senha (`POST /me/password`, revoga sessões), período,
+   matrículas, tema, backup.
+7. **Admin ampliado (RF-21)** — `GET /admin/stats`, papel por select (`PATCH /users/:id`),
+   matricular/desmatricular usuários.
+8. **Deploy custo-zero** — `render.yaml` + `frontend/vercel.json` + `directUrl` (Neon) +
+   `COOKIE_SAMESITE=none`/`TRUST_PROXY`/CORS multi-origem; guia completo em `docs/DEPLOY.md`.
+9. **Documentação 2×** — novos DOMINIO/DEPLOY/SEGURANCA/TESTES/CONTRIBUINDO + expansões
+   (API/MODULOS/ESPECIFICACAO com RF-17..21/README).
+
+Também: testes realinhados à **integralização limitada ao mínimo** (mudança da main que estava
+com CI vermelho), limpeza do diretório `${APPDATA}` commitado por acidente, e espelho
+`frontend/src/lib/sums.ts` sincronizado. Verificação: 43 testes backend + 4 E2E verdes; fluxo
+cadastro→curso→cursando→projeção conferido no navegador.
+
+---
+
+
 Registro do que foi implementado e **verificado em execução real** (Node 24 + Postgres em Docker +
 navegador), seguindo o `ROADMAP.md`.
 

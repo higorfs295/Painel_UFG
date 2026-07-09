@@ -70,7 +70,11 @@ Cada requisito referencia sua origem na concepção do produto.
 | RF-14 | Seed idempotente que popula o curso de Engenharia de Computação completo e a conta do usuário Higor com a baseline auditada do extrato. Contas criadas pelo fluxo normal nascem vazias. | "o meu populado, cru para os demais" |
 | RF-15 | Tema claro ou escuro por usuário, persistido no servidor. | "modo claro" |
 | RF-16 | Exportação e importação de backup em JSON dos dados do próprio usuário. | continuidade do protótipo |
-| RF-17 | Listagem de contas pelo admin, com nome, e-mail, papel e cursos vinculados, e ação de reemitir convite. | decorrência de RF-01 |
+| RF-17 | Cadastro público (auto-registro): qualquer pessoa cria a própria conta com nome, e-mail e senha, e se matricula num curso do catálogo. Desligável por instância (`ALLOW_REGISTRATION=false` volta ao modo somente-convite). A listagem de contas pelo admin (nome, e-mail, papel, cursos, reemissão de convite) integra o RF-01. | preparação open source: "cada pessoa deveria poder fazer cadastro" |
+| RF-18 | Envio de e-mail para convite e redefinição de senha via SMTP configurável (Gmail/Resend/Brevo…). Sem SMTP, o sistema opera em modo manual: o link é registrado no log e devolvido ao admin para repasse. Falha de envio nunca bloqueia o fluxo. | "o convite não veio para o meu email" |
+| RF-19 | Estado intermediário CURSANDO por disciplina, além de aprovada e simulada: não soma no progresso oficial, soma na projeção, sai das recomendações; um clique promove para aprovada quando o resultado sai. | "deveria ter um estado intermediário (cursando)" |
+| RF-20 | Período letivo corrente e férias: o sistema sugere o período pelo calendário (mar–jul = .1, ago–dez = .2, jan/fev = férias) e exibe no topo; o usuário pode fixar o período real da sua matrícula (`currentTerm`), que prevalece sobre a sugestão. | "acompanhar e mostrar o período em que estou, ou se estou de férias" |
+| RF-21 | Gestão administrativa ampliada: estatísticas da instância (usuários, convites pendentes, cursos, matrículas, atividade), alteração de papel (com guarda contra auto-rebaixamento), e matrícula/desmatrícula de usuários em cursos. | "mais algumas funções exclusivas do admin" |
 
 ---
 
@@ -163,7 +167,11 @@ O schema Prisma completo está em `backend/prisma/schema.prisma`. As entidades p
 | `POST /auth/invite/accept` | público | RF-02 |
 | `POST /auth/login` · `POST /auth/refresh` · `POST /auth/logout` | público/sessão | RF-03 |
 | `POST /auth/password/forgot` | público | RF-04 |
-| `GET /users` · `POST /users` · `POST /users/:id/invite` · `DELETE /users/:id` | ADMIN | RF-01, RF-17 |
+| `GET /users` · `POST /users` · `PATCH /users/:id` · `POST /users/:id/invite` · `POST/DELETE /users/:id/enrollments[/:id]` · `DELETE /users/:id` | ADMIN | RF-01, RF-21 |
+| `POST /auth/register` | público (se habilitado) | RF-17 |
+| `POST /me/enrollments` · `PATCH /me/enrollments/:id` | autenticado | RF-17, RF-20 |
+| `POST /me/password` | autenticado | segurança da conta |
+| `GET /admin/stats` | ADMIN | RF-21 |
 | `GET /courses` · `GET /courses/:slug` | autenticado | RF-13 |
 | `POST /courses/import` | ADMIN | RF-13 |
 | `GET /me/enrollments` | autenticado | RF-05 |

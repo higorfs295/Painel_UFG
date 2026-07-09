@@ -1,17 +1,23 @@
 # Painel Acadêmico — base do projeto (monólito modular)
 
 Evolução do protótipo em artefato para uma aplicação real multiusuário, com autenticação,
-papéis (admin/usuário), múltiplos cursos e os módulos de progresso/optativas/atividades/cronograma.
-Leia primeiro `ESPECIFICACAO.md`.
+papéis (admin/usuário), cadastro público, múltiplos cursos e os módulos de progresso (com estados
+aprovada/cursando/simulada), optativas, atividades, período letivo e cronograma.
+Leia primeiro `ESPECIFICACAO.md`; para entender o domínio a fundo, `docs/DOMINIO.md`.
 
 ## Documentação
 
 | Documento | Conteúdo |
 | --- | --- |
 | [`ESPECIFICACAO.md`](ESPECIFICACAO.md) | Requisitos funcionais (RF) e não-funcionais (RNF), escopo. |
-| [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | Diagramas (componentes, autenticação, modelo de dados, progresso), camadas e decisões de projeto. |
+| [`docs/DOMINIO.md`](docs/DOMINIO.md) | **Comece aqui** para entender o problema: matriz, integralização (regra do teto), grafo de requisitos, estados de disciplina, SIGAA, período — com exemplos numéricos. |
+| [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | Diagramas (componentes, autenticação, modelo de dados, progresso, deploy), camadas e decisões de projeto. |
 | [`docs/API.md`](docs/API.md) | Referência de endpoints com exemplos de `curl` e JSON. |
 | [`docs/MODULOS.md`](docs/MODULOS.md) | Referência arquivo a arquivo / função a função (backend e frontend). |
+| [`docs/DEPLOY.md`](docs/DEPLOY.md) | Do dev local ao ar por R$ 0 (Render + Vercel + Neon), Docker Compose, e-mail SMTP e solução de problemas. |
+| [`docs/SEGURANCA.md`](docs/SEGURANCA.md) | Modelo de ameaças, ciclo de vida dos tokens, decisões de autenticação/autorização e checklist de produção. |
+| [`docs/TESTES.md`](docs/TESTES.md) | A pirâmide de testes: como rodar, como escrever, o que cada camada cobre. |
+| [`docs/CONTRIBUINDO.md`](docs/CONTRIBUINDO.md) | Guia de contribuição: setup em 10 min, convenções, fluxo de PR, primeiras issues. |
 | [`docs/PROGRESSO.md`](docs/PROGRESSO.md) | Estado por fase e como rodar. |
 | [`docs/REVISAO.md`](docs/REVISAO.md) | Revisão técnica (escala/concorrência/persistência/desempenho) + backlog. |
 
@@ -70,8 +76,16 @@ npm run dev                # http://localhost:5173
 # login com a conta do seed (fhigor295@gmail.com) e a senha definida em SEED_ADMIN_PASSWORD
 ```
 
-Páginas: Login, Convite, Visão geral, Disciplinas (com simulação), Extras, Cronograma, Ajustes e Admin.
-Consome a API via TanStack Query; sessão com refresh automático; tema claro/escuro persistido.
+Páginas: Login, **Cadastro** (auto-registro, RF-17), Convite, Visão geral, Disciplinas (com os
+três estados: aprovada/cursando/simulada), Extras, Cronograma, Ajustes (senha, período letivo,
+matrículas, tema, backup) e Admin (estatísticas, papéis, matrículas). Consome a API via TanStack
+Query; sessão com refresh automático; chip de período/férias no topo; tema claro/escuro persistido.
+
+## Acesso público por R$ 0
+
+Quer colocar no ar? `docs/DEPLOY.md` traz o passo a passo do trio **Render (API) + Vercel
+(frontend) + Neon (Postgres com pooler, free permanente)** — inclusive o `render.yaml` (blueprint)
+e o `frontend/vercel.json` já prontos neste repositório.
 
 ## Stack completa com Docker (opcional)
 

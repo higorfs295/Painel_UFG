@@ -1,6 +1,7 @@
 # Referência de API — Painel Acadêmico
 
-Base (dev): `http://localhost:3333`. Em produção, mesma origem atrás do Caddy (`https://seu-dominio`).
+Base (dev): `http://localhost:3333`. Em produção, mesma origem atrás do Caddy (`https://seu-dominio`)
+ou cross-site (frontend na Vercel + API no Render — ver `DEPLOY.md`).
 Autenticação por **Bearer token** no header `Authorization` (access token curto) + cookie `httpOnly`
 de refresh. Todo payload é validado com zod; respostas de erro seguem um formato único.
 
@@ -13,12 +14,26 @@ de refresh. Todo payload é validado com zod; respostas de erro seguem um format
   ```
 - **Status usados**: `200/201/204` sucesso · `400` validação · `401` não autenticado · `403` sem
   permissão/posse · `404` inexistente · `409` conflito (duplicado) · `429` rate limit.
-- **Rate limit**: global 120 req/min por IP; rotas com segredo (`/auth/login`, `/auth/invite/accept`,
-  `/auth/password/forgot`) 10 req/min.
+- **Rate limit**: global 120 req/min por IP; rotas com segredo (`/auth/login`, `/auth/register`,
+  `/auth/invite/accept`, `/auth/password/forgot`) 10 req/min.
+- Em requests **sem corpo** (DELETE etc.), não envie `Content-Type: application/json` — o Fastify
+  rejeita corpo JSON vazio com 400.
 
 ---
 
 ## Autenticação — `/auth`
+
+### POST /auth/register `público` (RF-17)
+Cadastro público (auto-registro). Desligável por instância com `ALLOW_REGISTRATION=false`.
+Autentica na resposta (mesmo shape do login).
+```bash
+curl -i -X POST http://localhost:3333/auth/register \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Ana Souza","email":"ana@ex.com","password":"senha-bem-forte"}'
+```
+`201` → `{ accessToken, user }` + cookie `rt` · `409` e-mail já cadastrado ·
+`403 { "error": "cadastro público desabilitado nesta instância" }`.
+Depois do cadastro, matricule-se com `POST /me/enrollments`.
 
 ### POST /auth/login `público`
 ```bash
@@ -54,7 +69,8 @@ curl -X POST http://localhost:3333/auth/invite/accept \
 Revoga o refresh atual e limpa o cookie. `204`.
 
 ### POST /auth/password/forgot `público`
-Gera um token de redefinição (na v1, logado no servidor). Resposta uniforme:
+Gera um token de redefinição. Com SMTP configurado (RF-18), envia por e-mail; sem, o link fica
+no log do servidor. Resposta uniforme (não revela se a conta existe):
 ```bash
 curl -X POST http://localhost:3333/auth/password/forgot \
   -H 'Content-Type: application/json' -d '{"email":"user@ex.com"}'
@@ -66,14 +82,15 @@ curl -X POST http://localhost:3333/auth/password/forgot \
 ## Usuários — `/users` `ADMIN`
 
 ### GET /users
-Lista usuários com situação (senha definida?) e cursos.
+Lista usuários com situação (senha definida?) e cursos (com o id da matrícula, para gestão).
 ```json
 [ { "id":"...","name":"Ana","email":"...","role":"USER","active":false,
-    "courses":[{"slug":"engcomp-ufg-2021","name":"Eng. de Computação"}] } ]
+    "courses":[{"enrollmentId":"...","slug":"engcomp-ufg-2021","name":"Eng. de Computação"}] } ]
 ```
 
 ### POST /users
-Cria usuário **sem senha** e devolve o link de convite (RF-01).
+Cria usuário **sem senha** e devolve o link de convite (RF-01). Com SMTP configurado, o convite
+também segue por e-mail (`emailed: true`).
 ```bash
 curl -X POST http://localhost:3333/users -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' \
@@ -82,15 +99,40 @@ curl -X POST http://localhost:3333/users -H "Authorization: Bearer $TOKEN" \
 `201`:
 ```json
 { "user": { "id":"...","name":"Ana Souza","email":"ana@ex.com","role":"USER" },
-  "invite": { "link":"http://localhost:5173/convite/<token>","expiresAt":"2026-07-10T..." } }
+  "invite": { "link":"http://localhost:5173/convite/<token>","expiresAt":"2026-07-12T...","emailed":false } }
 ```
 `409` e-mail já cadastrado · `400` curso inexistente.
 
+### PATCH /users/:id (RF-21)
+Edita papel e/ou nome. `{ "role": "ADMIN" }` → `200`. `400` ao tentar rebaixar a própria conta.
+Nota: o papel vive no claim do JWT — a mudança vale para tokens emitidos **depois** dela
+(janela máxima = vida do access token, ~15 min; ver `SEGURANCA.md` §2.2).
+
 ### POST /users/:id/invite
-Reemite convite (ou reset). Invalida os pendentes do mesmo tipo. `200 { invite: {...} }`.
+Reemite convite (ou reset, se o usuário já tem senha). Invalida os pendentes do mesmo tipo.
+`200 { invite: { link, expiresAt, purpose, emailed } }`.
+
+### POST /users/:id/enrollments (RF-21)
+Matricula o usuário num curso (idempotente). `{ "courseSlug": "engcomp-ufg-2021" }` →
+`201 { enrollmentId, courseSlug }` · `400` curso inexistente · `404` usuário.
+
+### DELETE /users/:id/enrollments/:enrollmentId (RF-21)
+Desmatricula (⚠️ cascade apaga status/extras/cenários daquela matrícula). `204` · `404`.
 
 ### DELETE /users/:id
 Remove o usuário (cascade). `204` · `400` se for a própria conta.
+
+---
+
+## Administração — `/admin` `ADMIN`
+
+### GET /admin/stats (RF-21)
+Números agregados da instância:
+```json
+{ "users": { "total": 12, "admins": 1, "pendingInvites": 3 },
+  "courses": 2, "enrollments": 14,
+  "activity": { "subjectStatuses": 310, "extras": 41, "scenarios": 9 } }
+```
 
 ---
 
@@ -128,36 +170,56 @@ Em `pre`/`co`: número = `seq` de outra disciplina; string = `milestoneKey` (req
 ## Progresso — `/me` `autenticado`
 
 ### GET /me/enrollments
-Matrículas do usuário logado (com o curso). `[ { "id","courseId","course":{...} } ]`
+Matrículas do usuário logado (com o curso).
+`[ { "id","courseId","startTerm","currentTerm","course":{...} } ]`
+
+### POST /me/enrollments (RF-17)
+Auto-matrícula em um curso do catálogo (idempotente). `{ "courseSlug": "..." }` → `201` com a
+matrícula · `400` curso inexistente.
+
+### PATCH /me/enrollments/:id (RF-20)
+Atualiza os períodos da própria matrícula. Formato `AAAA.S` validado; `null` limpa o campo.
+```bash
+curl -X PATCH http://localhost:3333/me/enrollments/$ENR \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"currentTerm":"2026.2","startTerm":"2022.2"}'
+```
+`200` matrícula atualizada · `400 { issues: [...] }` formato inválido · `403` de outro usuário.
 
 ### GET /me/enrollments/:id/progress
 Progresso agregado numa leitura (RF-05):
 ```json
 { "enrollment": { "id":"...","courseId":"..." },
-  "totals": { "hours":1737,"required":4132,"pct":42.0 },
+  "totals": { "hours":1460,"required":4132,"pct":35.3 },
   "compositions": [
     { "key":"NL","label":"Núcleo Livre","required":128,"hours":286,"pct":100,"over":158 }
   ],
   "subjects": [ { "seq":6,"code":"IME0080","name":"Cálculo 2A","hours":96,
                   "nucleus":"NC","groupOpt":0,"state":null,"status":"avail" } ],
   "milestones": [ { "key":"CH1","hours":1200,"description":"...","reached":true } ],
-  "projected": { "totals":{"hours":1837,"required":4132}, "compositions":[...],
+  "projected": { "totals":{"hours":1556,"required":4132}, "compositions":[...],
                  "milestones": { "CH1":true,"CH2":false } } }
 ```
+Semântica dos números: `compositions[].hours` é o valor **real** (pode exceder o mínimo — o
+excedente vai em `over` e a `pct` trava em 100); `totals.hours` soma as contribuições
+**limitadas ao mínimo** de cada composição (regra do teto — `DOMINIO.md` §2.2).
 `status` de cada disciplina: `done` (aprovada) · `avail` (disponível) · `co` (só falta co-requisito) ·
 `lock` (bloqueada). `403` se o enrollment for de outro usuário.
 
 ### PUT /me/enrollments/:id/subjects/:subjectId
-Marca a disciplina (RF-06). `state` = `"APPROVED"` | `"SIMULATED"` | `null` (volta a pendente).
+Marca a disciplina (RF-06/19). `state` = `"APPROVED"` (oficial) | `"ENROLLED"` (cursando) |
+`"SIMULATED"` (planejada) | `null` (volta a pendente). Efeitos: só APPROVED soma no oficial;
+os três somam na projeção; qualquer estado tira a disciplina das recomendações.
 ```bash
 curl -X PUT http://localhost:3333/me/enrollments/$ENR/subjects/$SID \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  -d '{"state":"APPROVED"}'
+  -d '{"state":"ENROLLED"}'
 ```
 `200 { "subjectId","state" }` · `204` (quando `state:null`) · `400` disciplina de outro curso.
 
 ### GET /me/enrollments/:id/recommendations?limit=12
-Ranking de disponíveis por destravamento (RF-07):
+Ranking de disponíveis por destravamento (RF-07). Disciplinas já marcadas (qualquer estado)
+não aparecem.
 ```json
 [ { "seq":6,"code":"IME0080","name":"Cálculo 2A","hours":96,"ob":11,"tot":24 } ]
 ```
@@ -218,10 +280,26 @@ curl -X PUT http://localhost:3333/me/scenarios/$SID/paint \
 ## Conta e backup — `/me` `autenticado`
 
 ### GET /me
-Perfil do usuário logado: `{ "id","name","email","role","theme","createdAt" }`.
+Perfil do usuário logado + sugestão de período letivo (RF-20, relógio do servidor):
+```json
+{ "id":"...", "name":"...", "email":"...", "role":"USER", "theme":"dark",
+  "period": { "term":"2026.1", "onBreak":false, "label":"2026.1", "nextTerm":"2026.2" } }
+```
+Em janeiro/fevereiro: `{ "term":null, "onBreak":true, "label":"Férias", "nextTerm":"2027.1" }`.
+A heurística é sugestiva — o valor persistido em `Enrollment.currentTerm` (PATCH acima) prevalece.
 
 ### PATCH /me/settings
 Tema (RF-15) e/ou nome. `{ "theme":"light" }` → `200` com o perfil atualizado.
+
+### POST /me/password
+Troca de senha autenticada. Exige a senha atual; **revoga todas as sessões** (os refresh tokens
+ativos caem — outras abas/dispositivos precisam logar de novo).
+```bash
+curl -X POST http://localhost:3333/me/password -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"current":"senha-antiga","next":"senha-nova-forte"}'
+```
+`204` sucesso · `401 { "error": "senha atual incorreta" }`.
 
 ### GET /me/export
 Backup JSON completo do usuário (status, extras, cenários, tema), portável por `seq`.
@@ -239,4 +317,64 @@ Restaura um backup (RF-16), transacional. Cursos inexistentes no servidor são i
 ## Health
 
 ### GET /health `público`
-`{ "ok": true }` — usado por orquestradores/uptime.
+`{ "ok": true }` — usado por orquestradores/uptime (e pelo ping anti-hibernação no Render).
+
+---
+
+## Fluxo completo em curl (do zero ao progresso)
+
+Um passeio ponta a ponta pela API, útil para testar uma instância nova ou escrever um cliente
+alternativo. Assume a API em `http://localhost:3333` e pelo menos um curso importado.
+
+```bash
+API=http://localhost:3333
+
+# 1) Criar a própria conta (RF-17). O -c cookies.txt guarda o cookie de refresh.
+curl -s -c cookies.txt -X POST $API/auth/register \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Maria Dev","email":"maria@ex.com","password":"senha-bem-forte"}' > login.json
+TOKEN=$(python -c "import json;print(json.load(open('login.json'))['accessToken'])")
+
+# 2) Ver o catálogo e se matricular (RF-17)
+curl -s $API/courses -H "Authorization: Bearer $TOKEN"
+curl -s -X POST $API/me/enrollments -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"courseSlug":"engcomp-ufg-2021"}' > enr.json
+ENR=$(python -c "import json;print(json.load(open('enr.json'))['id'])")
+
+# 3) Registrar o período corrente (RF-20)
+curl -s -X PATCH $API/me/enrollments/$ENR -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"currentTerm":"2026.2","startTerm":"2026.1"}'
+
+# 4) Descobrir o id de uma disciplina (o progresso traz seq; o curso mapeia seq->id)
+SUBJ=$(curl -s $API/courses/engcomp-ufg-2021 -H "Authorization: Bearer $TOKEN" \
+  | python -c "import json,sys; c=json.load(sys.stdin); \
+      print(next(s['id'] for s in c['subjects'] if s['seq']==5))")   # Cálculo 1A
+
+# 5) Marcar como CURSANDO (RF-19); quando o resultado sair, promover a APROVADA (RF-06)
+curl -s -X PUT $API/me/enrollments/$ENR/subjects/$SUBJ -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"state":"ENROLLED"}'
+curl -s -X PUT $API/me/enrollments/$ENR/subjects/$SUBJ -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"state":"APPROVED"}'
+
+# 6) Um extra de Núcleo Livre concluído (RF-09)
+curl -s -X POST $API/me/enrollments/$ENR/extras -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Libras","code":"FL0001","hours":64,"category":"NL","done":true}'
+
+# 7) O progresso agregado (RF-05): somas com teto, marcos, projeção, recomendações
+curl -s $API/me/enrollments/$ENR/progress -H "Authorization: Bearer $TOKEN" | python -m json.tool
+curl -s "$API/me/enrollments/$ENR/recommendations?limit=5" -H "Authorization: Bearer $TOKEN"
+
+# 8) Sessão: renovar o access token com o cookie (rotação) e sair
+curl -s -b cookies.txt -c cookies.txt -X POST $API/auth/refresh
+curl -s -b cookies.txt -X POST $API/auth/logout
+```
+
+Observações para quem consome a API:
+
+- **Sempre** trate `401` re-tentando uma vez após `POST /auth/refresh` (o SPA faz isso em
+  `api/client.ts`); se o refresh também der 401, a sessão morreu (reuso detectado ou expirou).
+- Ids de banco (`subjectId`, `enrollmentId`) são cuids opacos; a identidade estável entre
+  instâncias é `Course.slug` + `Subject.seq` (é assim que o backup viaja).
+- Datas chegam como ISO-8601 UTC; percentuais já vêm travados em 100 (`pct`), com o valor real em
+  `hours` e o excedente em `over`.
