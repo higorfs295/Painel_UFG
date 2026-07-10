@@ -10,8 +10,14 @@ por ser a baseline; as demais ficam aqui.
 | `matriz-engmec-2018.json` | Engenharia Mecânica — UFG | Resolução CEPEC 1582/2018 (Tabela 2) | 98 (70 obrig + 28 opt) | 4452h |
 | `_MODELO.json` | *template didático* | — | ilustra cada recurso do formato | — |
 
-> Os campos `code` (código SIGAA) estão vazios por enquanto — o PPC não os traz. Preencher depois
-> é seguro: edite o JSON e reimporte (upsert por `seq` atualiza sem duplicar).
+> **Códigos SIGAA preenchidos** a partir dos relatórios "Dados da Matriz Curricular" do SIGAA
+> (ENGEL-BI-2 e ENGME-BI-2). Notas: (1) códigos **variam entre matrizes** — ex.: Cálculo 2A é
+> IME0356 na Elétrica, IME0080 na Mecânica/EngComp — nunca copie códigos entre cursos;
+> (2) na Elétrica, *Tópicos em Eletrônica 2–5* (seqs 113–116) **não constam** no relatório SIGAA
+> e ficaram sem código; (3) na Mecânica, o PPC chama a seq 48 de "Introdução à Economia" e o
+> SIGAA de "Economia B" — é o mesmo componente FAC0439; (4) o SIGAA agrupa NC/NE de forma
+> diferente do PPC (1920/2112 vs 1776/2256) — mantivemos a classificação do **PPC**, que é a
+> fonte da estrutura; o SIGAA foi usado **só** para os códigos.
 
 ## Como validar e importar
 

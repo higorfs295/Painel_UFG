@@ -56,7 +56,7 @@
   "subjects": [
     {
       "seq": 1,
-      "code": "",
+      "code": "IME0350",
       "name": "Cálculo 1A",
       "hours": 96,
       "nucleus": "NC",
@@ -66,7 +66,7 @@
     },
     {
       "seq": 2,
-      "code": "",
+      "code": "FAV0829",
       "name": "Desenho Técnico 1",
       "hours": 64,
       "nucleus": "NC",
@@ -76,7 +76,7 @@
     },
     {
       "seq": 3,
-      "code": "",
+      "code": "IME0345",
       "name": "Geometria Analítica",
       "hours": 64,
       "nucleus": "NC",
@@ -86,7 +86,7 @@
     },
     {
       "seq": 4,
-      "code": "",
+      "code": "INF0393",
       "name": "Introdução à Computação",
       "hours": 64,
       "nucleus": "NC",
@@ -96,7 +96,7 @@
     },
     {
       "seq": 5,
-      "code": "",
+      "code": "EMC0366",
       "name": "Introdução à Engenharia Elétrica",
       "hours": 32,
       "nucleus": "NC",
@@ -106,7 +106,7 @@
     },
     {
       "seq": 6,
-      "code": "",
+      "code": "INQ0323",
       "name": "Química Geral B",
       "hours": 64,
       "nucleus": "NC",
@@ -116,7 +116,7 @@
     },
     {
       "seq": 7,
-      "code": "",
+      "code": "INQ0324",
       "name": "Química Geral Experimental",
       "hours": 32,
       "nucleus": "NC",
@@ -128,7 +128,7 @@
     },
     {
       "seq": 8,
-      "code": "",
+      "code": "IME0351",
       "name": "Álgebra Linear",
       "hours": 64,
       "nucleus": "NC",
@@ -140,7 +140,7 @@
     },
     {
       "seq": 9,
-      "code": "",
+      "code": "IME0356",
       "name": "Cálculo 2A",
       "hours": 96,
       "nucleus": "NC",
@@ -152,7 +152,7 @@
     },
     {
       "seq": 10,
-      "code": "",
+      "code": "EEC0270",
       "name": "Introdução às Ciências do Ambiente",
       "hours": 32,
       "nucleus": "NC",
@@ -162,7 +162,7 @@
     },
     {
       "seq": 11,
-      "code": "",
+      "code": "IFI0326",
       "name": "Física Experimental I",
       "hours": 32,
       "nucleus": "NC",
@@ -174,7 +174,7 @@
     },
     {
       "seq": 12,
-      "code": "",
+      "code": "IFI0203",
       "name": "Física I",
       "hours": 64,
       "nucleus": "NC",
@@ -186,7 +186,7 @@
     },
     {
       "seq": 13,
-      "code": "",
+      "code": "IME0378",
       "name": "Probabilidade e Estatística A",
       "hours": 64,
       "nucleus": "NC",
@@ -198,7 +198,7 @@
     },
     {
       "seq": 14,
-      "code": "",
+      "code": "INF0396",
       "name": "Programação Orientada a Objetos",
       "hours": 64,
       "nucleus": "NC",
@@ -210,7 +210,7 @@
     },
     {
       "seq": 15,
-      "code": "",
+      "code": "IME0374",
       "name": "Cálculo 3A",
       "hours": 64,
       "nucleus": "NC",
@@ -222,7 +222,7 @@
     },
     {
       "seq": 16,
-      "code": "",
+      "code": "IME0377",
       "name": "Equações Diferenciais Ordinárias",
       "hours": 64,
       "nucleus": "NC",
@@ -234,7 +234,7 @@
     },
     {
       "seq": 17,
-      "code": "",
+      "code": "IFI0327",
       "name": "Física Experimental II",
       "hours": 32,
       "nucleus": "NC",
@@ -248,7 +248,7 @@
     },
     {
       "seq": 18,
-      "code": "",
+      "code": "IFI0328",
       "name": "Física Experimental III",
       "hours": 32,
       "nucleus": "NC",
@@ -262,7 +262,7 @@
     },
     {
       "seq": 19,
-      "code": "",
+      "code": "IFI0324",
       "name": "Física II",
       "hours": 64,
       "nucleus": "NC",
@@ -274,7 +274,7 @@
     },
     {
       "seq": 20,
-      "code": "",
+      "code": "IFI0325",
       "name": "Física III",
       "hours": 64,
       "nucleus": "NC",
@@ -287,7 +287,7 @@
     },
     {
       "seq": 21,
-      "code": "",
+      "code": "EMC0310",
       "name": "Métodos Matemáticos Lineares",
       "hours": 64,
       "nucleus": "NC",
@@ -299,7 +299,7 @@
     },
     {
       "seq": 23,
-      "code": "",
+      "code": "EMC0373",
       "name": "Análise de Sistemas Lineares",
       "hours": 64,
       "nucleus": "NE",
@@ -312,7 +312,7 @@
     },
     {
       "seq": 24,
-      "code": "",
+      "code": "EMC0374",
       "name": "Circuitos Elétricos 1",
       "hours": 64,
       "nucleus": "NE",
@@ -324,7 +324,7 @@
     },
     {
       "seq": 25,
-      "code": "",
+      "code": "IFI0027",
       "name": "Eletromagnetismo",
       "hours": 64,
       "nucleus": "NC",
@@ -337,7 +337,7 @@
     },
     {
       "seq": 26,
-      "code": "",
+      "code": "IFI0350",
       "name": "Estática",
       "hours": 64,
       "nucleus": "NC",
@@ -350,7 +350,7 @@
     },
     {
       "seq": 27,
-      "code": "",
+      "code": "IFI0332",
       "name": "Física Experimental IV",
       "hours": 32,
       "nucleus": "NC",
@@ -364,7 +364,7 @@
     },
     {
       "seq": 28,
-      "code": "",
+      "code": "IFI0092",
       "name": "Física IV",
       "hours": 64,
       "nucleus": "NC",
@@ -376,7 +376,7 @@
     },
     {
       "seq": 29,
-      "code": "",
+      "code": "EMC0376",
       "name": "Introdução à Teoria dos Materiais Elétricos",
       "hours": 64,
       "nucleus": "NE",
@@ -389,7 +389,7 @@
     },
     {
       "seq": 30,
-      "code": "",
+      "code": "IME0376",
       "name": "Cálculo Numérico",
       "hours": 64,
       "nucleus": "NC",
@@ -402,7 +402,7 @@
     },
     {
       "seq": 31,
-      "code": "",
+      "code": "EMC0377",
       "name": "Circuitos Elétricos 2",
       "hours": 64,
       "nucleus": "NE",
@@ -415,7 +415,7 @@
     },
     {
       "seq": 32,
-      "code": "",
+      "code": "EMC0378",
       "name": "Circuitos Elétricos Experimental",
       "hours": 32,
       "nucleus": "NE",
@@ -427,7 +427,7 @@
     },
     {
       "seq": 33,
-      "code": "",
+      "code": "EMC0379",
       "name": "Eletrônica 1",
       "hours": 64,
       "nucleus": "NE",
@@ -440,7 +440,7 @@
     },
     {
       "seq": 34,
-      "code": "",
+      "code": "EEC0346",
       "name": "Fenômenos de Transporte",
       "hours": 64,
       "nucleus": "NC",
@@ -454,7 +454,7 @@
     },
     {
       "seq": 35,
-      "code": "",
+      "code": "EMC0381",
       "name": "Medidas e Materiais Elétricos Experimental",
       "hours": 16,
       "nucleus": "NE",
@@ -466,7 +466,7 @@
     },
     {
       "seq": 36,
-      "code": "",
+      "code": "EMC0382",
       "name": "Sistemas de Controle",
       "hours": 64,
       "nucleus": "NE",
@@ -478,7 +478,7 @@
     },
     {
       "seq": 38,
-      "code": "",
+      "code": "EMC0380",
       "name": "Eletrônica 2",
       "hours": 64,
       "nucleus": "NE",
@@ -491,7 +491,7 @@
     },
     {
       "seq": 39,
-      "code": "",
+      "code": "EMC0383",
       "name": "Eletrônica Digital 1",
       "hours": 64,
       "nucleus": "NE",
@@ -503,7 +503,7 @@
     },
     {
       "seq": 40,
-      "code": "",
+      "code": "EMC0384",
       "name": "Eletrônica Experimental",
       "hours": 32,
       "nucleus": "NE",
@@ -515,7 +515,7 @@
     },
     {
       "seq": 41,
-      "code": "",
+      "code": "EMC0385",
       "name": "Instalações Elétricas Prediais",
       "hours": 64,
       "nucleus": "NE",
@@ -528,7 +528,7 @@
     },
     {
       "seq": 42,
-      "code": "",
+      "code": "EMC0386",
       "name": "Ondas e Propagação",
       "hours": 64,
       "nucleus": "NE",
@@ -541,7 +541,7 @@
     },
     {
       "seq": 43,
-      "code": "",
+      "code": "EEC0347",
       "name": "Resistência dos Materiais 1",
       "hours": 64,
       "nucleus": "NC",
@@ -553,7 +553,7 @@
     },
     {
       "seq": 44,
-      "code": "",
+      "code": "EMC0482",
       "name": "Sistemas de Controle Experimental",
       "hours": 16,
       "nucleus": "NE",
@@ -567,7 +567,7 @@
     },
     {
       "seq": 45,
-      "code": "",
+      "code": "EMC0483",
       "name": "Eletrônica Digital Experimental",
       "hours": 16,
       "nucleus": "NE",
@@ -579,7 +579,7 @@
     },
     {
       "seq": 46,
-      "code": "",
+      "code": "EMC0390",
       "name": "Conversão Eletromecânica de Energia",
       "hours": 96,
       "nucleus": "NE",
@@ -593,7 +593,7 @@
     },
     {
       "seq": 47,
-      "code": "",
+      "code": "EMC0392",
       "name": "Instalações Elétricas Experimental",
       "hours": 32,
       "nucleus": "NE",
@@ -607,7 +607,7 @@
     },
     {
       "seq": 48,
-      "code": "",
+      "code": "EMC0158",
       "name": "Metodologia Científica",
       "hours": 32,
       "nucleus": "NC",
@@ -617,7 +617,7 @@
     },
     {
       "seq": 49,
-      "code": "",
+      "code": "EMC0393",
       "name": "Microprocessadores e Microcontroladores",
       "hours": 64,
       "nucleus": "NE",
@@ -629,7 +629,7 @@
     },
     {
       "seq": 50,
-      "code": "",
+      "code": "EMC0484",
       "name": "Microprocessadores e Microcontroladores Experimental",
       "hours": 16,
       "nucleus": "NE",
@@ -641,7 +641,7 @@
     },
     {
       "seq": 51,
-      "code": "",
+      "code": "EMC0395",
       "name": "Teoria de Telecomunicações",
       "hours": 64,
       "nucleus": "NE",
@@ -653,7 +653,7 @@
     },
     {
       "seq": 52,
-      "code": "",
+      "code": "EMC0396",
       "name": "Transmissão de Energia Elétrica",
       "hours": 64,
       "nucleus": "NE",
@@ -666,7 +666,7 @@
     },
     {
       "seq": 53,
-      "code": "",
+      "code": "EMC0397",
       "name": "Conversão Eletromecânica de Energia Experimental",
       "hours": 32,
       "nucleus": "NE",
@@ -678,7 +678,7 @@
     },
     {
       "seq": 54,
-      "code": "",
+      "code": "FAC0439",
       "name": "Economia B",
       "hours": 32,
       "nucleus": "NC",
@@ -690,7 +690,7 @@
     },
     {
       "seq": 55,
-      "code": "",
+      "code": "FAC0440",
       "name": "Fundamentos da Administração",
       "hours": 32,
       "nucleus": "NC",
@@ -702,7 +702,7 @@
     },
     {
       "seq": 56,
-      "code": "",
+      "code": "EMC0398",
       "name": "Introdução a Sistemas de Energia Elétrica",
       "hours": 64,
       "nucleus": "NE",
@@ -715,7 +715,7 @@
     },
     {
       "seq": 57,
-      "code": "",
+      "code": "EMC0399",
       "name": "Sistemas de Comunicações",
       "hours": 64,
       "nucleus": "NE",
@@ -728,7 +728,7 @@
     },
     {
       "seq": 58,
-      "code": "",
+      "code": "EMC0485",
       "name": "Telecomunicações Experimental",
       "hours": 16,
       "nucleus": "NE",
@@ -740,7 +740,7 @@
     },
     {
       "seq": 61,
-      "code": "",
+      "code": "FAD0195",
       "name": "Direito e Cidadania",
       "hours": 32,
       "nucleus": "NC",
@@ -752,7 +752,7 @@
     },
     {
       "seq": 62,
-      "code": "",
+      "code": "EMC0404",
       "name": "Eletrônica de Potência",
       "hours": 64,
       "nucleus": "NE",
@@ -765,7 +765,7 @@
     },
     {
       "seq": 63,
-      "code": "",
+      "code": "EMC0405",
       "name": "Engenharia de Segurança",
       "hours": 32,
       "nucleus": "NE",
@@ -779,7 +779,7 @@
     },
     {
       "seq": 64,
-      "code": "",
+      "code": "EMC0406",
       "name": "Engenharia Econômica",
       "hours": 64,
       "nucleus": "NC",
@@ -791,7 +791,7 @@
     },
     {
       "seq": 65,
-      "code": "",
+      "code": "EMC0407",
       "name": "Gerenciamento de Projetos",
       "hours": 32,
       "nucleus": "NE",
@@ -803,7 +803,7 @@
     },
     {
       "seq": 68,
-      "code": "",
+      "code": "EMC0408",
       "name": "Estágio Obrigatório",
       "hours": 240,
       "nucleus": "NE",
@@ -817,7 +817,7 @@
     },
     {
       "seq": 69,
-      "code": "",
+      "code": "EMC0409",
       "name": "Projeto Final de Curso",
       "hours": 224,
       "nucleus": "NE",
@@ -830,7 +830,7 @@
     },
     {
       "seq": 70,
-      "code": "",
+      "code": "EMC0401",
       "name": "Acionamento de Máquinas Elétricas",
       "hours": 64,
       "nucleus": "NE",
@@ -842,7 +842,7 @@
     },
     {
       "seq": 71,
-      "code": "",
+      "code": "EMC0402",
       "name": "Acionamentos Eletrônicos",
       "hours": 64,
       "nucleus": "NE",
@@ -854,7 +854,7 @@
     },
     {
       "seq": 72,
-      "code": "",
+      "code": "EMC0410",
       "name": "Análise de Sistemas de Potência",
       "hours": 64,
       "nucleus": "NE",
@@ -866,7 +866,7 @@
     },
     {
       "seq": 73,
-      "code": "",
+      "code": "EMC0411",
       "name": "Antenas",
       "hours": 64,
       "nucleus": "NE",
@@ -878,7 +878,7 @@
     },
     {
       "seq": 74,
-      "code": "",
+      "code": "EMC0412",
       "name": "Aterramentos Elétricos",
       "hours": 64,
       "nucleus": "NE",
@@ -890,7 +890,7 @@
     },
     {
       "seq": 75,
-      "code": "",
+      "code": "EMC0413",
       "name": "Automação Aplicada",
       "hours": 64,
       "nucleus": "NE",
@@ -902,7 +902,7 @@
     },
     {
       "seq": 76,
-      "code": "",
+      "code": "EMC0414",
       "name": "Automação de Processos Industriais",
       "hours": 64,
       "nucleus": "NE",
@@ -914,7 +914,7 @@
     },
     {
       "seq": 77,
-      "code": "",
+      "code": "EMC0415",
       "name": "Confiabilidade de Sistemas Elétricos",
       "hours": 64,
       "nucleus": "NE",
@@ -926,7 +926,7 @@
     },
     {
       "seq": 78,
-      "code": "",
+      "code": "EMC0416",
       "name": "Controle Digital",
       "hours": 64,
       "nucleus": "NE",
@@ -938,7 +938,7 @@
     },
     {
       "seq": 79,
-      "code": "",
+      "code": "EMC0417",
       "name": "Controle Moderno",
       "hours": 64,
       "nucleus": "NE",
@@ -951,7 +951,7 @@
     },
     {
       "seq": 80,
-      "code": "",
+      "code": "EMC0418",
       "name": "Distribuição de Energia Elétrica",
       "hours": 64,
       "nucleus": "NE",
@@ -963,7 +963,7 @@
     },
     {
       "seq": 81,
-      "code": "",
+      "code": "EMC0419",
       "name": "Eficiência Energética",
       "hours": 64,
       "nucleus": "NE",
@@ -975,7 +975,7 @@
     },
     {
       "seq": 82,
-      "code": "",
+      "code": "EMC0420",
       "name": "Eletrônica Digital 2",
       "hours": 64,
       "nucleus": "NE",
@@ -988,7 +988,7 @@
     },
     {
       "seq": 83,
-      "code": "",
+      "code": "EMC0316",
       "name": "Energias Renováveis",
       "hours": 64,
       "nucleus": "NE",
@@ -1000,7 +1000,7 @@
     },
     {
       "seq": 84,
-      "code": "",
+      "code": "EMC0478",
       "name": "Energia Solar Fotovoltaica",
       "hours": 64,
       "nucleus": "NE",
@@ -1013,7 +1013,7 @@
     },
     {
       "seq": 85,
-      "code": "",
+      "code": "EMC0479",
       "name": "Energia Solar Fotovoltaica Experimental",
       "hours": 32,
       "nucleus": "NE",
@@ -1025,7 +1025,7 @@
     },
     {
       "seq": 86,
-      "code": "",
+      "code": "EMC0480",
       "name": "Educação para as Relações Étnico-Raciais",
       "hours": 64,
       "nucleus": "NE",
@@ -1035,7 +1035,7 @@
     },
     {
       "seq": 87,
-      "code": "",
+      "code": "EMC0423",
       "name": "Ética, Engenharia e Sociedade",
       "hours": 32,
       "nucleus": "NE",
@@ -1047,7 +1047,7 @@
     },
     {
       "seq": 88,
-      "code": "",
+      "code": "EMC0421",
       "name": "Geração de Energia Elétrica",
       "hours": 64,
       "nucleus": "NE",
@@ -1059,7 +1059,7 @@
     },
     {
       "seq": 89,
-      "code": "",
+      "code": "EMC0422",
       "name": "Instalações Elétricas Industriais",
       "hours": 64,
       "nucleus": "NE",
@@ -1072,7 +1072,7 @@
     },
     {
       "seq": 90,
-      "code": "",
+      "code": "EMC0424",
       "name": "Introdução à Metrologia",
       "hours": 64,
       "nucleus": "NE",
@@ -1085,7 +1085,7 @@
     },
     {
       "seq": 91,
-      "code": "",
+      "code": "EMC0425",
       "name": "Processamento Digital de Sinais",
       "hours": 64,
       "nucleus": "NE",
@@ -1097,7 +1097,7 @@
     },
     {
       "seq": 92,
-      "code": "",
+      "code": "EMC0426",
       "name": "Projetos com Microcontroladores",
       "hours": 64,
       "nucleus": "NE",
@@ -1110,7 +1110,7 @@
     },
     {
       "seq": 93,
-      "code": "",
+      "code": "EMC0427",
       "name": "Projetos de Máquinas Elétricas",
       "hours": 64,
       "nucleus": "NE",
@@ -1122,7 +1122,7 @@
     },
     {
       "seq": 94,
-      "code": "",
+      "code": "EMC0428",
       "name": "Propagação em Microondas",
       "hours": 64,
       "nucleus": "NE",
@@ -1134,7 +1134,7 @@
     },
     {
       "seq": 95,
-      "code": "",
+      "code": "EMC0429",
       "name": "Proteção de Sistemas Elétricos",
       "hours": 64,
       "nucleus": "NE",
@@ -1146,7 +1146,7 @@
     },
     {
       "seq": 96,
-      "code": "",
+      "code": "EMC0430",
       "name": "Qualidade de Energia Elétrica",
       "hours": 64,
       "nucleus": "NE",
@@ -1158,7 +1158,7 @@
     },
     {
       "seq": 97,
-      "code": "",
+      "code": "EMC0431",
       "name": "Regulação e Comercialização de Energia Elétrica",
       "hours": 64,
       "nucleus": "NE",
@@ -1170,7 +1170,7 @@
     },
     {
       "seq": 98,
-      "code": "",
+      "code": "EMC0432",
       "name": "Sistemas de Comunicações Móveis",
       "hours": 64,
       "nucleus": "NE",
@@ -1182,7 +1182,7 @@
     },
     {
       "seq": 99,
-      "code": "",
+      "code": "EMC0433",
       "name": "Sistemas de Comunicações Ópticas",
       "hours": 64,
       "nucleus": "NE",
@@ -1194,7 +1194,7 @@
     },
     {
       "seq": 100,
-      "code": "",
+      "code": "EMC0434",
       "name": "Sistemas de Televisão Digital",
       "hours": 64,
       "nucleus": "NE",
@@ -1206,7 +1206,7 @@
     },
     {
       "seq": 101,
-      "code": "",
+      "code": "EMC0435",
       "name": "Técnicas de Análise de Dados na Pesquisa Científica",
       "hours": 32,
       "nucleus": "NE",
@@ -1218,7 +1218,7 @@
     },
     {
       "seq": 102,
-      "code": "",
+      "code": "EMC0436",
       "name": "Tópicos Avançados em Engenharia Elétrica 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1230,7 +1230,7 @@
     },
     {
       "seq": 103,
-      "code": "",
+      "code": "EMC0437",
       "name": "Tópicos Avançados em Engenharia Elétrica 2",
       "hours": 64,
       "nucleus": "NE",
@@ -1242,7 +1242,7 @@
     },
     {
       "seq": 104,
-      "code": "",
+      "code": "EMC0438",
       "name": "Tópicos Avançados em Engenharia Elétrica 3",
       "hours": 64,
       "nucleus": "NE",
@@ -1254,7 +1254,7 @@
     },
     {
       "seq": 105,
-      "code": "",
+      "code": "EMC0439",
       "name": "Tópicos Avançados em Engenharia Elétrica 4",
       "hours": 64,
       "nucleus": "NE",
@@ -1266,7 +1266,7 @@
     },
     {
       "seq": 106,
-      "code": "",
+      "code": "EMC0440",
       "name": "Tópicos Avançados em Engenharia Elétrica 5",
       "hours": 32,
       "nucleus": "NE",
@@ -1278,7 +1278,7 @@
     },
     {
       "seq": 107,
-      "code": "",
+      "code": "EMC0461",
       "name": "Tópicos em Automação Industrial 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1290,7 +1290,7 @@
     },
     {
       "seq": 108,
-      "code": "",
+      "code": "EMC0462",
       "name": "Tópicos em Automação Industrial 2",
       "hours": 64,
       "nucleus": "NE",
@@ -1302,7 +1302,7 @@
     },
     {
       "seq": 109,
-      "code": "",
+      "code": "EMC0463",
       "name": "Tópicos em Automação Industrial 3",
       "hours": 64,
       "nucleus": "NE",
@@ -1314,7 +1314,7 @@
     },
     {
       "seq": 110,
-      "code": "",
+      "code": "EMC0464",
       "name": "Tópicos em Automação Industrial 4",
       "hours": 64,
       "nucleus": "NE",
@@ -1326,7 +1326,7 @@
     },
     {
       "seq": 111,
-      "code": "",
+      "code": "EMC0465",
       "name": "Tópicos em Automação Industrial 5",
       "hours": 32,
       "nucleus": "NE",
@@ -1338,7 +1338,7 @@
     },
     {
       "seq": 112,
-      "code": "",
+      "code": "EMC0466",
       "name": "Tópicos em Eletrônica 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1398,7 +1398,7 @@
     },
     {
       "seq": 117,
-      "code": "",
+      "code": "EMC0467",
       "name": "Tópicos em Engenharia de Computação 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1410,7 +1410,7 @@
     },
     {
       "seq": 118,
-      "code": "",
+      "code": "EMC0468",
       "name": "Tópicos em Engenharia de Computação 2",
       "hours": 64,
       "nucleus": "NE",
@@ -1422,7 +1422,7 @@
     },
     {
       "seq": 119,
-      "code": "",
+      "code": "EMC0469",
       "name": "Tópicos em Engenharia de Computação 3",
       "hours": 64,
       "nucleus": "NE",
@@ -1434,7 +1434,7 @@
     },
     {
       "seq": 120,
-      "code": "",
+      "code": "EMC0470",
       "name": "Tópicos em Engenharia de Computação 4",
       "hours": 64,
       "nucleus": "NE",
@@ -1446,7 +1446,7 @@
     },
     {
       "seq": 121,
-      "code": "",
+      "code": "EMC0471",
       "name": "Tópicos em Engenharia de Computação 5",
       "hours": 32,
       "nucleus": "NE",
@@ -1458,7 +1458,7 @@
     },
     {
       "seq": 122,
-      "code": "",
+      "code": "EMC0456",
       "name": "Tópicos em Engenharia Elétrica 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1470,7 +1470,7 @@
     },
     {
       "seq": 123,
-      "code": "",
+      "code": "EMC0457",
       "name": "Tópicos em Engenharia Elétrica 2",
       "hours": 64,
       "nucleus": "NE",
@@ -1482,7 +1482,7 @@
     },
     {
       "seq": 124,
-      "code": "",
+      "code": "EMC0458",
       "name": "Tópicos em Engenharia Elétrica 3",
       "hours": 64,
       "nucleus": "NE",
@@ -1494,7 +1494,7 @@
     },
     {
       "seq": 125,
-      "code": "",
+      "code": "EMC0459",
       "name": "Tópicos em Engenharia Elétrica 4",
       "hours": 64,
       "nucleus": "NE",
@@ -1506,7 +1506,7 @@
     },
     {
       "seq": 126,
-      "code": "",
+      "code": "EMC0460",
       "name": "Tópicos em Engenharia Elétrica 5",
       "hours": 32,
       "nucleus": "NE",
@@ -1518,7 +1518,7 @@
     },
     {
       "seq": 127,
-      "code": "",
+      "code": "EMC0472",
       "name": "Tópicos em Sistemas de Energia 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1530,7 +1530,7 @@
     },
     {
       "seq": 128,
-      "code": "",
+      "code": "EMC0473",
       "name": "Tópicos em Sistemas de Energia 2",
       "hours": 64,
       "nucleus": "NE",
@@ -1542,7 +1542,7 @@
     },
     {
       "seq": 129,
-      "code": "",
+      "code": "EMC0474",
       "name": "Tópicos em Sistemas de Energia 3",
       "hours": 64,
       "nucleus": "NE",
@@ -1554,7 +1554,7 @@
     },
     {
       "seq": 130,
-      "code": "",
+      "code": "EMC0475",
       "name": "Tópicos em Sistemas de Energia 4",
       "hours": 64,
       "nucleus": "NE",
@@ -1566,7 +1566,7 @@
     },
     {
       "seq": 131,
-      "code": "",
+      "code": "EMC0476",
       "name": "Tópicos em Sistemas de Energia 5",
       "hours": 32,
       "nucleus": "NE",
@@ -1578,7 +1578,7 @@
     },
     {
       "seq": 132,
-      "code": "",
+      "code": "EMC0451",
       "name": "Tópicos em Telecomunicações 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1590,7 +1590,7 @@
     },
     {
       "seq": 133,
-      "code": "",
+      "code": "EMC0452",
       "name": "Tópicos em Telecomunicações 2",
       "hours": 64,
       "nucleus": "NE",
@@ -1602,7 +1602,7 @@
     },
     {
       "seq": 134,
-      "code": "",
+      "code": "EMC0453",
       "name": "Tópicos em Telecomunicações 3",
       "hours": 64,
       "nucleus": "NE",
@@ -1614,7 +1614,7 @@
     },
     {
       "seq": 135,
-      "code": "",
+      "code": "EMC0454",
       "name": "Tópicos em Telecomunicações 4",
       "hours": 64,
       "nucleus": "NE",
@@ -1626,7 +1626,7 @@
     },
     {
       "seq": 136,
-      "code": "",
+      "code": "EMC0455",
       "name": "Tópicos em Telecomunicações 5",
       "hours": 32,
       "nucleus": "NE",
@@ -1638,7 +1638,7 @@
     },
     {
       "seq": 137,
-      "code": "",
+      "code": "EMC0441",
       "name": "Pesquisa Operacional 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1650,7 +1650,7 @@
     },
     {
       "seq": 138,
-      "code": "",
+      "code": "EMC0442",
       "name": "Redes de Computadores 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1662,7 +1662,7 @@
     },
     {
       "seq": 139,
-      "code": "",
+      "code": "EMC0447",
       "name": "Robótica de Manipuladores 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1675,7 +1675,7 @@
     },
     {
       "seq": 140,
-      "code": "",
+      "code": "EMC0443",
       "name": "Robótica de Manipuladores 2",
       "hours": 64,
       "nucleus": "NE",
@@ -1688,7 +1688,7 @@
     },
     {
       "seq": 141,
-      "code": "",
+      "code": "EMC0444",
       "name": "Robótica Móvel 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1700,7 +1700,7 @@
     },
     {
       "seq": 142,
-      "code": "",
+      "code": "EMC0445",
       "name": "Robótica Móvel 2",
       "hours": 64,
       "nucleus": "NE",
@@ -1712,7 +1712,7 @@
     },
     {
       "seq": 143,
-      "code": "",
+      "code": "EMC0446",
       "name": "Sistemas Embarcados",
       "hours": 64,
       "nucleus": "NE",
@@ -1725,7 +1725,7 @@
     },
     {
       "seq": 144,
-      "code": "",
+      "code": "EMC0352",
       "name": "Acústica Básica",
       "hours": 64,
       "nucleus": "NE",
@@ -1737,7 +1737,7 @@
     },
     {
       "seq": 145,
-      "code": "",
+      "code": "EMC0338",
       "name": "Instrumentação",
       "hours": 64,
       "nucleus": "NE",
@@ -1750,7 +1750,7 @@
     },
     {
       "seq": 146,
-      "code": "",
+      "code": "EMC0312",
       "name": "Sistemas Térmicos",
       "hours": 64,
       "nucleus": "NE",
@@ -1762,7 +1762,7 @@
     },
     {
       "seq": 147,
-      "code": "",
+      "code": "EMC0308",
       "name": "Termodinâmica Clássica",
       "hours": 64,
       "nucleus": "NE",
@@ -1775,7 +1775,7 @@
     },
     {
       "seq": 148,
-      "code": "",
+      "code": "EMC0325",
       "name": "Transferência de Calor 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1788,7 +1788,7 @@
     },
     {
       "seq": 149,
-      "code": "",
+      "code": "INF0419",
       "name": "Engenharia de Software 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1800,7 +1800,7 @@
     },
     {
       "seq": 150,
-      "code": "",
+      "code": "INF0420",
       "name": "Sistemas Operacionais",
       "hours": 64,
       "nucleus": "NE",
@@ -1812,7 +1812,7 @@
     },
     {
       "seq": 151,
-      "code": "",
+      "code": "EEC0344",
       "name": "Topografia e Geodésia",
       "hours": 64,
       "nucleus": "NE",
@@ -1824,7 +1824,7 @@
     },
     {
       "seq": 152,
-      "code": "",
+      "code": "IFI0130",
       "name": "Introdução à Física Quântica",
       "hours": 64,
       "nucleus": "NE",
@@ -1836,7 +1836,7 @@
     },
     {
       "seq": 153,
-      "code": "",
+      "code": "FAL0214",
       "name": "Introdução à Língua Brasileira de Sinais (LIBRAS)",
       "hours": 64,
       "nucleus": "NE",
@@ -1846,7 +1846,7 @@
     },
     {
       "seq": 154,
-      "code": "",
+      "code": "EMC0477",
       "name": "Contratação de Energia Elétrica",
       "hours": 64,
       "nucleus": "NE",

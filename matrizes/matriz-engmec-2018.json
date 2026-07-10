@@ -46,7 +46,7 @@
   "subjects": [
     {
       "seq": 1,
-      "code": "",
+      "code": "EMC0352",
       "name": "Acústica Básica",
       "hours": 64,
       "nucleus": "NE",
@@ -58,7 +58,7 @@
     },
     {
       "seq": 2,
-      "code": "",
+      "code": "IME0351",
       "name": "Álgebra Linear",
       "hours": 64,
       "nucleus": "NC",
@@ -70,7 +70,7 @@
     },
     {
       "seq": 3,
-      "code": "",
+      "code": "EMC0314",
       "name": "Análise de Sistemas Lineares",
       "hours": 64,
       "nucleus": "NC",
@@ -83,7 +83,7 @@
     },
     {
       "seq": 4,
-      "code": "",
+      "code": "IME0350",
       "name": "Cálculo 1A",
       "hours": 96,
       "nucleus": "NC",
@@ -93,7 +93,7 @@
     },
     {
       "seq": 5,
-      "code": "",
+      "code": "IME0080",
       "name": "Cálculo 2A",
       "hours": 96,
       "nucleus": "NC",
@@ -105,7 +105,7 @@
     },
     {
       "seq": 6,
-      "code": "",
+      "code": "IME0083",
       "name": "Cálculo 3A",
       "hours": 64,
       "nucleus": "NC",
@@ -117,7 +117,7 @@
     },
     {
       "seq": 7,
-      "code": "",
+      "code": "IME0060",
       "name": "Cálculo Numérico",
       "hours": 64,
       "nucleus": "NC",
@@ -130,7 +130,7 @@
     },
     {
       "seq": 8,
-      "code": "",
+      "code": "EMC0303",
       "name": "Ciência dos Materiais",
       "hours": 64,
       "nucleus": "NE",
@@ -142,7 +142,7 @@
     },
     {
       "seq": 9,
-      "code": "",
+      "code": "EEC0201",
       "name": "Ciências do Ambiente",
       "hours": 48,
       "nucleus": "NC",
@@ -152,7 +152,7 @@
     },
     {
       "seq": 10,
-      "code": "",
+      "code": "EMC0311",
       "name": "Conformação dos Metais e Moldagem de Polímeros",
       "hours": 64,
       "nucleus": "NE",
@@ -164,7 +164,7 @@
     },
     {
       "seq": 11,
-      "code": "",
+      "code": "EMC0032",
       "name": "Controle de Qualidade",
       "hours": 64,
       "nucleus": "NE",
@@ -176,7 +176,7 @@
     },
     {
       "seq": 12,
-      "code": "",
+      "code": "EMC0304",
       "name": "Desenho de Máquinas",
       "hours": 64,
       "nucleus": "NE",
@@ -188,7 +188,7 @@
     },
     {
       "seq": 13,
-      "code": "",
+      "code": "EMC0302",
       "name": "Desenho Técnico Mecânico",
       "hours": 64,
       "nucleus": "NE",
@@ -198,7 +198,7 @@
     },
     {
       "seq": 14,
-      "code": "",
+      "code": "IFI0330",
       "name": "Dinâmica",
       "hours": 64,
       "nucleus": "NC",
@@ -210,7 +210,7 @@
     },
     {
       "seq": 15,
-      "code": "",
+      "code": "EMC0317",
       "name": "Dinâmica das Máquinas",
       "hours": 64,
       "nucleus": "NE",
@@ -222,7 +222,7 @@
     },
     {
       "seq": 16,
-      "code": "",
+      "code": "EMC0353",
       "name": "Dinâmica dos Fluidos Computacional",
       "hours": 64,
       "nucleus": "NE",
@@ -235,7 +235,7 @@
     },
     {
       "seq": 17,
-      "code": "",
+      "code": "FAD0062",
       "name": "Direito Para Engenharia",
       "hours": 32,
       "nucleus": "NC",
@@ -245,7 +245,7 @@
     },
     {
       "seq": 18,
-      "code": "",
+      "code": "EMC0354",
       "name": "Educação das Relações Étnico-raciais",
       "hours": 64,
       "nucleus": "NC",
@@ -255,7 +255,7 @@
     },
     {
       "seq": 19,
-      "code": "",
+      "code": "EMC0326",
       "name": "Elementos de Máquinas",
       "hours": 96,
       "nucleus": "NE",
@@ -268,7 +268,7 @@
     },
     {
       "seq": 20,
-      "code": "",
+      "code": "EMC0327",
       "name": "Elementos de Máquinas Experimental",
       "hours": 16,
       "nucleus": "NE",
@@ -280,7 +280,7 @@
     },
     {
       "seq": 21,
-      "code": "",
+      "code": "EMC0051",
       "name": "Eletrônica Básica",
       "hours": 64,
       "nucleus": "NC",
@@ -292,7 +292,7 @@
     },
     {
       "seq": 22,
-      "code": "",
+      "code": "EMC0315",
       "name": "Eletrotécnica",
       "hours": 64,
       "nucleus": "NC",
@@ -304,7 +304,7 @@
     },
     {
       "seq": 23,
-      "code": "",
+      "code": "EMC0348",
       "name": "Empreendedorismo para Engenharia",
       "hours": 64,
       "nucleus": "NE",
@@ -314,7 +314,7 @@
     },
     {
       "seq": 24,
-      "code": "",
+      "code": "EMC0316",
       "name": "Energias Renováveis",
       "hours": 64,
       "nucleus": "NE",
@@ -326,7 +326,7 @@
     },
     {
       "seq": 25,
-      "code": "",
+      "code": "EMC0349",
       "name": "Engenharia Automobilística",
       "hours": 64,
       "nucleus": "NE",
@@ -338,7 +338,7 @@
     },
     {
       "seq": 26,
-      "code": "",
+      "code": "EMC0070",
       "name": "Engenharia de Segurança",
       "hours": 32,
       "nucleus": "NE",
@@ -348,7 +348,7 @@
     },
     {
       "seq": 27,
-      "code": "",
+      "code": "EMC0347",
       "name": "Engenharia Econômica",
       "hours": 64,
       "nucleus": "NE",
@@ -360,7 +360,7 @@
     },
     {
       "seq": 28,
-      "code": "",
+      "code": "EMC0307",
       "name": "Ensaios Mecânicos de Materiais",
       "hours": 32,
       "nucleus": "NE",
@@ -372,7 +372,7 @@
     },
     {
       "seq": 29,
-      "code": "",
+      "code": "IME0108",
       "name": "Equações Diferenciais Ordinárias",
       "hours": 64,
       "nucleus": "NC",
@@ -384,7 +384,7 @@
     },
     {
       "seq": 30,
-      "code": "",
+      "code": "EMC0343",
       "name": "Estágio Supervisionado",
       "hours": 320,
       "nucleus": "NE",
@@ -396,7 +396,7 @@
     },
     {
       "seq": 31,
-      "code": "",
+      "code": "IFI0329",
       "name": "Estática",
       "hours": 64,
       "nucleus": "NC",
@@ -408,7 +408,7 @@
     },
     {
       "seq": 32,
-      "code": "",
+      "code": "EEC0094",
       "name": "Estruturas Metálicas",
       "hours": 64,
       "nucleus": "NC",
@@ -420,7 +420,7 @@
     },
     {
       "seq": 33,
-      "code": "",
+      "code": "IFI0203",
       "name": "Física I",
       "hours": 64,
       "nucleus": "NC",
@@ -432,7 +432,7 @@
     },
     {
       "seq": 34,
-      "code": "",
+      "code": "IFI0324",
       "name": "Física II",
       "hours": 64,
       "nucleus": "NC",
@@ -444,7 +444,7 @@
     },
     {
       "seq": 35,
-      "code": "",
+      "code": "IFI0325",
       "name": "Física III",
       "hours": 64,
       "nucleus": "NC",
@@ -456,7 +456,7 @@
     },
     {
       "seq": 36,
-      "code": "",
+      "code": "IFI0326",
       "name": "Física Experimental I",
       "hours": 32,
       "nucleus": "NC",
@@ -469,7 +469,7 @@
     },
     {
       "seq": 37,
-      "code": "",
+      "code": "IFI0327",
       "name": "Física Experimental II",
       "hours": 32,
       "nucleus": "NC",
@@ -483,7 +483,7 @@
     },
     {
       "seq": 38,
-      "code": "",
+      "code": "IFI0328",
       "name": "Física Experimental III",
       "hours": 32,
       "nucleus": "NC",
@@ -497,7 +497,7 @@
     },
     {
       "seq": 39,
-      "code": "",
+      "code": "FAC0440",
       "name": "Fundamentos de Administração",
       "hours": 32,
       "nucleus": "NC",
@@ -507,7 +507,7 @@
     },
     {
       "seq": 40,
-      "code": "",
+      "code": "EMC0083",
       "name": "Fundamentos de Aeronáutica",
       "hours": 64,
       "nucleus": "NE",
@@ -519,7 +519,7 @@
     },
     {
       "seq": 41,
-      "code": "",
+      "code": "EMC0355",
       "name": "Fundamentos de Automação Industrial",
       "hours": 64,
       "nucleus": "NE",
@@ -531,7 +531,7 @@
     },
     {
       "seq": 42,
-      "code": "",
+      "code": "IME0345",
       "name": "Geometria Analítica",
       "hours": 64,
       "nucleus": "NC",
@@ -541,7 +541,7 @@
     },
     {
       "seq": 43,
-      "code": "",
+      "code": "EMC0340",
       "name": "Geração e Distribuição de Vapor",
       "hours": 64,
       "nucleus": "NE",
@@ -553,7 +553,7 @@
     },
     {
       "seq": 44,
-      "code": "",
+      "code": "EMC0356",
       "name": "Gestão dos Sistemas de Produção",
       "hours": 64,
       "nucleus": "NE",
@@ -563,7 +563,7 @@
     },
     {
       "seq": 45,
-      "code": "",
+      "code": "EMC0309",
       "name": "Informática Aplicada à Engenharia",
       "hours": 32,
       "nucleus": "NE",
@@ -575,7 +575,7 @@
     },
     {
       "seq": 46,
-      "code": "",
+      "code": "EMC0338",
       "name": "Instrumentação",
       "hours": 64,
       "nucleus": "NE",
@@ -589,7 +589,7 @@
     },
     {
       "seq": 47,
-      "code": "",
+      "code": "INF0393",
       "name": "Introdução à Computação",
       "hours": 64,
       "nucleus": "NC",
@@ -599,7 +599,7 @@
     },
     {
       "seq": 48,
-      "code": "",
+      "code": "FAC0439",
       "name": "Introdução à Economia",
       "hours": 32,
       "nucleus": "NC",
@@ -609,7 +609,7 @@
     },
     {
       "seq": 49,
-      "code": "",
+      "code": "EMC0301",
       "name": "Introdução à Engenharia Mecânica",
       "hours": 32,
       "nucleus": "NE",
@@ -619,7 +619,7 @@
     },
     {
       "seq": 50,
-      "code": "",
+      "code": "EMC0103",
       "name": "Introdução à Mecânica da Fratura",
       "hours": 64,
       "nucleus": "NE",
@@ -631,7 +631,7 @@
     },
     {
       "seq": 51,
-      "code": "",
+      "code": "EMC0357",
       "name": "Introdução à Tribologia",
       "hours": 64,
       "nucleus": "NE",
@@ -643,7 +643,7 @@
     },
     {
       "seq": 52,
-      "code": "",
+      "code": "EMC0358",
       "name": "Introdução ao Método dos Elementos Finitos",
       "hours": 64,
       "nucleus": "NE",
@@ -656,7 +656,7 @@
     },
     {
       "seq": 53,
-      "code": "",
+      "code": "FAL0214",
       "name": "Introdução à Língua Brasileira de Sinais - LIBRAS",
       "hours": 64,
       "nucleus": "NC",
@@ -666,7 +666,7 @@
     },
     {
       "seq": 54,
-      "code": "",
+      "code": "EMC0359",
       "name": "Laboratório de Sistemas de Controle",
       "hours": 32,
       "nucleus": "NC",
@@ -678,7 +678,7 @@
     },
     {
       "seq": 55,
-      "code": "",
+      "code": "EMC0142",
       "name": "Manufatura Assistida por Computador",
       "hours": 64,
       "nucleus": "NE",
@@ -690,7 +690,7 @@
     },
     {
       "seq": 56,
-      "code": "",
+      "code": "EMC0337",
       "name": "Manutenção Industrial",
       "hours": 64,
       "nucleus": "NE",
@@ -702,7 +702,7 @@
     },
     {
       "seq": 57,
-      "code": "",
+      "code": "EMC0333",
       "name": "Máquinas de Elevação e Transporte",
       "hours": 32,
       "nucleus": "NE",
@@ -714,7 +714,7 @@
     },
     {
       "seq": 58,
-      "code": "",
+      "code": "EMC0323",
       "name": "Máquinas de Fluxo e Deslocamento",
       "hours": 48,
       "nucleus": "NE",
@@ -726,7 +726,7 @@
     },
     {
       "seq": 59,
-      "code": "",
+      "code": "EMC0321",
       "name": "Máquinas Térmicas",
       "hours": 64,
       "nucleus": "NE",
@@ -738,7 +738,7 @@
     },
     {
       "seq": 60,
-      "code": "",
+      "code": "EMC0305",
       "name": "Materiais de Engenharia",
       "hours": 64,
       "nucleus": "NE",
@@ -750,7 +750,7 @@
     },
     {
       "seq": 61,
-      "code": "",
+      "code": "EMC0306",
       "name": "Materiais de Engenharia Experimental",
       "hours": 32,
       "nucleus": "NE",
@@ -762,7 +762,7 @@
     },
     {
       "seq": 62,
-      "code": "",
+      "code": "EMC0313",
       "name": "Mecânica dos Fluidos 1",
       "hours": 64,
       "nucleus": "NE",
@@ -777,7 +777,7 @@
     },
     {
       "seq": 63,
-      "code": "",
+      "code": "EMC0320",
       "name": "Mecânica dos Fluidos 2",
       "hours": 64,
       "nucleus": "NE",
@@ -789,7 +789,7 @@
     },
     {
       "seq": 64,
-      "code": "",
+      "code": "EMC0324",
       "name": "Mecânica dos Fluidos Experimental",
       "hours": 16,
       "nucleus": "NE",
@@ -801,7 +801,7 @@
     },
     {
       "seq": 65,
-      "code": "",
+      "code": "EMC0157",
       "name": "Metodologia Científica",
       "hours": 32,
       "nucleus": "NC",
@@ -811,7 +811,7 @@
     },
     {
       "seq": 66,
-      "code": "",
+      "code": "EMC0310",
       "name": "Métodos Matemáticos Lineares",
       "hours": 64,
       "nucleus": "NC",
@@ -823,7 +823,7 @@
     },
     {
       "seq": 67,
-      "code": "",
+      "code": "EMC0319",
       "name": "Metrologia",
       "hours": 32,
       "nucleus": "NE",
@@ -835,7 +835,7 @@
     },
     {
       "seq": 68,
-      "code": "",
+      "code": "EMC0318",
       "name": "Metrologia Experimental",
       "hours": 32,
       "nucleus": "NE",
@@ -847,7 +847,7 @@
     },
     {
       "seq": 69,
-      "code": "",
+      "code": "EMC0360",
       "name": "Planejamento Experimental",
       "hours": 64,
       "nucleus": "NE",
@@ -859,7 +859,7 @@
     },
     {
       "seq": 70,
-      "code": "",
+      "code": "IME0378",
       "name": "Probabilidade e Estatística A",
       "hours": 64,
       "nucleus": "NC",
@@ -871,7 +871,7 @@
     },
     {
       "seq": 71,
-      "code": "",
+      "code": "EMC0361",
       "name": "Processos Especiais de Fabricação",
       "hours": 64,
       "nucleus": "NE",
@@ -883,7 +883,7 @@
     },
     {
       "seq": 72,
-      "code": "",
+      "code": "EMC0351",
       "name": "Processos Metalúrgicos",
       "hours": 64,
       "nucleus": "NE",
@@ -895,7 +895,7 @@
     },
     {
       "seq": 73,
-      "code": "",
+      "code": "EMC0332",
       "name": "Processos Metalúrgicos Experimental",
       "hours": 32,
       "nucleus": "NE",
@@ -907,7 +907,7 @@
     },
     {
       "seq": 74,
-      "code": "",
+      "code": "EMC0339",
       "name": "Projeto de Sistema Mecânico",
       "hours": 64,
       "nucleus": "NE",
@@ -919,7 +919,7 @@
     },
     {
       "seq": 75,
-      "code": "",
+      "code": "EMC0342",
       "name": "Projeto Final de Curso",
       "hours": 32,
       "nucleus": "NE",
@@ -932,7 +932,7 @@
     },
     {
       "seq": 76,
-      "code": "",
+      "code": "INQ0323",
       "name": "Química Geral B",
       "hours": 64,
       "nucleus": "NC",
@@ -942,7 +942,7 @@
     },
     {
       "seq": 77,
-      "code": "",
+      "code": "INQ0324",
       "name": "Química Geral Experimental",
       "hours": 32,
       "nucleus": "NC",
@@ -952,7 +952,7 @@
     },
     {
       "seq": 78,
-      "code": "",
+      "code": "EMC0341",
       "name": "Refrigeração e Ar Condicionado",
       "hours": 48,
       "nucleus": "NE",
@@ -964,7 +964,7 @@
     },
     {
       "seq": 79,
-      "code": "",
+      "code": "EEC0203",
       "name": "Resistência dos Materiais 1",
       "hours": 64,
       "nucleus": "NC",
@@ -976,7 +976,7 @@
     },
     {
       "seq": 80,
-      "code": "",
+      "code": "EEC0205",
       "name": "Resistência dos Materiais 2",
       "hours": 64,
       "nucleus": "NC",
@@ -988,7 +988,7 @@
     },
     {
       "seq": 81,
-      "code": "",
+      "code": "EMC0362",
       "name": "Robótica de Manipuladores 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1000,7 +1000,7 @@
     },
     {
       "seq": 82,
-      "code": "",
+      "code": "EMC0363",
       "name": "Robótica de Manipuladores 2",
       "hours": 64,
       "nucleus": "NE",
@@ -1013,7 +1013,7 @@
     },
     {
       "seq": 83,
-      "code": "",
+      "code": "EMC0334",
       "name": "Sistemas e Acionamentos Hidráulicos e Pneumáticos",
       "hours": 80,
       "nucleus": "NE",
@@ -1026,7 +1026,7 @@
     },
     {
       "seq": 84,
-      "code": "",
+      "code": "EMC0350",
       "name": "Sistemas de Controle",
       "hours": 64,
       "nucleus": "NC",
@@ -1038,7 +1038,7 @@
     },
     {
       "seq": 85,
-      "code": "",
+      "code": "EMC0312",
       "name": "Sistemas Térmicos",
       "hours": 64,
       "nucleus": "NE",
@@ -1050,7 +1050,7 @@
     },
     {
       "seq": 86,
-      "code": "",
+      "code": "EMC0365",
       "name": "Tecnologia da Soldagem",
       "hours": 64,
       "nucleus": "NE",
@@ -1062,7 +1062,7 @@
     },
     {
       "seq": 87,
-      "code": "",
+      "code": "EMC0308",
       "name": "Termodinâmica Clássica",
       "hours": 64,
       "nucleus": "NE",
@@ -1075,7 +1075,7 @@
     },
     {
       "seq": 88,
-      "code": "",
+      "code": "EMC0322",
       "name": "Termodinâmica Experimental",
       "hours": 16,
       "nucleus": "NE",
@@ -1087,7 +1087,7 @@
     },
     {
       "seq": 98,
-      "code": "",
+      "code": "EMC0330",
       "name": "Tópicos em Engenharia Mecânica 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1097,7 +1097,7 @@
     },
     {
       "seq": 99,
-      "code": "",
+      "code": "EMC0345",
       "name": "Tópicos em Engenharia Mecânica 2",
       "hours": 48,
       "nucleus": "NE",
@@ -1107,7 +1107,7 @@
     },
     {
       "seq": 100,
-      "code": "",
+      "code": "EMC0346",
       "name": "Tópicos em Engenharia Mecânica 3",
       "hours": 32,
       "nucleus": "NE",
@@ -1117,7 +1117,7 @@
     },
     {
       "seq": 101,
-      "code": "",
+      "code": "EMC0325",
       "name": "Transferência de Calor 1",
       "hours": 64,
       "nucleus": "NE",
@@ -1130,7 +1130,7 @@
     },
     {
       "seq": 102,
-      "code": "",
+      "code": "EMC0335",
       "name": "Transferência de Calor 2",
       "hours": 64,
       "nucleus": "NE",
@@ -1143,7 +1143,7 @@
     },
     {
       "seq": 103,
-      "code": "",
+      "code": "EMC0336",
       "name": "Transferência de Calor Experimental",
       "hours": 16,
       "nucleus": "NE",
@@ -1155,7 +1155,7 @@
     },
     {
       "seq": 104,
-      "code": "",
+      "code": "EMC0328",
       "name": "Usinagem",
       "hours": 64,
       "nucleus": "NE",
@@ -1167,7 +1167,7 @@
     },
     {
       "seq": 105,
-      "code": "",
+      "code": "EMC0329",
       "name": "Usinagem Experimental",
       "hours": 32,
       "nucleus": "NE",
@@ -1179,7 +1179,7 @@
     },
     {
       "seq": 106,
-      "code": "",
+      "code": "EMC0364",
       "name": "Ventilação Industrial",
       "hours": 64,
       "nucleus": "NE",
@@ -1191,7 +1191,7 @@
     },
     {
       "seq": 107,
-      "code": "",
+      "code": "EMC0273",
       "name": "Vibrações dos Sistemas Mecânicos",
       "hours": 64,
       "nucleus": "NE",
