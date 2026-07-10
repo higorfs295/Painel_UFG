@@ -3,7 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Painel Acadêmico</title>
+    <!-- Tipografia: Fraunces (display, serifa orgânica) + Sora (interface). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- carregamento NÃO-bloqueante: a página pinta com as fontes de fallback e troca quando
+         o CSS chegar (evita tela em branco se fonts.googleapis.com estiver lento/inacessível) -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Sora:wght@300..700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Sora:wght@300..700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+    <!-- o título real vem de src/branding.ts (APP_NAME), aplicado em main.tsx -->
+    <title>Painel</title>
   </head>
   <body>
     <div id="root"></div>

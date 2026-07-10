@@ -1,11 +1,13 @@
-// Login (POST /auth/login) + "esqueci a senha" (POST /auth/password/forgot).
+// Login em tela dividida: hero editorial à esquerda (sol do cerrado), formulário de vidro à direita.
 import { useState } from "react";
 import { useNavigate, useLocation, Navigate, Link } from "react-router-dom";
 import { auth } from "../api/endpoints";
 import { setAccessToken } from "../api/client";
 import { useAuth, applyTheme } from "../store/auth";
+import { APP_NAME, APP_TAGLINE } from "../branding";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
+import { IconTarget, IconGrid, IconSprout } from "../components/ui/Icons";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -45,27 +47,38 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="authwrap">
-      <Card className="authcard">
-        <div className="brand mt" style={{ marginBottom: 18 }}><span className="dot" />Painel Acadêmico</div>
-        <h1>Entrar</h1>
-        <p className="mut">Acompanhe sua integralização, simulações e cronograma.</p>
-        <form onSubmit={submit} className="stack mt">
-          <label className="field">E-mail
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />
-          </label>
-          <label className="field">Senha
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          </label>
-          {err && <div className="err">{err}</div>}
-          {msg && <div className="ok">{msg}</div>}
-          <Button type="submit" variant="prim" disabled={busy}>{busy ? "Entrando…" : "Entrar"}</Button>
-          <button type="button" className="btn ghost sm" onClick={forgot}>Esqueci minha senha</button>
-          <p className="mut center" style={{ margin: 0 }}>
-            Não tem conta? <Link to="/cadastro">Criar conta</Link>
-          </p>
-        </form>
-      </Card>
+    <div className="auth-split">
+      <section className="auth-hero" aria-hidden="true">
+        <div className="auth-brand"><span className="dot" />{APP_NAME}</div>
+        <h1 className="auth-headline">Cada aula, um passo rumo ao <em>horizonte</em>.</h1>
+        <p className="auth-sub">{APP_TAGLINE}</p>
+        <div className="auth-points">
+          <span className="auth-point"><IconTarget /> Recomendações pelo que mais destrava a sua matriz</span>
+          <span className="auth-point"><IconGrid /> Cenários de grade com códigos do SIGAA</span>
+          <span className="auth-point"><IconSprout /> Optativas, Núcleo Livre e horas complementares no lugar</span>
+        </div>
+      </section>
+
+      <section className="auth-pane">
+        <Card className="authcard">
+          <h1>Entrar</h1>
+          <form onSubmit={submit} className="stack mt">
+            <label className="field">E-mail
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />
+            </label>
+            <label className="field">Senha
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            </label>
+            {err && <div className="err" role="alert">{err}</div>}
+            {msg && <div className="ok">{msg}</div>}
+            <Button type="submit" variant="prim" disabled={busy}>{busy ? "Entrando…" : "Entrar"}</Button>
+            <button type="button" className="btn ghost sm" onClick={forgot}>Esqueci minha senha</button>
+            <p className="mut center" style={{ margin: 0 }}>
+              Não tem conta? <Link to="/cadastro">Criar conta</Link>
+            </p>
+          </form>
+        </Card>
+      </section>
     </div>
   );
 }

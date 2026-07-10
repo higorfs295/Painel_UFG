@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { auth } from "../api/endpoints";
+import { APP_NAME } from "../branding";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 
@@ -34,7 +35,7 @@ export default function InvitePage() {
   return (
     <div className="authwrap">
       <Card className="authcard">
-        <div className="brand" style={{ marginBottom: 18 }}><span className="dot" />Painel Acadêmico</div>
+        <div className="brand" style={{ marginBottom: 18 }}><span className="dot" />{APP_NAME}</div>
         <h1>Definir senha</h1>
         {done ? (
           <p className="ok">Senha definida! Redirecionando para o login… <Link to="/login">Entrar agora</Link></p>

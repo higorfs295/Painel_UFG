@@ -81,6 +81,18 @@ três estados: aprovada/cursando/simulada), Extras, Cronograma, Ajustes (senha, 
 matrículas, tema, backup) e Admin (estatísticas, papéis, matrículas). Consome a API via TanStack
 Query; sessão com refresh automático; chip de período/férias no topo; tema claro/escuro persistido.
 
+## Batizando o sistema (nome próprio em 1 linha)
+
+Quer chamar a sua instância de outro nome? Edite **uma única constante** em
+[`frontend/src/branding.ts`](frontend/src/branding.ts):
+
+```ts
+export const APP_NAME = "Painel Acadêmico";   // ← troque aqui
+```
+
+O nome se propaga para o cabeçalho, telas de login/cadastro/convite, título da aba do navegador
+e tela de erro. (Há também `APP_TAGLINE`, o subtítulo das telas de entrada.)
+
 ## Acesso público por R$ 0
 
 Quer colocar no ar? `docs/DEPLOY.md` traz o passo a passo do trio **Render (API) + Vercel

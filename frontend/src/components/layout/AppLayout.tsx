@@ -1,5 +1,5 @@
-// Casca autenticada: carrega enrollments, mantém o curso selecionado e renderiza a página ativa.
-// Sem matrícula (conta recém-criada via cadastro público), oferece a escolha de curso (RF-17).
+// Casca autenticada v4 — dashboard com trilho lateral (sidebar) + barra superior,
+// no espírito dos painéis de referência. Sem matrícula, oferece a escolha de curso (RF-17).
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,7 +7,8 @@ import { me, auth, courses } from "../../api/endpoints";
 import { setAccessToken } from "../../api/client";
 import { useAuth } from "../../store/auth";
 import { useApp } from "../../store/app";
-import AppHeader from "./AppHeader";
+import Sidebar from "./Sidebar";
+import Topbar from "./Topbar";
 import Card from "../ui/Card";
 import Button from "../ui/Button";
 
@@ -67,23 +68,21 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="app">
+    <div className="shell">
       <a href="#conteudo" className="skiplink">Pular para o conteúdo</a>
-      <AppHeader
-        enrollments={enrollments ?? []}
-        selectedId={enrollmentId}
-        onSelect={setEnrollment}
-        onLogout={logout}
-      />
-      <main id="conteudo" className="container page">
-        {isLoading ? (
-          <div className="spinner" role="status" aria-live="polite">Carregando cursos…</div>
-        ) : !enrollments || enrollments.length === 0 ? (
-          <CoursePicker />
-        ) : (
-          <Outlet />
-        )}
-      </main>
+      <Sidebar onLogout={logout} />
+      <div className="shell-main">
+        <Topbar enrollments={enrollments ?? []} selectedId={enrollmentId} onSelect={setEnrollment} />
+        <main id="conteudo" className="content">
+          {isLoading ? (
+            <div className="spinner" role="status" aria-live="polite">Carregando cursos…</div>
+          ) : !enrollments || enrollments.length === 0 ? (
+            <CoursePicker />
+          ) : (
+            <Outlet />
+          )}
+        </main>
+      </div>
     </div>
   );
 }

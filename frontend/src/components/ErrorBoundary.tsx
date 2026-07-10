@@ -1,5 +1,6 @@
 // Captura erros de renderização e mostra um fallback amigável em vez de tela branca.
 import { Component, type ReactNode } from "react";
+import { APP_NAME } from "../branding";
 
 type Props = { children: ReactNode };
 type State = { error: Error | null };
@@ -20,7 +21,7 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div className="authwrap">
           <div className="card authcard center" role="alert">
             <div className="brand" style={{ justifyContent: "center", marginBottom: 12 }}>
-              <span className="dot" />Painel Acadêmico
+              <span className="dot" />{APP_NAME}
             </div>
             <h1>Algo deu errado</h1>
             <p className="mut">Ocorreu um erro inesperado na interface. Tente recarregar a página.</p>

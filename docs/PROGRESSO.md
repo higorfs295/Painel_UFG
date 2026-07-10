@@ -1,5 +1,39 @@
 # Progresso da Implementação
 
+## Design v4 — "Cerrado dashboard" (2026-07-10)
+
+Reforma **estrutural** do frontend, mesclando de verdade os 5 templates de referência (Luminary,
+NovaPay, Quantix, Frost, Crypto Vault) sobre a identidade cerrado/pôr do sol (paleta preservada):
+
+- **Trilho lateral de dashboard** (Crypto Vault): sidebar de vidro com marca, navegação por ícones
+  de traço fino (desenhados à mão em `ui/Icons.tsx`), item ativo com acento de urucum e cartão do
+  usuário com avatar+saída; no mobile vira faixa superior rolável (sem overflow — verificado).
+- **Topbar de conteúdo**: curso ativo, chip de período/férias e tema, com fio de poente animado.
+- **Hero de estatísticas** (NovaPay): 4 cartões com ícone, número grande em Fraunces com gradiente
+  (horas integralizadas, concluídas, disponíveis, horas até o próximo marco) e anel pulsante no hover.
+- **Ticker "Próximos passos"** (NovaPay/Frost): marquee vivo com as recomendações (pausa no hover,
+  some em reduced-motion).
+- **Auth em tela dividida** (Quantix/Luminary): hero editorial com manchete Fraunces gigante,
+  sol desfocado flutuando, bullets com ícones; formulário em painel de vidro.
+
+- **Tipografia com alma**: Fraunces (display serifada orgânica, títulos com itálico de destaque)
+  + Sora (interface) — carregadas de forma **não-bloqueante** (fallback elegante se a CDN falhar).
+- **Grão de filme** (`feTurbulence` em overlay fixo) — a textura sutil que tira o "liso digital".
+- **Painéis de vidro**: cartões translúcidos com `backdrop-blur`, bordas fio-de-cabelo e fio de
+  luz no topo; tabelas sem "gaiola" (só linhas de ar).
+- **Movimento "silk"** (`cubic-bezier(0.16,1,0.3,1)`): entradas suaves, hovers com elevação,
+  shimmer nas barras, sol flutuando no horizonte das telas de entrada.
+- **Editorial**: micro-labels em caixa alta espaçada (h3 com traço de urucum), nav em pílulas,
+  botões-pílula com gradiente de poente, horizonte + sol decorativos no login/cadastro.
+- Acessibilidade preservada (focus-visible, reduced-motion desliga inclusive o grão).
+
+**Batismo em 1 linha (`frontend/src/branding.ts`)**: `APP_NAME` (e `APP_TAGLINE`) propagam para
+cabeçalho, login/cadastro/convite, título da aba e tela de erro — renomear o sistema é editar uma
+constante.
+
+---
+
+
 ## Rodada "preparação open source" (2026-07-09, branch claude/os-prep)
 
 Nove pedidos atendidos sobre a main pós-merge:

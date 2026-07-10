@@ -1,9 +1,42 @@
-// Visão geral: integralização total, donut, composições (NC/NEO/OPT/NL/AC), marcos e recomendações.
+// Visão geral: hero de estatísticas, ticker de recomendações, donut, composições, marcos e ranking.
 import { useQuery } from "@tanstack/react-query";
+import type { ComponentType, SVGProps } from "react";
 import { me } from "../api/endpoints";
 import { useApp } from "../store/app";
 import Card from "../components/ui/Card";
-import type { Composition } from "../api/types";
+import { IconClock, IconTarget, IconCheck, IconFlame } from "../components/ui/Icons";
+import type { Composition, Recommendation } from "../api/types";
+
+// cartão de estatística com número grande em display (estilo dashboards de referência)
+function Stat({ icon: Icon, num, unit, label }: {
+  icon: ComponentType<SVGProps<SVGSVGElement>>; num: string | number; unit?: string; label: string;
+}) {
+  return (
+    <div className="stat-card">
+      <div className="stat-ico"><Icon /></div>
+      <div className="stat-num">{num}{unit && <small> {unit}</small>}</div>
+      <div className="stat-lbl">{label}</div>
+    </div>
+  );
+}
+
+// marquee vivo com as recomendações (pausa no hover; some em reduced-motion)
+function Ticker({ recs }: { recs: Recommendation[] }) {
+  if (!recs.length) return null;
+  const items = recs.map((r) => (
+    <span key={r.seq} className="ticker-item">
+      <b>{r.name}</b> <span className="up">↗ destrava {r.tot}</span> <span className="ticker-sep">◆</span>
+    </span>
+  ));
+  return (
+    <div className="ticker" aria-hidden="true">
+      <span className="ticker-tag">Próximos passos</span>
+      <div className="ticker-view">
+        <div className="ticker-track">{items}{items.map((el, i) => <span key={`d${i}`}>{el}</span>)}</div>
+      </div>
+    </div>
+  );
+}
 
 function Donut({ pct, label }: { pct: number; label: string }) {
   const r = 52, c = 2 * Math.PI * r, off = c * (1 - Math.min(100, pct) / 100);
@@ -54,18 +87,32 @@ export default function OverviewPage() {
   if (isLoading || !prog) return <div className="spinner" role="status" aria-live="polite">Carregando progresso…</div>;
 
   const doneCount = prog.subjects.filter((s) => s.status === "done").length;
+  const availCount = prog.subjects.filter((s) => s.status === "avail").length;
+  const nextMilestone = prog.milestones.find((m) => !m.reached);
 
   return (
     <div className="stack">
       <div className="row spread wrap">
         <div>
-          <h1>Visão geral</h1>
+          <h1>Visão <em>geral</em></h1>
           <p className="mut">
             {prog.totals.hours}h de {prog.totals.required}h integralizadas · {doneCount} disciplinas concluídas
           </p>
         </div>
       </div>
       <div className="tribal" aria-hidden="true" />
+
+      <div className="statgrid">
+        <Stat icon={IconClock} num={prog.totals.hours.toLocaleString("pt-BR")} unit="h" label="Integralizadas" />
+        <Stat icon={IconCheck} num={doneCount} label="Concluídas" />
+        <Stat icon={IconTarget} num={availCount} label="Disponíveis agora" />
+        <Stat icon={IconFlame}
+          num={nextMilestone ? `${Math.max(0, nextMilestone.hours - prog.totals.hours).toLocaleString("pt-BR")}` : "—"}
+          unit={nextMilestone ? "h" : undefined}
+          label={nextMilestone ? `Até o marco ${nextMilestone.key}` : "Marcos concluídos"} />
+      </div>
+
+      {recs && <Ticker recs={recs} />}
 
       <div className="grid-2">
         <Card className="center">

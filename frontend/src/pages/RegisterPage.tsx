@@ -1,11 +1,13 @@
-// RF-17 — cadastro público. Cria a conta, autentica na resposta e leva à escolha de curso.
+// RF-17 — cadastro em tela dividida (hero editorial + formulário de vidro).
 import { useState } from "react";
 import { useNavigate, Link, Navigate } from "react-router-dom";
 import { auth } from "../api/endpoints";
 import { setAccessToken } from "../api/client";
 import { useAuth, applyTheme } from "../store/auth";
+import { APP_NAME, APP_TAGLINE } from "../branding";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
+import { IconSun, IconBook, IconClock } from "../components/ui/Icons";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -41,29 +43,40 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="authwrap">
-      <Card className="authcard">
-        <div className="brand" style={{ marginBottom: 18 }}><span className="dot" />Painel Acadêmico</div>
-        <h1>Criar conta</h1>
-        <p className="mut">Acompanhe sua integralização, simule cenários e monte sua grade.</p>
-        <form onSubmit={submit} className="stack mt">
-          <label className="field">Nome
-            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required minLength={2} autoFocus />
-          </label>
-          <label className="field">E-mail
-            <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-          </label>
-          <label className="field">Senha (mín. 10 caracteres)
-            <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
-          </label>
-          <label className="field">Confirmar senha
-            <input type="password" value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} required />
-          </label>
-          {err && <div className="err" role="alert">{err}</div>}
-          <Button type="submit" variant="prim" disabled={busy}>{busy ? "Criando…" : "Criar conta"}</Button>
-          <p className="mut center" style={{ margin: 0 }}>Já tem conta? <Link to="/login">Entrar</Link></p>
-        </form>
-      </Card>
+    <div className="auth-split">
+      <section className="auth-hero" aria-hidden="true">
+        <div className="auth-brand"><span className="dot" />{APP_NAME}</div>
+        <h1 className="auth-headline">Comece hoje a enxergar o seu <em>caminho</em>.</h1>
+        <p className="auth-sub">{APP_TAGLINE}</p>
+        <div className="auth-points">
+          <span className="auth-point"><IconSun /> Visão geral com marcos e progresso real</span>
+          <span className="auth-point"><IconBook /> Aprovadas, cursando e simuladas — lado a lado</span>
+          <span className="auth-point"><IconClock /> Grade semanal navegável até por teclado</span>
+        </div>
+      </section>
+
+      <section className="auth-pane">
+        <Card className="authcard">
+          <h1>Criar conta</h1>
+          <form onSubmit={submit} className="stack mt">
+            <label className="field">Nome
+              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required minLength={2} autoFocus />
+            </label>
+            <label className="field">E-mail
+              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+            </label>
+            <label className="field">Senha (mín. 10 caracteres)
+              <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+            </label>
+            <label className="field">Confirmar senha
+              <input type="password" value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} required />
+            </label>
+            {err && <div className="err" role="alert">{err}</div>}
+            <Button type="submit" variant="prim" disabled={busy}>{busy ? "Criando…" : "Criar conta"}</Button>
+            <p className="mut center" style={{ margin: 0 }}>Já tem conta? <Link to="/login">Entrar</Link></p>
+          </form>
+        </Card>
+      </section>
     </div>
   );
 }
