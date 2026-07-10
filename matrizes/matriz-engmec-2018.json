@@ -1,0 +1,1205 @@
+{
+  "course": {
+    "slug": "engmec-ufg-2018",
+    "name": "Engenharia Mecânica — UFG (Goiânia, PPC 2018)"
+  },
+  "totalHours": 4452,
+  "requirements": [
+    {
+      "key": "NC",
+      "label": "Núcleo Comum",
+      "hours": 1776
+    },
+    {
+      "key": "NEO",
+      "label": "Núcleo Específico Obrigatório",
+      "hours": 2256
+    },
+    {
+      "key": "OPT",
+      "label": "Núcleo Específico Optativo",
+      "hours": 192
+    },
+    {
+      "key": "NL",
+      "label": "Núcleo Livre",
+      "hours": 128
+    },
+    {
+      "key": "AC",
+      "label": "Atividades Complementares",
+      "hours": 100
+    }
+  ],
+  "milestones": [
+    {
+      "key": "CH2720",
+      "hours": 2720,
+      "description": "2720h de núcleo comum + específico — destrava Estágio Supervisionado"
+    },
+    {
+      "key": "CH3440",
+      "hours": 3440,
+      "description": "3440h de núcleo comum + específico — destrava Projeto Final de Curso"
+    }
+  ],
+  "subjects": [
+    {
+      "seq": 1,
+      "code": "",
+      "name": "Acústica Básica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        66
+      ],
+      "co": []
+    },
+    {
+      "seq": 2,
+      "code": "",
+      "name": "Álgebra Linear",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        42
+      ],
+      "co": []
+    },
+    {
+      "seq": 3,
+      "code": "",
+      "name": "Análise de Sistemas Lineares",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        2,
+        66
+      ],
+      "co": []
+    },
+    {
+      "seq": 4,
+      "code": "",
+      "name": "Cálculo 1A",
+      "hours": 96,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 5,
+      "code": "",
+      "name": "Cálculo 2A",
+      "hours": 96,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        4
+      ],
+      "co": []
+    },
+    {
+      "seq": 6,
+      "code": "",
+      "name": "Cálculo 3A",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        5
+      ],
+      "co": []
+    },
+    {
+      "seq": 7,
+      "code": "",
+      "name": "Cálculo Numérico",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        29,
+        47
+      ],
+      "co": []
+    },
+    {
+      "seq": 8,
+      "code": "",
+      "name": "Ciência dos Materiais",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        76
+      ],
+      "co": []
+    },
+    {
+      "seq": 9,
+      "code": "",
+      "name": "Ciências do Ambiente",
+      "hours": 48,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 10,
+      "code": "",
+      "name": "Conformação dos Metais e Moldagem de Polímeros",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        60
+      ],
+      "co": []
+    },
+    {
+      "seq": 11,
+      "code": "",
+      "name": "Controle de Qualidade",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        70
+      ],
+      "co": []
+    },
+    {
+      "seq": 12,
+      "code": "",
+      "name": "Desenho de Máquinas",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        13
+      ],
+      "co": []
+    },
+    {
+      "seq": 13,
+      "code": "",
+      "name": "Desenho Técnico Mecânico",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 14,
+      "code": "",
+      "name": "Dinâmica",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        31
+      ],
+      "co": []
+    },
+    {
+      "seq": 15,
+      "code": "",
+      "name": "Dinâmica das Máquinas",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        14
+      ],
+      "co": []
+    },
+    {
+      "seq": 16,
+      "code": "",
+      "name": "Dinâmica dos Fluidos Computacional",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        62,
+        7
+      ],
+      "co": []
+    },
+    {
+      "seq": 17,
+      "code": "",
+      "name": "Direito Para Engenharia",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 18,
+      "code": "",
+      "name": "Educação das Relações Étnico-raciais",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 2,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 19,
+      "code": "",
+      "name": "Elementos de Máquinas",
+      "hours": 96,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        80,
+        12
+      ],
+      "co": []
+    },
+    {
+      "seq": 20,
+      "code": "",
+      "name": "Elementos de Máquinas Experimental",
+      "hours": 16,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        19
+      ]
+    },
+    {
+      "seq": 21,
+      "code": "",
+      "name": "Eletrônica Básica",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        35
+      ],
+      "co": []
+    },
+    {
+      "seq": 22,
+      "code": "",
+      "name": "Eletrotécnica",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        35
+      ],
+      "co": []
+    },
+    {
+      "seq": 23,
+      "code": "",
+      "name": "Empreendedorismo para Engenharia",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 24,
+      "code": "",
+      "name": "Energias Renováveis",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        85
+      ],
+      "co": []
+    },
+    {
+      "seq": 25,
+      "code": "",
+      "name": "Engenharia Automobilística",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        15
+      ],
+      "co": []
+    },
+    {
+      "seq": 26,
+      "code": "",
+      "name": "Engenharia de Segurança",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 27,
+      "code": "",
+      "name": "Engenharia Econômica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        48
+      ],
+      "co": []
+    },
+    {
+      "seq": 28,
+      "code": "",
+      "name": "Ensaios Mecânicos de Materiais",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        8
+      ],
+      "co": []
+    },
+    {
+      "seq": 29,
+      "code": "",
+      "name": "Equações Diferenciais Ordinárias",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        5
+      ],
+      "co": []
+    },
+    {
+      "seq": 30,
+      "code": "",
+      "name": "Estágio Supervisionado",
+      "hours": 320,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        "CH2720"
+      ],
+      "co": []
+    },
+    {
+      "seq": 31,
+      "code": "",
+      "name": "Estática",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        2
+      ],
+      "co": []
+    },
+    {
+      "seq": 32,
+      "code": "",
+      "name": "Estruturas Metálicas",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        80
+      ],
+      "co": []
+    },
+    {
+      "seq": 33,
+      "code": "",
+      "name": "Física I",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        4
+      ],
+      "co": []
+    },
+    {
+      "seq": 34,
+      "code": "",
+      "name": "Física II",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        33
+      ],
+      "co": []
+    },
+    {
+      "seq": 35,
+      "code": "",
+      "name": "Física III",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        33
+      ],
+      "co": []
+    },
+    {
+      "seq": 36,
+      "code": "",
+      "name": "Física Experimental I",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        33,
+        70
+      ]
+    },
+    {
+      "seq": 37,
+      "code": "",
+      "name": "Física Experimental II",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        36
+      ],
+      "co": [
+        34
+      ]
+    },
+    {
+      "seq": 38,
+      "code": "",
+      "name": "Física Experimental III",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        36
+      ],
+      "co": [
+        35
+      ]
+    },
+    {
+      "seq": 39,
+      "code": "",
+      "name": "Fundamentos de Administração",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 40,
+      "code": "",
+      "name": "Fundamentos de Aeronáutica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        63
+      ],
+      "co": []
+    },
+    {
+      "seq": 41,
+      "code": "",
+      "name": "Fundamentos de Automação Industrial",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        83
+      ],
+      "co": []
+    },
+    {
+      "seq": 42,
+      "code": "",
+      "name": "Geometria Analítica",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 43,
+      "code": "",
+      "name": "Geração e Distribuição de Vapor",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        102
+      ],
+      "co": []
+    },
+    {
+      "seq": 44,
+      "code": "",
+      "name": "Gestão dos Sistemas de Produção",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 45,
+      "code": "",
+      "name": "Informática Aplicada à Engenharia",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        7
+      ]
+    },
+    {
+      "seq": 46,
+      "code": "",
+      "name": "Instrumentação",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        3,
+        21,
+        67
+      ],
+      "co": []
+    },
+    {
+      "seq": 47,
+      "code": "",
+      "name": "Introdução à Computação",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 48,
+      "code": "",
+      "name": "Introdução à Economia",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 49,
+      "code": "",
+      "name": "Introdução à Engenharia Mecânica",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 50,
+      "code": "",
+      "name": "Introdução à Mecânica da Fratura",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        60
+      ],
+      "co": []
+    },
+    {
+      "seq": 51,
+      "code": "",
+      "name": "Introdução à Tribologia",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        60
+      ],
+      "co": []
+    },
+    {
+      "seq": 52,
+      "code": "",
+      "name": "Introdução ao Método dos Elementos Finitos",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        79,
+        29
+      ],
+      "co": []
+    },
+    {
+      "seq": 53,
+      "code": "",
+      "name": "Introdução à Língua Brasileira de Sinais - LIBRAS",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 2,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 54,
+      "code": "",
+      "name": "Laboratório de Sistemas de Controle",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 2,
+      "pre": [
+        84
+      ],
+      "co": []
+    },
+    {
+      "seq": 55,
+      "code": "",
+      "name": "Manufatura Assistida por Computador",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        104
+      ],
+      "co": []
+    },
+    {
+      "seq": 56,
+      "code": "",
+      "name": "Manutenção Industrial",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        107
+      ],
+      "co": []
+    },
+    {
+      "seq": 57,
+      "code": "",
+      "name": "Máquinas de Elevação e Transporte",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        19
+      ],
+      "co": []
+    },
+    {
+      "seq": 58,
+      "code": "",
+      "name": "Máquinas de Fluxo e Deslocamento",
+      "hours": 48,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        63
+      ],
+      "co": []
+    },
+    {
+      "seq": 59,
+      "code": "",
+      "name": "Máquinas Térmicas",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        85
+      ],
+      "co": []
+    },
+    {
+      "seq": 60,
+      "code": "",
+      "name": "Materiais de Engenharia",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        8
+      ],
+      "co": []
+    },
+    {
+      "seq": 61,
+      "code": "",
+      "name": "Materiais de Engenharia Experimental",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        60
+      ]
+    },
+    {
+      "seq": 62,
+      "code": "",
+      "name": "Mecânica dos Fluidos 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        6,
+        87
+      ],
+      "co": [
+        29
+      ]
+    },
+    {
+      "seq": 63,
+      "code": "",
+      "name": "Mecânica dos Fluidos 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        62
+      ],
+      "co": []
+    },
+    {
+      "seq": 64,
+      "code": "",
+      "name": "Mecânica dos Fluidos Experimental",
+      "hours": 16,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        58
+      ]
+    },
+    {
+      "seq": 65,
+      "code": "",
+      "name": "Metodologia Científica",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 66,
+      "code": "",
+      "name": "Métodos Matemáticos Lineares",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        29
+      ],
+      "co": []
+    },
+    {
+      "seq": 67,
+      "code": "",
+      "name": "Metrologia",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        70
+      ],
+      "co": []
+    },
+    {
+      "seq": 68,
+      "code": "",
+      "name": "Metrologia Experimental",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        67
+      ]
+    },
+    {
+      "seq": 69,
+      "code": "",
+      "name": "Planejamento Experimental",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        70
+      ],
+      "co": []
+    },
+    {
+      "seq": 70,
+      "code": "",
+      "name": "Probabilidade e Estatística A",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        4
+      ],
+      "co": []
+    },
+    {
+      "seq": 71,
+      "code": "",
+      "name": "Processos Especiais de Fabricação",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        104
+      ],
+      "co": []
+    },
+    {
+      "seq": 72,
+      "code": "",
+      "name": "Processos Metalúrgicos",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        60
+      ],
+      "co": []
+    },
+    {
+      "seq": 73,
+      "code": "",
+      "name": "Processos Metalúrgicos Experimental",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        72
+      ]
+    },
+    {
+      "seq": 74,
+      "code": "",
+      "name": "Projeto de Sistema Mecânico",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        19
+      ],
+      "co": []
+    },
+    {
+      "seq": 75,
+      "code": "",
+      "name": "Projeto Final de Curso",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        65,
+        "CH3440"
+      ],
+      "co": []
+    },
+    {
+      "seq": 76,
+      "code": "",
+      "name": "Química Geral B",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 77,
+      "code": "",
+      "name": "Química Geral Experimental",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 78,
+      "code": "",
+      "name": "Refrigeração e Ar Condicionado",
+      "hours": 48,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        85
+      ],
+      "co": []
+    },
+    {
+      "seq": 79,
+      "code": "",
+      "name": "Resistência dos Materiais 1",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        31
+      ],
+      "co": []
+    },
+    {
+      "seq": 80,
+      "code": "",
+      "name": "Resistência dos Materiais 2",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        79
+      ],
+      "co": []
+    },
+    {
+      "seq": 81,
+      "code": "",
+      "name": "Robótica de Manipuladores 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        3
+      ],
+      "co": []
+    },
+    {
+      "seq": 82,
+      "code": "",
+      "name": "Robótica de Manipuladores 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        81,
+        84
+      ],
+      "co": []
+    },
+    {
+      "seq": 83,
+      "code": "",
+      "name": "Sistemas e Acionamentos Hidráulicos e Pneumáticos",
+      "hours": 80,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        21,
+        58
+      ],
+      "co": []
+    },
+    {
+      "seq": 84,
+      "code": "",
+      "name": "Sistemas de Controle",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 2,
+      "pre": [
+        3
+      ],
+      "co": []
+    },
+    {
+      "seq": 85,
+      "code": "",
+      "name": "Sistemas Térmicos",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        87
+      ],
+      "co": []
+    },
+    {
+      "seq": 86,
+      "code": "",
+      "name": "Tecnologia da Soldagem",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        72
+      ],
+      "co": []
+    },
+    {
+      "seq": 87,
+      "code": "",
+      "name": "Termodinâmica Clássica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        34,
+        5
+      ],
+      "co": []
+    },
+    {
+      "seq": 88,
+      "code": "",
+      "name": "Termodinâmica Experimental",
+      "hours": 16,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        59
+      ]
+    },
+    {
+      "seq": 98,
+      "code": "",
+      "name": "Tópicos em Engenharia Mecânica 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 99,
+      "code": "",
+      "name": "Tópicos em Engenharia Mecânica 2",
+      "hours": 48,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 100,
+      "code": "",
+      "name": "Tópicos em Engenharia Mecânica 3",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 101,
+      "code": "",
+      "name": "Transferência de Calor 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        87,
+        29
+      ],
+      "co": []
+    },
+    {
+      "seq": 102,
+      "code": "",
+      "name": "Transferência de Calor 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        101,
+        63
+      ],
+      "co": []
+    },
+    {
+      "seq": 103,
+      "code": "",
+      "name": "Transferência de Calor Experimental",
+      "hours": 16,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        102
+      ]
+    },
+    {
+      "seq": 104,
+      "code": "",
+      "name": "Usinagem",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        60
+      ],
+      "co": []
+    },
+    {
+      "seq": 105,
+      "code": "",
+      "name": "Usinagem Experimental",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        104
+      ]
+    },
+    {
+      "seq": 106,
+      "code": "",
+      "name": "Ventilação Industrial",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        58
+      ],
+      "co": []
+    },
+    {
+      "seq": 107,
+      "code": "",
+      "name": "Vibrações dos Sistemas Mecânicos",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        3
+      ],
+      "co": []
+    }
+  ]
+}

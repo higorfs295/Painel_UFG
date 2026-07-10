@@ -1,0 +1,1860 @@
+{
+  "course": {
+    "slug": "engel-ufg-2023",
+    "name": "Engenharia Elétrica — UFG (Goiânia, PPC 2023)"
+  },
+  "totalHours": 4164,
+  "requirements": [
+    {
+      "key": "NC",
+      "label": "Núcleo Comum",
+      "hours": 1824
+    },
+    {
+      "key": "NEO",
+      "label": "Núcleo Específico Obrigatório",
+      "hours": 1856
+    },
+    {
+      "key": "OPT",
+      "label": "Núcleo Específico Optativo",
+      "hours": 256
+    },
+    {
+      "key": "NL",
+      "label": "Núcleo Livre",
+      "hours": 128
+    },
+    {
+      "key": "AC",
+      "label": "Atividades Complementares",
+      "hours": 100
+    }
+  ],
+  "milestones": [
+    {
+      "key": "CH1920",
+      "hours": 1920,
+      "description": "1920h integralizadas — destrava Estágio Obrigatório"
+    },
+    {
+      "key": "CH2016",
+      "hours": 2016,
+      "description": "2016h integralizadas — destrava Engenharia de Segurança"
+    },
+    {
+      "key": "CH2400",
+      "hours": 2400,
+      "description": "2400h integralizadas — destrava Economia B, Fund. da Administração, Direito e Cidadania e Ética"
+    },
+    {
+      "key": "CH2496",
+      "hours": 2496,
+      "description": "2496h integralizadas — destrava Projeto Final de Curso"
+    }
+  ],
+  "subjects": [
+    {
+      "seq": 1,
+      "code": "",
+      "name": "Cálculo 1A",
+      "hours": 96,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 2,
+      "code": "",
+      "name": "Desenho Técnico 1",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 3,
+      "code": "",
+      "name": "Geometria Analítica",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 4,
+      "code": "",
+      "name": "Introdução à Computação",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 5,
+      "code": "",
+      "name": "Introdução à Engenharia Elétrica",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 6,
+      "code": "",
+      "name": "Química Geral B",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 7,
+      "code": "",
+      "name": "Química Geral Experimental",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        6
+      ]
+    },
+    {
+      "seq": 8,
+      "code": "",
+      "name": "Álgebra Linear",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        3
+      ],
+      "co": []
+    },
+    {
+      "seq": 9,
+      "code": "",
+      "name": "Cálculo 2A",
+      "hours": 96,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        1
+      ],
+      "co": []
+    },
+    {
+      "seq": 10,
+      "code": "",
+      "name": "Introdução às Ciências do Ambiente",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 11,
+      "code": "",
+      "name": "Física Experimental I",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        12
+      ]
+    },
+    {
+      "seq": 12,
+      "code": "",
+      "name": "Física I",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        1
+      ]
+    },
+    {
+      "seq": 13,
+      "code": "",
+      "name": "Probabilidade e Estatística A",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        1
+      ],
+      "co": []
+    },
+    {
+      "seq": 14,
+      "code": "",
+      "name": "Programação Orientada a Objetos",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        4
+      ],
+      "co": []
+    },
+    {
+      "seq": 15,
+      "code": "",
+      "name": "Cálculo 3A",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        9
+      ],
+      "co": []
+    },
+    {
+      "seq": 16,
+      "code": "",
+      "name": "Equações Diferenciais Ordinárias",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        9
+      ],
+      "co": []
+    },
+    {
+      "seq": 17,
+      "code": "",
+      "name": "Física Experimental II",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        11
+      ],
+      "co": [
+        19
+      ]
+    },
+    {
+      "seq": 18,
+      "code": "",
+      "name": "Física Experimental III",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        11
+      ],
+      "co": [
+        20
+      ]
+    },
+    {
+      "seq": 19,
+      "code": "",
+      "name": "Física II",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        12
+      ],
+      "co": []
+    },
+    {
+      "seq": 20,
+      "code": "",
+      "name": "Física III",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        1,
+        12
+      ],
+      "co": []
+    },
+    {
+      "seq": 21,
+      "code": "",
+      "name": "Métodos Matemáticos Lineares",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        16
+      ]
+    },
+    {
+      "seq": 23,
+      "code": "",
+      "name": "Análise de Sistemas Lineares",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        16,
+        21
+      ],
+      "co": []
+    },
+    {
+      "seq": 24,
+      "code": "",
+      "name": "Circuitos Elétricos 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        20
+      ],
+      "co": []
+    },
+    {
+      "seq": 25,
+      "code": "",
+      "name": "Eletromagnetismo",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        15,
+        20
+      ],
+      "co": []
+    },
+    {
+      "seq": 26,
+      "code": "",
+      "name": "Estática",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        1,
+        12
+      ],
+      "co": []
+    },
+    {
+      "seq": 27,
+      "code": "",
+      "name": "Física Experimental IV",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        18
+      ],
+      "co": [
+        28
+      ]
+    },
+    {
+      "seq": 28,
+      "code": "",
+      "name": "Física IV",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        20
+      ],
+      "co": []
+    },
+    {
+      "seq": 29,
+      "code": "",
+      "name": "Introdução à Teoria dos Materiais Elétricos",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        6,
+        20
+      ],
+      "co": []
+    },
+    {
+      "seq": 30,
+      "code": "",
+      "name": "Cálculo Numérico",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        4,
+        16
+      ],
+      "co": []
+    },
+    {
+      "seq": 31,
+      "code": "",
+      "name": "Circuitos Elétricos 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        23,
+        24
+      ],
+      "co": []
+    },
+    {
+      "seq": 32,
+      "code": "",
+      "name": "Circuitos Elétricos Experimental",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        31
+      ]
+    },
+    {
+      "seq": 33,
+      "code": "",
+      "name": "Eletrônica 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        24,
+        29
+      ],
+      "co": []
+    },
+    {
+      "seq": 34,
+      "code": "",
+      "name": "Fenômenos de Transporte",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        15,
+        16,
+        19
+      ],
+      "co": []
+    },
+    {
+      "seq": 35,
+      "code": "",
+      "name": "Medidas e Materiais Elétricos Experimental",
+      "hours": 16,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        29
+      ]
+    },
+    {
+      "seq": 36,
+      "code": "",
+      "name": "Sistemas de Controle",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        23
+      ],
+      "co": []
+    },
+    {
+      "seq": 38,
+      "code": "",
+      "name": "Eletrônica 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        23,
+        33
+      ],
+      "co": []
+    },
+    {
+      "seq": 39,
+      "code": "",
+      "name": "Eletrônica Digital 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        29
+      ],
+      "co": []
+    },
+    {
+      "seq": 40,
+      "code": "",
+      "name": "Eletrônica Experimental",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        38
+      ]
+    },
+    {
+      "seq": 41,
+      "code": "",
+      "name": "Instalações Elétricas Prediais",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        2,
+        24
+      ],
+      "co": []
+    },
+    {
+      "seq": 42,
+      "code": "",
+      "name": "Ondas e Propagação",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        24,
+        25
+      ],
+      "co": []
+    },
+    {
+      "seq": 43,
+      "code": "",
+      "name": "Resistência dos Materiais 1",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        26
+      ],
+      "co": []
+    },
+    {
+      "seq": 44,
+      "code": "",
+      "name": "Sistemas de Controle Experimental",
+      "hours": 16,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        36
+      ],
+      "co": [
+        33
+      ]
+    },
+    {
+      "seq": 45,
+      "code": "",
+      "name": "Eletrônica Digital Experimental",
+      "hours": 16,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        39
+      ],
+      "co": []
+    },
+    {
+      "seq": 46,
+      "code": "",
+      "name": "Conversão Eletromecânica de Energia",
+      "hours": 96,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        25,
+        26,
+        31
+      ],
+      "co": []
+    },
+    {
+      "seq": 47,
+      "code": "",
+      "name": "Instalações Elétricas Experimental",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        41
+      ],
+      "co": [
+        45
+      ]
+    },
+    {
+      "seq": 48,
+      "code": "",
+      "name": "Metodologia Científica",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 49,
+      "code": "",
+      "name": "Microprocessadores e Microcontroladores",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        39
+      ],
+      "co": []
+    },
+    {
+      "seq": 50,
+      "code": "",
+      "name": "Microprocessadores e Microcontroladores Experimental",
+      "hours": 16,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        49
+      ]
+    },
+    {
+      "seq": 51,
+      "code": "",
+      "name": "Teoria de Telecomunicações",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        33
+      ],
+      "co": []
+    },
+    {
+      "seq": 52,
+      "code": "",
+      "name": "Transmissão de Energia Elétrica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        31,
+        42
+      ],
+      "co": []
+    },
+    {
+      "seq": 53,
+      "code": "",
+      "name": "Conversão Eletromecânica de Energia Experimental",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        46
+      ],
+      "co": []
+    },
+    {
+      "seq": 54,
+      "code": "",
+      "name": "Economia B",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        "CH2400"
+      ],
+      "co": []
+    },
+    {
+      "seq": 55,
+      "code": "",
+      "name": "Fundamentos da Administração",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        "CH2400"
+      ],
+      "co": []
+    },
+    {
+      "seq": 56,
+      "code": "",
+      "name": "Introdução a Sistemas de Energia Elétrica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        30,
+        31
+      ],
+      "co": []
+    },
+    {
+      "seq": 57,
+      "code": "",
+      "name": "Sistemas de Comunicações",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        41,
+        51
+      ],
+      "co": []
+    },
+    {
+      "seq": 58,
+      "code": "",
+      "name": "Telecomunicações Experimental",
+      "hours": 16,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        51
+      ],
+      "co": []
+    },
+    {
+      "seq": 61,
+      "code": "",
+      "name": "Direito e Cidadania",
+      "hours": 32,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        "CH2400"
+      ],
+      "co": []
+    },
+    {
+      "seq": 62,
+      "code": "",
+      "name": "Eletrônica de Potência",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        31,
+        38
+      ],
+      "co": []
+    },
+    {
+      "seq": 63,
+      "code": "",
+      "name": "Engenharia de Segurança",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        "CH2016"
+      ],
+      "co": [
+        41
+      ]
+    },
+    {
+      "seq": 64,
+      "code": "",
+      "name": "Engenharia Econômica",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [
+        54
+      ],
+      "co": []
+    },
+    {
+      "seq": 65,
+      "code": "",
+      "name": "Gerenciamento de Projetos",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        55
+      ],
+      "co": []
+    },
+    {
+      "seq": 68,
+      "code": "",
+      "name": "Estágio Obrigatório",
+      "hours": 240,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        "CH1920",
+        5,
+        48
+      ],
+      "co": []
+    },
+    {
+      "seq": 69,
+      "code": "",
+      "name": "Projeto Final de Curso",
+      "hours": 224,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        "CH2496",
+        48
+      ],
+      "co": []
+    },
+    {
+      "seq": 70,
+      "code": "",
+      "name": "Acionamento de Máquinas Elétricas",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 71,
+      "code": "",
+      "name": "Acionamentos Eletrônicos",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 72,
+      "code": "",
+      "name": "Análise de Sistemas de Potência",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        56
+      ],
+      "co": []
+    },
+    {
+      "seq": 73,
+      "code": "",
+      "name": "Antenas",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        51
+      ],
+      "co": []
+    },
+    {
+      "seq": 74,
+      "code": "",
+      "name": "Aterramentos Elétricos",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        56
+      ],
+      "co": []
+    },
+    {
+      "seq": 75,
+      "code": "",
+      "name": "Automação Aplicada",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        49
+      ],
+      "co": []
+    },
+    {
+      "seq": 76,
+      "code": "",
+      "name": "Automação de Processos Industriais",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        49
+      ],
+      "co": []
+    },
+    {
+      "seq": 77,
+      "code": "",
+      "name": "Confiabilidade de Sistemas Elétricos",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        56
+      ],
+      "co": []
+    },
+    {
+      "seq": 78,
+      "code": "",
+      "name": "Controle Digital",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        36
+      ],
+      "co": []
+    },
+    {
+      "seq": 79,
+      "code": "",
+      "name": "Controle Moderno",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        8,
+        36
+      ],
+      "co": []
+    },
+    {
+      "seq": 80,
+      "code": "",
+      "name": "Distribuição de Energia Elétrica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        56
+      ],
+      "co": []
+    },
+    {
+      "seq": 81,
+      "code": "",
+      "name": "Eficiência Energética",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 82,
+      "code": "",
+      "name": "Eletrônica Digital 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        33,
+        39
+      ],
+      "co": []
+    },
+    {
+      "seq": 83,
+      "code": "",
+      "name": "Energias Renováveis",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        24
+      ],
+      "co": []
+    },
+    {
+      "seq": 84,
+      "code": "",
+      "name": "Energia Solar Fotovoltaica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        24,
+        29
+      ],
+      "co": []
+    },
+    {
+      "seq": 85,
+      "code": "",
+      "name": "Energia Solar Fotovoltaica Experimental",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        84
+      ],
+      "co": []
+    },
+    {
+      "seq": 86,
+      "code": "",
+      "name": "Educação para as Relações Étnico-Raciais",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 87,
+      "code": "",
+      "name": "Ética, Engenharia e Sociedade",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        "CH2400"
+      ],
+      "co": []
+    },
+    {
+      "seq": 88,
+      "code": "",
+      "name": "Geração de Energia Elétrica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        56
+      ],
+      "co": []
+    },
+    {
+      "seq": 89,
+      "code": "",
+      "name": "Instalações Elétricas Industriais",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        41,
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 90,
+      "code": "",
+      "name": "Introdução à Metrologia",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        13,
+        31
+      ],
+      "co": []
+    },
+    {
+      "seq": 91,
+      "code": "",
+      "name": "Processamento Digital de Sinais",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        51
+      ],
+      "co": []
+    },
+    {
+      "seq": 92,
+      "code": "",
+      "name": "Projetos com Microcontroladores",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        33,
+        49
+      ],
+      "co": []
+    },
+    {
+      "seq": 93,
+      "code": "",
+      "name": "Projetos de Máquinas Elétricas",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 94,
+      "code": "",
+      "name": "Propagação em Microondas",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        51
+      ],
+      "co": []
+    },
+    {
+      "seq": 95,
+      "code": "",
+      "name": "Proteção de Sistemas Elétricos",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        56
+      ],
+      "co": []
+    },
+    {
+      "seq": 96,
+      "code": "",
+      "name": "Qualidade de Energia Elétrica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        56
+      ],
+      "co": []
+    },
+    {
+      "seq": 97,
+      "code": "",
+      "name": "Regulação e Comercialização de Energia Elétrica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        56
+      ],
+      "co": []
+    },
+    {
+      "seq": 98,
+      "code": "",
+      "name": "Sistemas de Comunicações Móveis",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        51
+      ],
+      "co": []
+    },
+    {
+      "seq": 99,
+      "code": "",
+      "name": "Sistemas de Comunicações Ópticas",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        51
+      ],
+      "co": []
+    },
+    {
+      "seq": 100,
+      "code": "",
+      "name": "Sistemas de Televisão Digital",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        51
+      ],
+      "co": []
+    },
+    {
+      "seq": 101,
+      "code": "",
+      "name": "Técnicas de Análise de Dados na Pesquisa Científica",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        13
+      ],
+      "co": []
+    },
+    {
+      "seq": 102,
+      "code": "",
+      "name": "Tópicos Avançados em Engenharia Elétrica 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        31
+      ],
+      "co": []
+    },
+    {
+      "seq": 103,
+      "code": "",
+      "name": "Tópicos Avançados em Engenharia Elétrica 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        31
+      ],
+      "co": []
+    },
+    {
+      "seq": 104,
+      "code": "",
+      "name": "Tópicos Avançados em Engenharia Elétrica 3",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        31
+      ],
+      "co": []
+    },
+    {
+      "seq": 105,
+      "code": "",
+      "name": "Tópicos Avançados em Engenharia Elétrica 4",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        31
+      ],
+      "co": []
+    },
+    {
+      "seq": 106,
+      "code": "",
+      "name": "Tópicos Avançados em Engenharia Elétrica 5",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        31
+      ],
+      "co": []
+    },
+    {
+      "seq": 107,
+      "code": "",
+      "name": "Tópicos em Automação Industrial 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 108,
+      "code": "",
+      "name": "Tópicos em Automação Industrial 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 109,
+      "code": "",
+      "name": "Tópicos em Automação Industrial 3",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 110,
+      "code": "",
+      "name": "Tópicos em Automação Industrial 4",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 111,
+      "code": "",
+      "name": "Tópicos em Automação Industrial 5",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 112,
+      "code": "",
+      "name": "Tópicos em Eletrônica 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        38
+      ],
+      "co": []
+    },
+    {
+      "seq": 113,
+      "code": "",
+      "name": "Tópicos em Eletrônica 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        38
+      ],
+      "co": []
+    },
+    {
+      "seq": 114,
+      "code": "",
+      "name": "Tópicos em Eletrônica 3",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        38
+      ],
+      "co": []
+    },
+    {
+      "seq": 115,
+      "code": "",
+      "name": "Tópicos em Eletrônica 4",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        38
+      ],
+      "co": []
+    },
+    {
+      "seq": 116,
+      "code": "",
+      "name": "Tópicos em Eletrônica 5",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        38
+      ],
+      "co": []
+    },
+    {
+      "seq": 117,
+      "code": "",
+      "name": "Tópicos em Engenharia de Computação 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        14
+      ],
+      "co": []
+    },
+    {
+      "seq": 118,
+      "code": "",
+      "name": "Tópicos em Engenharia de Computação 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        14
+      ],
+      "co": []
+    },
+    {
+      "seq": 119,
+      "code": "",
+      "name": "Tópicos em Engenharia de Computação 3",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        14
+      ],
+      "co": []
+    },
+    {
+      "seq": 120,
+      "code": "",
+      "name": "Tópicos em Engenharia de Computação 4",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        14
+      ],
+      "co": []
+    },
+    {
+      "seq": 121,
+      "code": "",
+      "name": "Tópicos em Engenharia de Computação 5",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        14
+      ],
+      "co": []
+    },
+    {
+      "seq": 122,
+      "code": "",
+      "name": "Tópicos em Engenharia Elétrica 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        24
+      ],
+      "co": []
+    },
+    {
+      "seq": 123,
+      "code": "",
+      "name": "Tópicos em Engenharia Elétrica 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        24
+      ],
+      "co": []
+    },
+    {
+      "seq": 124,
+      "code": "",
+      "name": "Tópicos em Engenharia Elétrica 3",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        24
+      ],
+      "co": []
+    },
+    {
+      "seq": 125,
+      "code": "",
+      "name": "Tópicos em Engenharia Elétrica 4",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        24
+      ],
+      "co": []
+    },
+    {
+      "seq": 126,
+      "code": "",
+      "name": "Tópicos em Engenharia Elétrica 5",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        24
+      ],
+      "co": []
+    },
+    {
+      "seq": 127,
+      "code": "",
+      "name": "Tópicos em Sistemas de Energia 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 128,
+      "code": "",
+      "name": "Tópicos em Sistemas de Energia 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 129,
+      "code": "",
+      "name": "Tópicos em Sistemas de Energia 3",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 130,
+      "code": "",
+      "name": "Tópicos em Sistemas de Energia 4",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 131,
+      "code": "",
+      "name": "Tópicos em Sistemas de Energia 5",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        45
+      ],
+      "co": []
+    },
+    {
+      "seq": 132,
+      "code": "",
+      "name": "Tópicos em Telecomunicações 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        51
+      ],
+      "co": []
+    },
+    {
+      "seq": 133,
+      "code": "",
+      "name": "Tópicos em Telecomunicações 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        51
+      ],
+      "co": []
+    },
+    {
+      "seq": 134,
+      "code": "",
+      "name": "Tópicos em Telecomunicações 3",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        51
+      ],
+      "co": []
+    },
+    {
+      "seq": 135,
+      "code": "",
+      "name": "Tópicos em Telecomunicações 4",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        51
+      ],
+      "co": []
+    },
+    {
+      "seq": 136,
+      "code": "",
+      "name": "Tópicos em Telecomunicações 5",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        51
+      ],
+      "co": []
+    },
+    {
+      "seq": 137,
+      "code": "",
+      "name": "Pesquisa Operacional 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        30
+      ],
+      "co": []
+    },
+    {
+      "seq": 138,
+      "code": "",
+      "name": "Redes de Computadores 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        51
+      ],
+      "co": []
+    },
+    {
+      "seq": 139,
+      "code": "",
+      "name": "Robótica de Manipuladores 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        23,
+        26
+      ],
+      "co": []
+    },
+    {
+      "seq": 140,
+      "code": "",
+      "name": "Robótica de Manipuladores 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        36,
+        139
+      ],
+      "co": []
+    },
+    {
+      "seq": 141,
+      "code": "",
+      "name": "Robótica Móvel 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        36
+      ],
+      "co": []
+    },
+    {
+      "seq": 142,
+      "code": "",
+      "name": "Robótica Móvel 2",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        141
+      ],
+      "co": []
+    },
+    {
+      "seq": 143,
+      "code": "",
+      "name": "Sistemas Embarcados",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        24,
+        39
+      ],
+      "co": []
+    },
+    {
+      "seq": 144,
+      "code": "",
+      "name": "Acústica Básica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        21
+      ],
+      "co": []
+    },
+    {
+      "seq": 145,
+      "code": "",
+      "name": "Instrumentação",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        23,
+        33
+      ],
+      "co": []
+    },
+    {
+      "seq": 146,
+      "code": "",
+      "name": "Sistemas Térmicos",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        148
+      ],
+      "co": []
+    },
+    {
+      "seq": 147,
+      "code": "",
+      "name": "Termodinâmica Clássica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        9,
+        19
+      ],
+      "co": []
+    },
+    {
+      "seq": 148,
+      "code": "",
+      "name": "Transferência de Calor 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        16,
+        147
+      ],
+      "co": []
+    },
+    {
+      "seq": 149,
+      "code": "",
+      "name": "Engenharia de Software 1",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        14
+      ],
+      "co": []
+    },
+    {
+      "seq": 150,
+      "code": "",
+      "name": "Sistemas Operacionais",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        14
+      ],
+      "co": []
+    },
+    {
+      "seq": 151,
+      "code": "",
+      "name": "Topografia e Geodésia",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        2
+      ],
+      "co": []
+    },
+    {
+      "seq": 152,
+      "code": "",
+      "name": "Introdução à Física Quântica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        28
+      ],
+      "co": []
+    },
+    {
+      "seq": 153,
+      "code": "",
+      "name": "Introdução à Língua Brasileira de Sinais (LIBRAS)",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 154,
+      "code": "",
+      "name": "Contratação de Energia Elétrica",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        31
+      ],
+      "co": []
+    }
+  ]
+}

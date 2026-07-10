@@ -291,6 +291,11 @@ Regras do importador (`importCourse.ts`):
 - referências órfãs (`pre: [999]` sem seq 999) são **ignoradas** com aviso — não viram lixo;
 - ao final, o **cache do grafo** daquele curso é invalidado.
 
+> Matrizes prontas (Elétrica 2023, Mecânica 2018) e o template vivem em [`matrizes/`](../matrizes/)
+> com notas de validação por curso. Ferramentas: `npm run validar -- ../matrizes/arquivo.json`
+> (schema + integridade + somas) e `npm run matrizes` (importa todas). O CI revalida e importa cada
+> matriz commitada em `backend/test/integration/matrizes.test.ts`.
+
 ### Checklist para transcrever uma matriz nova
 
 1. Liste as disciplinas com `seq` = posição na matriz oficial (não invente números).

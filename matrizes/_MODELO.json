@@ -1,0 +1,101 @@
+{
+  "course": {
+    "slug": "sigla-curso-ano",
+    "name": "Nome do Curso — UFG (Goiânia)"
+  },
+  "totalHours": 4000,
+  "requirements": [
+    {
+      "key": "NC",
+      "label": "Núcleo Comum",
+      "hours": 1600
+    },
+    {
+      "key": "NEO",
+      "label": "Núcleo Específico Obrigatório",
+      "hours": 1900
+    },
+    {
+      "key": "OPT",
+      "label": "Núcleo Específico Optativo",
+      "hours": 300
+    },
+    {
+      "key": "NL",
+      "label": "Núcleo Livre",
+      "hours": 128
+    },
+    {
+      "key": "AC",
+      "label": "Atividades Complementares",
+      "hours": 100
+    }
+  ],
+  "milestones": [
+    {
+      "key": "CH2720",
+      "hours": 2720,
+      "description": "Marco por horas: destrava disciplinas que exigem N horas integralizadas (ex.: Estágio)"
+    }
+  ],
+  "subjects": [
+    {
+      "seq": 1,
+      "code": "",
+      "name": "Disciplina sem pré-requisito",
+      "hours": 64,
+      "nucleus": "NC",
+      "groupOpt": 0,
+      "pre": [],
+      "co": []
+    },
+    {
+      "seq": 2,
+      "code": "",
+      "name": "Disciplina com pré-requisito",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        1
+      ],
+      "co": []
+    },
+    {
+      "seq": 3,
+      "code": "",
+      "name": "Experimental com co-requisito",
+      "hours": 16,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [],
+      "co": [
+        2
+      ]
+    },
+    {
+      "seq": 4,
+      "code": "",
+      "name": "Disciplina destravada por horas",
+      "hours": 32,
+      "nucleus": "NE",
+      "groupOpt": 0,
+      "pre": [
+        "CH2720"
+      ],
+      "co": []
+    },
+    {
+      "seq": 5,
+      "code": "",
+      "name": "Optativa (grupo 2)",
+      "hours": 64,
+      "nucleus": "NE",
+      "groupOpt": 2,
+      "pre": [
+        2
+      ],
+      "co": []
+    }
+  ]
+}

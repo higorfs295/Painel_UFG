@@ -216,8 +216,9 @@ um pequeno; o compilador e os testes seguram as pontas entre eles.
 Boas portas de entrada (issues marcadas `good first issue` quando existirem):
 
 - **Realce de conflito de horário** na grade (o domínio `conflicts()` já existe; falta a UI).
-- **Transcrever uma matriz nova** (outro curso) seguindo `docs/DOMINIO.md` §8 — contribuição de
-  dados, zero código.
+- **Transcrever uma matriz nova** (outro curso) seguindo `docs/DOMINIO.md` §8 e o fluxo de
+  `matrizes/README.md` (`npm run validar` te diz na hora se está íntegra) — contribuição de
+  dados, zero código. Elétrica e Mecânica já estão lá como referência.
 - **Tela de "acordando o servidor"** para o cold start do Render (retry com feedback).
 - Tradução/i18n da UI (hoje pt-BR fixo).
 - Mais testes de componente no frontend (hoje a cobertura pesada está no backend + E2E).
