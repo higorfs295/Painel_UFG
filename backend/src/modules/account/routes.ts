@@ -4,18 +4,22 @@ import { z } from "zod";
 import argon2 from "argon2";
 import { exportUser, importUser } from "../../lib/backup.js";
 import { stripUndefined } from "../../lib/strip.js";
-import { periodInfo } from "../../domain/period.js";
+import { resolvePeriod } from "../../domain/period.js";
 
 export async function accountRoutes(app: FastifyInstance) {
   // Perfil do usuário autenticado (o frontend usa após login/refresh).
-  // Inclui a sugestão de período letivo corrente/férias (RF-20) calculada pelo relógio do servidor.
+  // Inclui o período letivo GLOBAL (RF-20 v2): resolvido pelo calendário acadêmico agendado
+  // pelos admins; sem calendário, cai na heurística de meses como sugestão.
   app.get("/", { preHandler: app.requireAuth }, async (req, reply) => {
-    const user = await app.prisma.user.findUnique({
-      where: { id: req.user.sub },
-      select: { id: true, name: true, email: true, role: true, theme: true, createdAt: true },
-    });
+    const [user, calendar] = await Promise.all([
+      app.prisma.user.findUnique({
+        where: { id: req.user.sub },
+        select: { id: true, name: true, email: true, role: true, theme: true, createdAt: true },
+      }),
+      app.prisma.academicPeriod.findMany({ orderBy: { startsAt: "asc" } }),
+    ]);
     if (!user) return reply.code(404).send({ error: "usuário não encontrado" });
-    return { ...user, period: periodInfo() };
+    return { ...user, period: resolvePeriod(calendar) };
   });
 
   // Troca de senha autenticada (exige a senha atual; revoga as outras sessões por segurança).

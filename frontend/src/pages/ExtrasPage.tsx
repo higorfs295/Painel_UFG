@@ -78,7 +78,7 @@ export default function ExtrasPage() {
                     <td><span className="badge">{x.category}</span></td>
                     <td>{x.done ? <span className="chip done"><span className="swatch" />Concluído</span> : <span className="chip sim"><span className="swatch" />Planejado</span>}</td>
                     <td>
-                      <div className="row" style={{ gap: 6, justifyContent: "flex-end" }}>
+                      <div className="row wrap" style={{ gap: 6, justifyContent: "flex-end" }}>
                         <Button size="sm" onClick={() => toggle.mutate({ id: x.id, done: !x.done })}>{x.done ? "Marcar planejado" : "Marcar concluído"}</Button>
                         <Button size="sm" variant="warn" onClick={() => remove.mutate(x.id)}>Remover</Button>
                       </div>

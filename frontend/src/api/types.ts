@@ -5,9 +5,17 @@ export type SubjectState = "APPROVED" | "SIMULATED" | "ENROLLED";
 export type GraphStatus = "done" | "avail" | "co" | "lock";
 export type ExtraCategory = "OPT" | "NL" | "AC" | "NONE";
 
-// RF-20 — sugestão de período letivo calculada pelo servidor (heurística; o valor
-// persistido em Enrollment.currentTerm é a fonte de verdade editável).
-export type PeriodInfo = { term: string | null; onBreak: boolean; label: string; nextTerm: string };
+// RF-20 v2 — período letivo GLOBAL resolvido pelo servidor a partir do calendário
+// acadêmico agendado pelos admins (fallback: heurística de meses).
+export type PeriodInfo = {
+  term: string | null; onBreak: boolean; label: string; nextTerm: string;
+  source: "calendar" | "heuristic"; nextStartsAt?: string;
+};
+
+// Entrada agendada do calendário acadêmico (admin).
+export type AcademicPeriodEntry = {
+  id: string; type: "TERM" | "BREAK"; term: string | null; startsAt: string; createdAt: string;
+};
 
 export type User = {
   id: string; name: string; email: string; role: Role; theme: Theme;
@@ -16,7 +24,7 @@ export type User = {
 
 export type Enrollment = {
   id: string; userId: string; courseId: string;
-  startTerm: string | null; currentTerm: string | null;
+  startTerm: string | null;
   course: { slug: string; name: string; totalHours: number };
 };
 

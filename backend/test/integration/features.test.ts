@@ -86,8 +86,8 @@ describe("estado CURSANDO (RF-19)", () => {
   });
 });
 
-describe("período letivo (RF-20)", () => {
-  it("GET /me expõe a sugestão; PATCH /me/enrollments/:id persiste currentTerm", async () => {
+describe("período letivo global (RF-20 v2)", () => {
+  it("GET /me expõe o período; PATCH /me/enrollments/:id só aceita startTerm", async () => {
     const user = await createUser(app, { password: "senha-forte-123" });
     const course = await app.prisma.course.findUniqueOrThrow({ where: { slug: courseSlug } });
     const enr = await app.prisma.enrollment.create({ data: { userId: user.id, courseId: course.id } });
@@ -96,19 +96,71 @@ describe("período letivo (RF-20)", () => {
     const me = (await app.inject({ method: "GET", url: "/me", headers: authHeader(accessToken) })).json();
     expect(me.period).toHaveProperty("label");
     expect(me.period).toHaveProperty("onBreak");
+    expect(me.period).toHaveProperty("source");
 
     const patch = await app.inject({
       method: "PATCH", url: `/me/enrollments/${enr.id}`,
-      headers: authHeader(accessToken), payload: { currentTerm: "2026.2" },
+      headers: authHeader(accessToken), payload: { startTerm: "2022.2" },
     });
     expect(patch.statusCode).toBe(200);
-    expect(patch.json().currentTerm).toBe("2026.2");
+    expect(patch.json().startTerm).toBe("2022.2");
 
+    // currentTerm saiu do PATCH do usuário: o período corrente agora é global (admin)
     const bad = await app.inject({
       method: "PATCH", url: `/me/enrollments/${enr.id}`,
-      headers: authHeader(accessToken), payload: { currentTerm: "verao-2026" },
+      headers: authHeader(accessToken), payload: { currentTerm: "2026.2" },
     });
     expect(bad.statusCode).toBe(400);
+  });
+
+  it("admin agenda viradas do calendário e o período resolvido reflete", async () => {
+    const admin = await createUser(app, { role: "ADMIN", password: "senha-admin-123" });
+    const { accessToken } = await login(app, admin.email, "senha-admin-123");
+    const dayMs = 24 * 60 * 60 * 1000;
+    const past = new Date(Date.now() - dayMs);     // TERM já vigente
+    const future = new Date(Date.now() + dayMs);   // BREAK agendado
+
+    const t1 = await app.inject({
+      method: "POST", url: "/admin/periods", headers: authHeader(accessToken),
+      payload: { type: "TERM", term: "2031.1", startsAt: past.toISOString() },
+    });
+    expect(t1.statusCode).toBe(201);
+    const t2 = await app.inject({
+      method: "POST", url: "/admin/periods", headers: authHeader(accessToken),
+      payload: { type: "BREAK", startsAt: future.toISOString() },
+    });
+    expect(t2.statusCode).toBe(201);
+
+    // TERM sem rótulo é rejeitado
+    const bad = await app.inject({
+      method: "POST", url: "/admin/periods", headers: authHeader(accessToken),
+      payload: { type: "TERM", startsAt: future.toISOString() },
+    });
+    expect(bad.statusCode).toBe(400);
+
+    const list = (await app.inject({
+      method: "GET", url: "/admin/periods", headers: authHeader(accessToken),
+    })).json();
+    expect(list.current.term).toBe("2031.1");
+    expect(list.current.source).toBe("calendar");
+    expect(list.current.nextStartsAt).toBe(future.toISOString());
+
+    // usuário comum não gerencia o calendário
+    const user = await createUser(app, { password: "senha-forte-123" });
+    const { accessToken: userToken } = await login(app, user.email, "senha-forte-123");
+    const nope = await app.inject({
+      method: "POST", url: "/admin/periods", headers: authHeader(userToken),
+      payload: { type: "BREAK", startsAt: future.toISOString() },
+    });
+    expect(nope.statusCode).toBe(403);
+
+    // limpeza: calendário é global — não vazar para outros testes
+    for (const e of list.entries) {
+      const del = await app.inject({
+        method: "DELETE", url: `/admin/periods/${e.id}`, headers: authHeader(accessToken),
+      });
+      expect(del.statusCode).toBe(204);
+    }
   });
 });
 

@@ -1,7 +1,9 @@
 // Utilitários dos testes E2E. Credenciais da conta semeada vêm do ambiente.
 import { expect, type Page } from "@playwright/test";
 
-export const EMAIL = process.env.E2E_USER_EMAIL ?? "fhigor295@gmail.com";
+// Conta-aluno semeada (o admin não tem matrícula e cai em /admin — os fluxos de aluno
+// precisam da conta de demonstração criada pelo seed).
+export const EMAIL = process.env.E2E_USER_EMAIL ?? "aluno@painel.local";
 export const PASSWORD = process.env.E2E_USER_PASSWORD ?? "";
 
 export function requireCredentials() {

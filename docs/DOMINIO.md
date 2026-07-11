@@ -248,19 +248,22 @@ horário (backlog de UI).
 
 ---
 
-## 7. Período letivo e férias (RF-20)
+## 7. Período letivo e férias (RF-20 v2 — calendário global)
 
-Dois níveis:
+O período letivo corrente é **um só para toda a instância** e vem de um **calendário acadêmico
+agendável** que só os admins editam (`AcademicPeriod`). Cada entrada é uma *virada*: numa data
+(`startsAt`) começa um `TERM` (com rótulo, ex.: `2026.2`) ou um `BREAK` (férias, `term=null`).
 
-1. **Persistido** — `Enrollment.currentTerm` (`"2026.2"`) e `startTerm`: o aluno edita nas
-   configurações; é a fonte de verdade exibida no topo.
-2. **Heurística** — `periodInfo(now)` sugere o período pelo calendário típico da UFG:
-   março–julho → `.1` · agosto–dezembro → `.2` · janeiro/fevereiro → **férias** (com o próximo
-   período sugerido). O servidor calcula (relógio confiável) e expõe em `GET /me`.
+`resolvePeriod(rows, now)` (`domain/period.ts`, puro):
+- **corrente** = última entrada com `startsAt <= now`; `onBreak` quando é `BREAK`.
+- **próximo** = próxima entrada futura (`nextStartsAt`) e o próximo `TERM` (`nextTerm`).
+- **sem calendário** → `heuristic(now)` sugere pelo mês (mar–jul → `.1` · ago–dez → `.2` ·
+  jan/fev → férias); `source:"heuristic"` sinaliza a sugestão. O servidor resolve e expõe em `GET /me`.
 
-A UI mostra o persistido quando existe; senão, a sugestão — e o chip vira "🌴 Férias" no recesso.
-Calendários reais variam (greves, reposições): por isso a heurística **nunca sobrescreve** o valor
-persistido, só preenche a lacuna.
+Exemplo real (o do próprio usuário): `2026.1` em curso → **06/07 começam as férias** → **10/08
+começa o `2026.2`** → férias → `2027.1`… O aluno mantém só o **período de ingresso** (`startTerm`)
+na matrícula; `currentTerm` foi removido (o PATCH da matrícula é `.strict()` e rejeita a chave).
+A UI (`Topbar`) mostra o chip global; o admin gere a linha do tempo em `/admin/periodos`.
 
 ---
 
@@ -356,8 +359,9 @@ trocar de servidor ou clonar o próprio perfil num ambiente de teste.
 | **Extra (componente)** | Item fora da matriz: OPT/NL/AC/NONE, com `done` (planejado não soma) |
 | **Cenário** | Hipótese de grade semanal: disciplinas com código SIGAA + células pintadas |
 | **Slot** | Uma célula dia×aula da grade (`"2-M1"` = segunda, 1ª aula da manhã) |
-| **Período (`2026.2`)** | Semestre letivo; `currentTerm` persistido na matrícula, com sugestão por heurística |
-| **Seed** | Script idempotente que importa a matriz de EngComp e a conta baseline |
+| **Período (`2026.2`)** | Semestre letivo; **global**, resolvido do calendário acadêmico agendado (admin), com heurística de fallback |
+| **Virada / calendário** | Entrada `AcademicPeriod`: numa data começa um `TERM` (rótulo) ou `BREAK` (férias); vale para todos |
+| **Seed** | Script idempotente: importa a matriz de EngComp, cria o **admin sem matrícula**, a **conta-aluno** baseline e o calendário exemplo |
 
 ## 12. Perguntas frequentes de quem chega agora
 

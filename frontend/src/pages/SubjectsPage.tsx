@@ -104,7 +104,7 @@ export default function SubjectsPage() {
                     <td className="mut">{s.nucleus}</td>
                     <td><StatusChip status={s.status} state={s.state} /></td>
                     <td>
-                      <div className="row" style={{ gap: 6, justifyContent: "flex-end" }}>
+                      <div className="row wrap" style={{ gap: 6, justifyContent: "flex-end", rowGap: 6 }}>
                         <Button size="sm" variant={s.state === "APPROVED" ? "prim" : "default"} disabled={!sid || mutate.isPending}
                           onClick={() => sid && mutate.mutate({ subjectId: sid, state: "APPROVED" })}>Aprovada</Button>
                         <Button size="sm" variant={s.state === "ENROLLED" ? "prim" : "default"} disabled={!sid || mutate.isPending}

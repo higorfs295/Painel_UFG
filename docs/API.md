@@ -134,6 +134,23 @@ Números agregados da instância:
   "activity": { "subjectStatuses": 310, "extras": 41, "scenarios": 9 } }
 ```
 
+### Calendário acadêmico global (RF-20 v2) `ADMIN`
+O período letivo corrente vale para **todos** e é resolvido de um calendário de *viradas*
+agendáveis: em cada `startsAt` começa um `TERM` (com `term`, ex.: `2026.2`) ou um `BREAK`
+(férias). O corrente = última entrada com `startsAt <= agora`; sem calendário, cai numa
+heurística de meses.
+
+- **GET /admin/periods** — `{ "entries": [...], "current": { "term","onBreak","label","nextTerm","source","nextStartsAt" } }`
+- **POST /admin/periods** — agenda/atualiza uma virada (upsert por `startsAt`):
+  ```bash
+  curl -X POST http://localhost:3333/admin/periods -H "Authorization: Bearer $TOKEN" \
+    -H 'Content-Type: application/json' -d '{"type":"BREAK","startsAt":"2026-07-06T00:00:00-03:00"}'
+  curl -X POST http://localhost:3333/admin/periods -H "Authorization: Bearer $TOKEN" \
+    -H 'Content-Type: application/json' -d '{"type":"TERM","term":"2026.2","startsAt":"2026-08-10T00:00:00-03:00"}'
+  ```
+  `201` entrada criada · `400` `TERM` sem `term` ou formato inválido · `403` não-admin.
+- **DELETE /admin/periods/:id** — remove uma virada. `204`.
+
 ---
 
 ## Cursos — `/courses`
@@ -171,20 +188,23 @@ Em `pre`/`co`: número = `seq` de outra disciplina; string = `milestoneKey` (req
 
 ### GET /me/enrollments
 Matrículas do usuário logado (com o curso).
-`[ { "id","courseId","startTerm","currentTerm","course":{...} } ]`
+`[ { "id","courseId","startTerm","course":{...} } ]`
 
 ### POST /me/enrollments (RF-17)
 Auto-matrícula em um curso do catálogo (idempotente). `{ "courseSlug": "..." }` → `201` com a
 matrícula · `400` curso inexistente.
 
-### PATCH /me/enrollments/:id (RF-20)
-Atualiza os períodos da própria matrícula. Formato `AAAA.S` validado; `null` limpa o campo.
+### PATCH /me/enrollments/:id (RF-20 v2)
+Atualiza o **período de ingresso** (`startTerm`) da própria matrícula. Formato `AAAA.S`
+validado; `null` limpa o campo. O período *corrente* saiu daqui — agora é global
+(calendário do admin, ver `/admin/periods`); enviar `currentTerm` (ou qualquer chave extra)
+é rejeitado com `400` (`.strict()`).
 ```bash
 curl -X PATCH http://localhost:3333/me/enrollments/$ENR \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  -d '{"currentTerm":"2026.2","startTerm":"2022.2"}'
+  -d '{"startTerm":"2022.2"}'
 ```
-`200` matrícula atualizada · `400 { issues: [...] }` formato inválido · `403` de outro usuário.
+`200` matrícula atualizada · `400 { issues: [...] }` formato/chave inválida · `403` de outro usuário.
 
 ### GET /me/enrollments/:id/progress
 Progresso agregado numa leitura (RF-05):
@@ -280,13 +300,15 @@ curl -X PUT http://localhost:3333/me/scenarios/$SID/paint \
 ## Conta e backup — `/me` `autenticado`
 
 ### GET /me
-Perfil do usuário logado + sugestão de período letivo (RF-20, relógio do servidor):
+Perfil do usuário logado + período letivo **global** (RF-20 v2), resolvido do calendário
+acadêmico (ver `/admin/periods`); sem calendário, cai na heurística de meses:
 ```json
 { "id":"...", "name":"...", "email":"...", "role":"USER", "theme":"dark",
-  "period": { "term":"2026.1", "onBreak":false, "label":"2026.1", "nextTerm":"2026.2" } }
+  "period": { "term":"2026.1", "onBreak":false, "label":"2026.1",
+              "nextTerm":"2026.2", "source":"calendar", "nextStartsAt":"2026-07-06T03:00:00.000Z" } }
 ```
-Em janeiro/fevereiro: `{ "term":null, "onBreak":true, "label":"Férias", "nextTerm":"2027.1" }`.
-A heurística é sugestiva — o valor persistido em `Enrollment.currentTerm` (PATCH acima) prevalece.
+Em férias: `{ "term":null, "onBreak":true, "label":"Férias", "nextTerm":"2026.2", "source":"calendar" }`.
+`source:"heuristic"` indica que ainda não há calendário cadastrado (o valor é uma sugestão).
 
 ### PATCH /me/settings
 Tema (RF-15) e/ou nome. `{ "theme":"light" }` → `200` com o perfil atualizado.
@@ -341,9 +363,9 @@ curl -s -X POST $API/me/enrollments -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' -d '{"courseSlug":"engcomp-ufg-2021"}' > enr.json
 ENR=$(python -c "import json;print(json.load(open('enr.json'))['id'])")
 
-# 3) Registrar o período corrente (RF-20)
+# 3) Registrar o período de ingresso (RF-20 v2). O período corrente é global (admin) — ver /admin/periods.
 curl -s -X PATCH $API/me/enrollments/$ENR -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"currentTerm":"2026.2","startTerm":"2026.1"}'
+  -H 'Content-Type: application/json' -d '{"startTerm":"2022.2"}'
 
 # 4) Descobrir o id de uma disciplina (o progresso traz seq; o curso mapeia seq->id)
 SUBJ=$(curl -s $API/courses/engcomp-ufg-2021 -H "Authorization: Bearer $TOKEN" \

@@ -30,13 +30,13 @@ export async function progressRoutes(app: FastifyInstance) {
     return reply.code(201).send(enr);
   });
 
-  // RF-20: período letivo — o usuário mantém startTerm/currentTerm da própria matrícula.
+  // O usuário mantém apenas o startTerm (ingresso) da própria matrícula; o período corrente
+  // é GLOBAL e vem do calendário acadêmico gerido pelos admins (RF-20 v2).
   app.patch("/enrollments/:id", { preHandler: app.requireAuth }, async (req, reply) => {
     const { id } = z.object({ id: z.string() }).parse(req.params);
     const patch = z.object({
-      currentTerm: z.string().regex(TERM_RE, "formato AAAA.S (ex.: 2026.2)").nullable().optional(),
       startTerm: z.string().regex(TERM_RE, "formato AAAA.S (ex.: 2022.2)").nullable().optional(),
-    }).parse(req.body);
+    }).strict().parse(req.body); // strict: rejeita currentTerm e afins — período corrente é global
     await assertEnrollmentOwner(app.prisma, id, req.user.sub);
     const enr = await app.prisma.enrollment.update({
       where: { id },

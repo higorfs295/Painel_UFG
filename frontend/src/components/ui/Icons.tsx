@@ -44,3 +44,15 @@ export const IconTarget = (p: SVGProps<SVGSVGElement>) => (
 export const IconCheck = (p: SVGProps<SVGSVGElement>) => (
   <I {...p}><circle cx="12" cy="12" r="8.5" /><path d="m8.2 12.2 2.6 2.6 5-5.6" /></I>
 );
+export const IconUsers = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><circle cx="9" cy="8.5" r="3.2" /><path d="M3.5 19.5c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5" /><path d="M15.5 5.8a3.2 3.2 0 0 1 0 5.4M17.8 14.9c1.6.8 2.5 2.4 2.8 4.6" /></I>
+);
+export const IconCal = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" /><path d="M3.5 10h17M8 2.8V6.5M16 2.8V6.5" /><path d="m9.5 15 2 2 3.5-4" /></I>
+);
+export const IconMenu = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><path d="M4 7h16M4 12h16M4 17h10" /></I>
+);
+export const IconX = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><path d="m6 6 12 12M18 6 6 18" /></I>
+);

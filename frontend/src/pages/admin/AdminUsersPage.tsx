@@ -1,30 +1,16 @@
-// Admin (RF-01/13/21): estatísticas, criar/convidar/remover usuários, papéis, matrículas
-// e importação de matrizes de curso.
+// Admin · Usuários (RF-01/21): criar/convidar/remover contas, papéis e matrículas.
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { admin, courses } from "../api/endpoints";
-import Card from "../components/ui/Card";
-import Button from "../components/ui/Button";
+import { admin, courses } from "../../api/endpoints";
+import Card from "../../components/ui/Card";
+import Button from "../../components/ui/Button";
 
-function Stat({ label, value }: { label: string; value: number | string }) {
-  return (
-    <div className="card tight center stat">
-      <div className="stat-val">{value}</div>
-      <div className="mut" style={{ fontSize: ".8rem" }}>{label}</div>
-    </div>
-  );
-}
-
-export default function AdminPage() {
+export default function AdminUsersPage() {
   const qc = useQueryClient();
   const [form, setForm] = useState({ name: "", email: "", role: "USER" as "USER" | "ADMIN", courseSlug: "" });
   const [lastLink, setLastLink] = useState<{ link: string; emailed: boolean } | null>(null);
-  const [matriz, setMatriz] = useState("");
-  const [importMsg, setImportMsg] = useState("");
-  const [importErr, setImportErr] = useState("");
   const [enrollPick, setEnrollPick] = useState<Record<string, string>>({}); // userId -> slug
 
-  const stats = useQuery({ queryKey: ["admin-stats"], queryFn: admin.stats });
   const users = useQuery({ queryKey: ["admin-users"], queryFn: admin.listUsers });
   const courseList = useQuery({ queryKey: ["courses"], queryFn: courses.list });
   const invalidate = () => {
@@ -51,26 +37,12 @@ export default function AdminPage() {
     onSuccess: invalidate,
   });
 
-  const doImport = useMutation({
-    mutationFn: () => courses.import(JSON.parse(matriz)),
-    onSuccess: (res) => { setImportMsg(`Curso "${res.slug}" importado (${res.subjects} disciplinas).`); setImportErr(""); setMatriz(""); qc.invalidateQueries({ queryKey: ["courses"] }); invalidate(); },
-    onError: () => { setImportErr("JSON inválido ou erro na importação."); setImportMsg(""); },
-  });
-
   return (
     <div className="stack">
-      <h1>Administração</h1>
-
-      {stats.data && (
-        <div className="cards">
-          <Stat label="Usuários" value={stats.data.users.total} />
-          <Stat label="Admins" value={stats.data.users.admins} />
-          <Stat label="Convites pendentes" value={stats.data.users.pendingInvites} />
-          <Stat label="Cursos" value={stats.data.courses} />
-          <Stat label="Matrículas" value={stats.data.enrollments} />
-          <Stat label="Disciplinas marcadas" value={stats.data.activity.subjectStatuses} />
-        </div>
-      )}
+      <header className="page-head">
+        <span className="eyebrow">Administração · contas</span>
+        <h1>Usuários</h1>
+      </header>
 
       <Card>
         <h3>Criar usuário (com convite)</h3>
@@ -140,7 +112,7 @@ export default function AdminPage() {
                       </div>
                     </td>
                     <td>
-                      <div className="row" style={{ gap: 6, justifyContent: "flex-end" }}>
+                      <div className="row wrap" style={{ gap: 6, justifyContent: "flex-end" }}>
                         <Button size="sm" onClick={() => reinvite.mutate(u.id)}>Reenviar convite</Button>
                         <Button size="sm" variant="warn" onClick={() => { if (confirm(`Remover ${u.name}?`)) remove.mutate(u.id); }}>Remover</Button>
                       </div>
@@ -151,17 +123,6 @@ export default function AdminPage() {
             </table>
           </div>
         )}
-      </Card>
-
-      <Card>
-        <h3>Importar matriz de curso (RF-13)</h3>
-        <p className="mut">Cole o JSON no mesmo formato do seed (<code>course</code>, <code>totalHours</code>, <code>requirements</code>, <code>milestones</code>, <code>subjects</code>).</p>
-        <textarea value={matriz} onChange={(e) => setMatriz(e.target.value)} rows={8} style={{ width: "100%", fontFamily: "monospace" }} placeholder='{ "course": { "slug": "...", "name": "..." }, ... }' />
-        <div className="row mt" style={{ gap: 8 }}>
-          <Button variant="prim" disabled={!matriz.trim() || doImport.isPending} onClick={() => doImport.mutate()}>Importar</Button>
-        </div>
-        {importMsg && <div className="ok mt">{importMsg}</div>}
-        {importErr && <div className="err mt" role="alert">{importErr}</div>}
       </Card>
     </div>
   );

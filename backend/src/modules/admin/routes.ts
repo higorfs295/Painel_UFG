@@ -1,6 +1,8 @@
-// RF-21 — visão administrativa: estatísticas da instância (somente ADMIN).
-// Complementa /users (gestão de contas) com números agregados para o painel do admin.
+// RF-21 — visão administrativa: estatísticas da instância e calendário acadêmico global
+// (RF-20 v2). Tudo somente ADMIN; o calendário vale para todos os usuários.
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
+import { TERM_RE, resolvePeriod } from "../../domain/period.js";
 
 export async function adminRoutes(app: FastifyInstance) {
   app.get("/stats", { preHandler: app.requireAdmin }, async () => {
@@ -21,5 +23,40 @@ export async function adminRoutes(app: FastifyInstance) {
       enrollments,
       activity: { subjectStatuses: statuses, extras, scenarios },
     };
+  });
+
+  // Calendário acadêmico: lista as entradas agendadas + o período resolvido agora.
+  app.get("/periods", { preHandler: app.requireAdmin }, async () => {
+    const entries = await app.prisma.academicPeriod.findMany({ orderBy: { startsAt: "asc" } });
+    return { entries, current: resolvePeriod(entries) };
+  });
+
+  // Agenda uma virada: em startsAt começa um TERM ("2026.2") ou um BREAK (férias).
+  // Datas passadas são aceitas de propósito — é assim que se define o período vigente.
+  app.post("/periods", { preHandler: app.requireAdmin }, async (req, reply) => {
+    const body = z.object({
+      type: z.enum(["TERM", "BREAK"]),
+      term: z.string().regex(TERM_RE, "formato AAAA.S (ex.: 2026.2)").nullish(),
+      startsAt: z.coerce.date(),
+    }).parse(req.body);
+    if (body.type === "TERM" && !body.term)
+      return reply.code(400).send({ error: "período letivo exige o rótulo (ex.: 2026.2)" });
+
+    const entry = await app.prisma.academicPeriod.upsert({
+      where: { startsAt: body.startsAt }, // 1 virada por data — reagendar sobrescreve
+      update: { type: body.type, term: body.type === "TERM" ? body.term! : null },
+      create: {
+        type: body.type,
+        term: body.type === "TERM" ? body.term! : null,
+        startsAt: body.startsAt,
+      },
+    });
+    return reply.code(201).send(entry);
+  });
+
+  app.delete("/periods/:id", { preHandler: app.requireAdmin }, async (req, reply) => {
+    const { id } = z.object({ id: z.string() }).parse(req.params);
+    await app.prisma.academicPeriod.delete({ where: { id } }).catch(() => null);
+    return reply.code(204).send();
   });
 }

@@ -2,7 +2,7 @@
 import { api, setAccessToken } from "./client";
 import type {
   User, Enrollment, Progress, Recommendation, Extra, CourseSummary, Scenario, AdminUser,
-  AdminStats, SubjectState, ExtraCategory, Theme,
+  AdminStats, SubjectState, ExtraCategory, Theme, AcademicPeriodEntry, PeriodInfo,
 } from "./types";
 
 // ---- auth ----
@@ -44,7 +44,7 @@ export const me = {
   enrollments: () => api<Enrollment[]>("/me/enrollments"),
   selfEnroll: (courseSlug: string) =>
     api<Enrollment>("/me/enrollments", { method: "POST", body: JSON.stringify({ courseSlug }) }),
-  updateEnrollment: (enrollmentId: string, patch: { currentTerm?: string | null; startTerm?: string | null }) =>
+  updateEnrollment: (enrollmentId: string, patch: { startTerm?: string | null }) =>
     api<Enrollment>(`/me/enrollments/${enrollmentId}`, { method: "PATCH", body: JSON.stringify(patch) }),
   progress: (enrollmentId: string) => api<Progress>(`/me/enrollments/${enrollmentId}/progress`),
   recommendations: (enrollmentId: string, limit = 12) =>
@@ -117,4 +117,9 @@ export const admin = {
     api<void>(`/users/${id}/enrollments/${enrollmentId}`, { method: "DELETE" }),
   removeUser: (id: string) => api<void>(`/users/${id}`, { method: "DELETE" }),
   stats: () => api<AdminStats>("/admin/stats"),
+  // calendário acadêmico global (RF-20 v2)
+  periods: () => api<{ entries: AcademicPeriodEntry[]; current: PeriodInfo }>("/admin/periods"),
+  addPeriod: (data: { type: "TERM" | "BREAK"; term?: string | null; startsAt: string }) =>
+    api<AcademicPeriodEntry>("/admin/periods", { method: "POST", body: JSON.stringify(data) }),
+  removePeriod: (id: string) => api<void>(`/admin/periods/${id}`, { method: "DELETE" }),
 };

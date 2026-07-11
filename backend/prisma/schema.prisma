@@ -37,6 +37,23 @@ enum ExtraCategory {
   NONE
 }
 
+enum PeriodType {
+  TERM
+  BREAK
+}
+
+// Calendário acadêmico GLOBAL (RF-20 v2): entradas agendadas por data de início, geridas
+// pelos admins e valendo para todos. O período corrente = última entrada com startsAt <= agora.
+// Ex.: 06/07 inicia BREAK (férias) -> 10/08 inicia TERM "2026.2" -> ...
+model AcademicPeriod {
+  id        String     @id @default(cuid())
+  type      PeriodType
+  term      String?    // "2026.2" quando TERM; null em BREAK
+  startsAt  DateTime   @unique
+  createdAt DateTime   @default(now())
+  @@index([startsAt])
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String

@@ -42,9 +42,17 @@ export default function RegisterPage() {
     }
   }
 
+  // brilho que segue o cursor no hero (Quantix)
+  function heroGlow(e: React.MouseEvent<HTMLElement>) {
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+  }
+
   return (
     <div className="auth-split">
-      <section className="auth-hero" aria-hidden="true">
+      <section className="auth-hero" aria-hidden="true" onMouseMove={heroGlow}>
+        <span className="auth-glow" />
         <div className="auth-brand"><span className="dot" />{APP_NAME}</div>
         <h1 className="auth-headline">Comece hoje a enxergar o seu <em>caminho</em>.</h1>
         <p className="auth-sub">{APP_TAGLINE}</p>

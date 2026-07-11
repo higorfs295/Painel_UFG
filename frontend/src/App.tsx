@@ -15,7 +15,10 @@ const SubjectsPage = lazy(() => import("./pages/SubjectsPage"));
 const ExtrasPage = lazy(() => import("./pages/ExtrasPage"));
 const SchedulePage = lazy(() => import("./pages/SchedulePage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
-const AdminPage = lazy(() => import("./pages/AdminPage"));
+const AdminHomePage = lazy(() => import("./pages/admin/AdminHomePage"));
+const AdminUsersPage = lazy(() => import("./pages/admin/AdminUsersPage"));
+const AdminCoursesPage = lazy(() => import("./pages/admin/AdminCoursesPage"));
+const AdminPeriodsPage = lazy(() => import("./pages/admin/AdminPeriodsPage"));
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const status = useAuth((s) => s.status);
@@ -27,6 +30,13 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 function RequireAdmin({ children }: { children: React.ReactNode }) {
   const user = useAuth((s) => s.user);
   if (user?.role !== "ADMIN") return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
+// Páginas de aluno não fazem sentido para o admin (ele não cursa) — vai para o painel dele.
+function StudentPage({ children }: { children: React.ReactNode }) {
+  const user = useAuth((s) => s.user);
+  if (user?.role === "ADMIN") return <Navigate to="/admin" replace />;
   return <>{children}</>;
 }
 
@@ -61,12 +71,15 @@ export default function App() {
               </RequireAuth>
             }
           >
-            <Route path="/" element={<OverviewPage />} />
-            <Route path="/disciplinas" element={<SubjectsPage />} />
-            <Route path="/extras" element={<ExtrasPage />} />
-            <Route path="/cronograma" element={<SchedulePage />} />
+            <Route path="/" element={<StudentPage><OverviewPage /></StudentPage>} />
+            <Route path="/disciplinas" element={<StudentPage><SubjectsPage /></StudentPage>} />
+            <Route path="/extras" element={<StudentPage><ExtrasPage /></StudentPage>} />
+            <Route path="/cronograma" element={<StudentPage><SchedulePage /></StudentPage>} />
             <Route path="/config" element={<SettingsPage />} />
-            <Route path="/admin" element={<RequireAdmin><AdminPage /></RequireAdmin>} />
+            <Route path="/admin" element={<RequireAdmin><AdminHomePage /></RequireAdmin>} />
+            <Route path="/admin/usuarios" element={<RequireAdmin><AdminUsersPage /></RequireAdmin>} />
+            <Route path="/admin/cursos" element={<RequireAdmin><AdminCoursesPage /></RequireAdmin>} />
+            <Route path="/admin/periodos" element={<RequireAdmin><AdminPeriodsPage /></RequireAdmin>} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

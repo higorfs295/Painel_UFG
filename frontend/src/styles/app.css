@@ -184,8 +184,9 @@ code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-siz
   background: linear-gradient(120deg, var(--sun), var(--copper) 65%, var(--ember));
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
+.stat-num { display: block; }
 .stat-num small { font-size: .95rem; -webkit-text-fill-color: var(--mut); font-family: var(--font-body); font-weight: 400; }
-.stat-lbl { font-size: .68rem; font-weight: 620; letter-spacing: .14em; text-transform: uppercase; color: var(--mut); margin-top: 2px; }
+.stat-lbl { display: block; font-size: .68rem; font-weight: 620; letter-spacing: .14em; text-transform: uppercase; color: var(--mut); margin-top: 2px; }
 
 /* ═══ TICKER / MARQUEE (recomendações vivas) ═══ */
 .ticker {
@@ -474,27 +475,26 @@ tbody tr:hover { background: color-mix(in srgb, var(--sun) 5%, transparent); }
   .auth-pane { border-left: none; border-top: 1px solid var(--hairline); }
 }
 @media (max-width: 900px) {
-  /* sidebar vira faixa superior: marca + nav horizontal rolável + usuário compacto */
+  /* sidebar vira gaveta off-canvas controlada pelo hambúrguer da topbar */
   .shell { grid-template-columns: minmax(0, 1fr); }
   .sidebar {
-    position: sticky; height: auto; flex-direction: row; align-items: center;
-    padding: 10px 12px; gap: 10px; min-width: 0; max-width: 100vw;
-    border-right: none; border-bottom: 1px solid var(--hairline);
+    position: fixed; inset: 0 auto 0 0; height: 100dvh; width: min(290px, 84vw);
+    min-width: 0; z-index: 60;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    transform: translateX(-104%);
+    transition: transform .55s var(--silk), box-shadow .55s var(--silk);
   }
-  .side-nav { min-width: 0; }
-  .sidebar::after { display: none; }
-  .side-brand { padding: 0 6px; }
-  .side-brand-name { display: none; }
-  .side-nav { flex-direction: row; overflow-x: auto; scrollbar-width: none; }
-  .side-nav::-webkit-scrollbar { display: none; }
-  .side-link { padding: 8px 12px; white-space: nowrap; }
-  .side-link span { font-size: .76rem; }
-  .side-user { padding: 6px; background: none; border: none; }
-  .side-user-info { display: none; }
+  .sidebar.open {
+    transform: none;
+    box-shadow: 24px 0 70px -30px rgba(0,0,0,.6);
+  }
+  .side-close { display: grid; }
+  .hamburger { display: grid; }
   .content { width: min(1080px, 100% - 28px); padding: 18px 0 64px; }
   .topbar { padding: 10px 16px; }
   .grid-2 { grid-template-columns: 1fr; }
 }
+@media (min-width: 901px) { .scrim { display: none; } }
 @media (max-width: 520px) {
   body { font-size: 14px; }
   .statgrid { grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -507,6 +507,224 @@ tbody tr:hover { background: color-mix(in srgb, var(--sun) 5%, transparent); }
   .authwrap::before { width: 340px; height: 340px; bottom: -130px; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Camada v5 — mescla profunda dos templates:
+   · mosaico bento (Quantix)            · numerais fantasma 01/02/03 (Luminary)
+   · faixa marquee inclinada (Frost)    · callout com borda cônica viva (NovaPay)
+   · stickers de marco (Frost)          · wordmark gigante no rodapé (Luminary)
+   · gaveta + hambúrguer no mobile      · brilho que segue o cursor no hero (Quantix)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── cabeçalho de página com sobrelinha ── */
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: .66rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--mut);
+}
+.eyebrow::before { content: ""; width: 22px; height: 2px; border-radius: 2px; background: var(--copper); flex: none; }
+.page-head { display: flex; flex-direction: column; gap: 4px; }
+.page-head h1 { margin-bottom: 0; }
+
+/* ── grupos da sidebar (Crypto Vault) ── */
+.side-group { display: flex; flex-direction: column; gap: 4px; }
+.side-group + .side-group { margin-top: 18px; }
+.side-group-label {
+  font-size: .6rem; font-weight: 720; letter-spacing: .24em; text-transform: uppercase;
+  color: var(--dim); padding: 0 14px 4px;
+}
+.side-close {
+  display: none; place-items: center; margin-left: auto;
+  background: none; border: none; color: var(--mut); cursor: pointer; padding: 6px; border-radius: 8px;
+}
+.side-close:hover { color: var(--tx); background: var(--glass-hi); }
+.hamburger {
+  display: none; place-items: center; padding: 8px; border-radius: 10px;
+  background: var(--glass-hi); border: 1px solid var(--hairline); color: var(--tx); cursor: pointer;
+  transition: border-color .4s var(--silk), transform .4s var(--silk);
+}
+.hamburger:hover { border-color: var(--hairline-hi); transform: translateY(-1px); }
+.scrim {
+  position: fixed; inset: 0; z-index: 50; border: none; cursor: pointer;
+  background: color-mix(in srgb, var(--bg) 45%, transparent);
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  animation: fadeIn .4s var(--silk) both;
+}
+
+/* ── mosaico bento ── */
+.bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+.b-cell {
+  position: relative; overflow: hidden;
+  padding: 22px; border-radius: var(--radius);
+  background: var(--glass); border: 1px solid var(--hairline);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+  transition: transform .6s var(--silk), border-color .6s var(--silk);
+}
+.b-cell:hover { transform: translateY(-3px); border-color: var(--hairline-hi); }
+.sp4 { grid-column: span 4; } .sp5 { grid-column: span 5; } .sp6 { grid-column: span 6; }
+.sp7 { grid-column: span 7; } .sp8 { grid-column: span 8; } .sp12 { grid-column: span 12; }
+
+/* numeral fantasma de seção (Luminary) — classe própria p/ não colidir com .btn.ghost */
+.ghostnum {
+  position: absolute; right: 6px; top: -26px; z-index: 0; pointer-events: none; user-select: none;
+  font-family: var(--font-display); font-size: 7.2rem; font-weight: 700; line-height: 1;
+  color: transparent; -webkit-text-stroke: 1.5px var(--hairline-hi);
+  opacity: .55;
+}
+.b-cell > *:not(.ghostnum) { position: relative; z-index: 1; }
+
+/* hero de integralização: número gigante em display */
+.hero-pct {
+  font-family: var(--font-display); font-weight: 600; line-height: .95; letter-spacing: -.02em;
+  font-size: clamp(3.6rem, 2.4rem + 5vw, 6rem); margin: 8px 0 6px;
+  background: linear-gradient(120deg, var(--sun), var(--copper) 55%, var(--ember));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-pct small { font-size: .32em; -webkit-text-fill-color: var(--mut); font-family: var(--font-body); font-weight: 400; letter-spacing: 0; }
+
+/* ── faixa marquee inclinada (Frost) ── */
+.strip {
+  position: relative; overflow: hidden; padding: 12px 0; margin: 6px -8px;
+  border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline);
+  transform: rotate(-1.1deg) scale(1.015);
+  background: color-mix(in srgb, var(--copper) 5%, transparent);
+}
+.strip-track {
+  display: inline-flex; gap: 30px; white-space: nowrap; will-change: transform;
+  animation: tickerScroll 40s linear infinite; padding-right: 30px;
+}
+.strip:hover .strip-track { animation-play-state: paused; }
+.strip-item {
+  display: inline-flex; align-items: center; gap: 12px;
+  font-family: var(--font-display); font-size: .84rem; font-weight: 560;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--mut);
+}
+.strip-item b { color: var(--tx); font-weight: 640; }
+.strip-item .up { color: var(--savanna); letter-spacing: .04em; }
+.strip-sep { color: var(--copper); font-size: .7rem; }
+
+/* ── stickers de marco: anel tracejado e leve inclinação (Frost) ── */
+.sticker {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 16px; border-radius: 999px;
+  border: 1.6px dashed color-mix(in srgb, var(--mut) 55%, transparent);
+  font-size: .78rem; font-weight: 650; color: var(--mut);
+  transform: rotate(-1.6deg);
+  transition: transform .5s var(--silk), border-color .5s var(--silk), color .5s var(--silk);
+  animation: popIn .5s var(--silk) both;
+}
+.sticker:nth-child(even) { transform: rotate(1.4deg); }
+.sticker:hover { transform: rotate(0) scale(1.05); }
+.sticker.done {
+  color: var(--done); border-color: color-mix(in srgb, var(--done) 65%, transparent);
+  background: color-mix(in srgb, var(--done) 9%, transparent);
+}
+.sticker.done::after { content: "✓"; font-weight: 800; }
+
+/* ── callout com borda cônica viva (NovaPay) ── */
+.callout {
+  position: relative; border-radius: var(--radius); padding: 22px;
+  background: var(--glass); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+}
+.callout::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.4px;
+  background: conic-gradient(from 140deg, var(--copper), var(--dusk) 30%, var(--sun) 62%, var(--ember) 82%, var(--copper));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: .75; pointer-events: none;
+  animation: calloutGlow 6s ease-in-out infinite alternate;
+}
+.callout-body { display: flex; flex-direction: column; gap: 6px; }
+.callout-big { font-family: var(--font-display); font-size: 1.7rem; font-weight: 620; line-height: 1.1; }
+
+/* ── grade de atalhos do admin ── */
+.linkgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.linkcard {
+  position: relative; display: flex; flex-direction: column; gap: 4px;
+  padding: 20px 22px; border-radius: var(--radius); color: var(--tx);
+  background: var(--glass); border: 1px solid var(--hairline);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  transition: transform .5s var(--silk), border-color .5s var(--silk);
+}
+.linkcard strong { font-family: var(--font-display); font-size: 1.12rem; font-weight: 620; }
+.linkcard:hover { transform: translateY(-3px); border-color: var(--hairline-hi); color: var(--tx); }
+.linkcard-go {
+  position: absolute; right: 18px; top: 18px; color: var(--copper); font-size: 1.1rem;
+  transition: transform .5s var(--silk);
+}
+.linkcard:hover .linkcard-go { transform: translateX(4px); }
+
+/* ── linha do tempo do calendário acadêmico ── */
+.timeline { list-style: none; margin: 6px 0 4px; padding: 2px 8px 10px; position: relative; }
+.timeline::before {
+  content: ""; position: absolute; left: 21px; top: 12px; bottom: 14px; width: 2px;
+  background: linear-gradient(180deg, transparent, var(--hairline-hi) 12%, var(--hairline-hi) 88%, transparent);
+}
+.tl-item { display: flex; align-items: center; gap: 12px; padding: 10px 6px 10px 6px; position: relative; }
+.tl-dot {
+  width: 11px; height: 11px; border-radius: 50%; flex: none; margin-left: 8px;
+  background: var(--dim); border: 2px solid var(--bg); z-index: 1;
+}
+.tl-item.current .tl-dot {
+  background: radial-gradient(circle at 35% 30%, var(--sun), var(--copper));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--sun) 55%, transparent);
+}
+.tl-item.past { opacity: .55; }
+.tl-date { font-size: .8rem; color: var(--mut); min-width: 110px; }
+.tl-del {
+  margin-left: auto; background: none; border: none; color: var(--dim); cursor: pointer;
+  font-size: 1rem; padding: 4px 10px; border-radius: 8px;
+  transition: color .4s var(--silk), background .4s var(--silk);
+}
+.tl-del:hover { color: var(--lock); background: color-mix(in srgb, var(--lock) 12%, transparent); }
+
+/* ── miudezas v5 ── */
+.stat-sub { display: block; font-size: .7rem; color: var(--dim); margin-top: 4px; }
+.enr-list { list-style: none; margin: 6px 0 12px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+
+/* brilho que segue o cursor no hero de auth (Quantix) */
+.auth-glow {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .8s var(--silk);
+  background: radial-gradient(340px 340px at var(--mx, 50%) var(--my, 40%),
+    color-mix(in srgb, var(--sun) 13%, transparent), transparent 70%);
+}
+.auth-hero:hover .auth-glow { opacity: 1; }
+
+/* rodapé com wordmark gigante (Luminary) */
+.foot {
+  margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--hairline);
+  display: flex; flex-direction: column; gap: 2px; overflow: hidden;
+}
+.foot-word {
+  font-family: var(--font-display); font-weight: 700; line-height: .9; letter-spacing: -.02em;
+  font-size: clamp(2.6rem, 1rem + 7vw, 5.6rem); white-space: nowrap;
+  color: transparent; -webkit-text-stroke: 1.5px var(--hairline-hi);
+  user-select: none;
+}
+.foot small { color: var(--dim); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; }
+
+/* aparição ao rolar */
+.reveal { opacity: 0; transform: translateY(22px); }
+.reveal.in { opacity: 1; transform: none; transition: opacity .9s var(--silk), transform .9s var(--silk); }
+
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes calloutGlow { from { opacity: .45; } to { opacity: .95; } }
+
+@media (max-width: 1100px) {
+  .sp4 { grid-column: span 6; }
+  .sp5, .sp7 { grid-column: span 12; }
+}
+/* precisa vir DEPOIS das regras-base .hamburger/.side-close (display:none) p/ vencer no mobile */
+@media (max-width: 900px) {
+  .hamburger, .side-close { display: grid; }
+}
+@media (max-width: 700px) {
+  .sp4, .sp6, .sp8 { grid-column: span 12; }
+  .ghostnum { font-size: 5rem; }
+  .tl-date { min-width: 84px; }
+}
+
 /* ── respeita quem prefere menos movimento ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -517,5 +735,8 @@ tbody tr:hover { background: color-mix(in srgb, var(--sun) 5%, transparent); }
   }
   .bar > span { width: revert; }
   body::after { display: none; }
-  .ticker-track { animation: none; }
+  .ticker-track, .strip-track { animation: none; }
+  .strip { transform: none; }
+  .reveal { opacity: 1; transform: none; }
+  .sticker { transform: none; }
 }

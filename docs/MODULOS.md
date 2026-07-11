@@ -55,7 +55,7 @@ test/{unit,integration}/  # Vitest
 | --- | --- | --- |
 | `graph.ts` | `statusOf()`, `buildDeps()`, `unlockCount()` | status de disciplina (done/avail/co/lock) a partir de pré/co e marcos; grafo de dependências; destravamento transitivo |
 | `sums.ts` | `sums()`, `cappedPct()`, tipos `Minimums`/`CompositionSum` | somas por composição com **contribuição limitada ao mínimo** (raw/counted/excess) — a regra do teto explicada em `DOMINIO.md` §2 |
-| `period.ts` | `periodInfo()`, `compareTerms()`, `TERM_RE` | RF-20: período letivo corrente/férias por heurística de calendário (sugestão; `currentTerm` persistido prevalece) |
+| `period.ts` | `resolvePeriod()`, `heuristic()`, `TERM_RE` | RF-20 v2: período letivo **global** resolvido do calendário acadêmico agendado (última virada `startsAt<=agora`); sem calendário, `heuristic()` sugere pelo mês |
 | `sigaa.ts` | `parseSIGAA()`, `conflicts()`, `SLOTS` | parser de código de horário (`"56M23456"`→slots), detecção de conflito |
 | `progress.ts` | `computeProgress()`, `recommend()` | agrega composições+status+marcos+projeção; ranqueia recomendações |
 | `loadCourse.ts` | `loadCourseGraph()`, `invalidateCourseGraph()` | ponte Prisma→domínio com **cache** por curso (TTL 5 min) |
@@ -70,11 +70,11 @@ Cada função registra os handlers da área. Contrato detalhado em [`API.md`](AP
 | `auth` | 02/03/04/**17** | `POST /auth/{register, invite/accept, login, refresh, logout, password/forgot}` (rate limit por rota nas de segredo; register gated por `ALLOW_REGISTRATION`) |
 | `users` | 01/**21** | `GET/POST /users`, `PATCH /users/:id` (papel/nome), `POST /users/:id/invite`, `POST/DELETE /users/:id/enrollments[/:enrId]`, `DELETE /users/:id` (ADMIN; convites enviados por e-mail quando há SMTP) |
 | `courses` | 13 | `GET /courses`, `GET /courses/:slug`, `POST /courses/import` |
-| `progress` | 05/06/07/**17/19/20** | `GET/POST /me/enrollments`, `PATCH /me/enrollments/:id` (períodos), `GET .../progress`, `PUT .../subjects/:id` (APPROVED/ENROLLED/SIMULATED), `GET .../recommendations` |
+| `progress` | 05/06/07/**17/19/20** | `GET/POST /me/enrollments`, `PATCH /me/enrollments/:id` (só `startTerm`, `.strict()`), `GET .../progress`, `PUT .../subjects/:id` (APPROVED/ENROLLED/SIMULATED), `GET .../recommendations` |
 | `extras` | 08/09 | `GET/POST /me/enrollments/:id/extras`, `PATCH/DELETE /me/extras/:id` |
 | `schedules` | 10/11/12 | CRUD de `scenarios`/`disciplines` (valida SIGAA) + `PUT .../paint`; exporta `SigaaError` |
 | `account` | 15/16/**20** | `GET /me` (+período), `PATCH /me/settings`, `POST /me/password`, `GET /me/export`, `POST /me/import` |
-| `admin` | **21** | `GET /admin/stats` (números agregados da instância) |
+| `admin` | **20/21** | `GET /admin/stats` (números agregados) · `GET/POST/DELETE /admin/periods` (calendário acadêmico global) |
 
 ## Dados e testes
 
@@ -130,16 +130,20 @@ src/
 | `LoginPage` | `/login` | login + "esqueci a senha" + link para cadastro |
 | `RegisterPage` | `/cadastro` | RF-17: auto-registro (autentica na resposta; trata instância fechada/409) |
 | `InvitePage` | `/convite/:token`, `/reset/:token` | define a própria senha |
-| `OverviewPage` | `/` | donut, composições (teto+excedente), marcos, recomendações; grafismo tribal |
-| `SubjectsPage` | `/disciplinas` | tabela com status, filtros e os três estados (Aprovada/**Cursando**/Simular) |
-| `ExtrasPage` | `/extras` | CRUD de extras; alterna concluído/planejado |
-| `SchedulePage` | `/cronograma` | cenários, disciplinas (SIGAA), grade **navegável por teclado** (roving tabindex) + pintura |
-| `SettingsPage` | `/config` | nome, **troca de senha**, **período letivo** (com sugestão), **matrículas**, tema, backup |
-| `AdminPage` | `/admin` | **cards de estatísticas**, criar/convidar, **papel por select**, **matricular/desmatricular**, remover, importar matriz |
+| `OverviewPage` | `/` | mosaico **bento** v5: hero de integralização, donut, composições, callout do próximo marco, stickers, recomendações (só aluno) |
+| `SubjectsPage` | `/disciplinas` | tabela com status, filtros e os três estados (Aprovada/**Cursando**/Simular) (só aluno) |
+| `ExtrasPage` | `/extras` | CRUD de extras; alterna concluído/planejado (só aluno) |
+| `SchedulePage` | `/cronograma` | cenários, disciplinas (SIGAA), grade **navegável por teclado** (roving tabindex) + pintura (só aluno) |
+| `SettingsPage` | `/config` | nome, **troca de senha**, tema; para aluno também **matrículas** (com período de ingresso) e backup |
+| `admin/AdminHomePage` | `/admin` | **visão do sistema**: stat-cards (usuários/cursos/período vigente/atividade) + atalhos |
+| `admin/AdminUsersPage` | `/admin/usuarios` | criar/convidar, **papel por select**, **matricular/desmatricular**, remover |
+| `admin/AdminCoursesPage` | `/admin/cursos` | catálogo de matrizes + importação (RF-13) |
+| `admin/AdminPeriodsPage` | `/admin/periodos` | **calendário acadêmico global**: agenda viradas (TERM/BREAK) + linha do tempo (RF-20 v2) |
 
-Camada de layout: `AppLayout` mostra o **seletor de curso** (auto-matrícula) quando a conta não
-tem matrícula; `AppHeader` exibe o **chip de período/férias** (currentTerm persistido > heurística
-do servidor via `GET /me`).
+Camada de layout: `Sidebar` é **papel-consciente** (aluno vê a jornada; ADMIN vê só a gestão) e
+no mobile (≤900px) vira **gaveta off-canvas** com hambúrguer na `Topbar` + scrim. O ADMIN **não
+cursa** — `AppLayout` pula matrícula/`CoursePicker` e as páginas de aluno redirecionam para
+`/admin`. `Topbar` exibe o **chip de período/férias** global (do calendário, via `GET /me`).
 
 ## Estilos e acessibilidade
 
