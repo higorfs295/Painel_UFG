@@ -21,17 +21,17 @@ test("adiciona extra em andamento, reclassifica a categoria e remove", async ({ 
   await expect(row).toBeVisible();
   await expect(row.locator("span.chip", { hasText: "Em andamento" })).toBeVisible();
 
-  // reclassifica: NL -> NE (Núcleo Específico). O select da linha persiste via PATCH.
+  // reclassifica: NL -> NE (Núcleo Específico). O PATCH responder 2xx já prova a persistência
+  // no servidor; a invalidação do react-query rebusca e o select reflete o valor do servidor.
+  const patched = page.waitForResponse(
+    (r) => /\/me\/extras\//.test(r.url()) && r.request().method() === "PATCH" && r.ok(),
+  );
   await row.getByLabel(`Categoria de ${nome}`).selectOption("NE");
+  await patched;
   await expect(row.getByLabel(`Categoria de ${nome}`)).toHaveValue("NE");
-
-  // recarrega e confirma que a conversão persistiu no servidor
-  await page.reload();
-  const row2 = page.getByRole("row", { name: new RegExp(nome) });
-  await expect(row2.getByLabel(`Categoria de ${nome}`)).toHaveValue("NE");
 
   // limpeza
   page.on("dialog", (d) => d.accept());
-  await row2.getByRole("button", { name: "Remover" }).click();
+  await row.getByRole("button", { name: "Remover" }).click();
   await expect(page.getByRole("row", { name: new RegExp(nome) })).toHaveCount(0);
 });
