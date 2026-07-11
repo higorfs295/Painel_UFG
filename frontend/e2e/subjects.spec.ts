@@ -14,16 +14,18 @@ test("simular disciplina atualiza a projeção e limpar restaura", async ({ page
   const row = page.getByRole("row", { name: /Fundamentos de Lógica/ });
   await expect(row).toBeVisible();
 
-  // estado inicial: disponível, sem projeção divergente
+  // estado inicial: disponível
   await expect(row.getByText("Disponível")).toBeVisible();
 
-  // simula -> chip muda e o total projetado aparece no cabeçalho
+  // simula -> o chip da linha muda e o total projetado aparece no cabeçalho
   await row.getByRole("button", { name: "Simular" }).click();
   await expect(row.getByText("Simulada")).toBeVisible({ timeout: 10_000 });
   await expect(page.getByText(/Projetado:/)).toBeVisible();
 
-  // limpa -> volta a disponível e a projeção some
+  // limpa -> a linha volta a disponível e some o estado simulado
+  // (o chip "Projetado:" do cabeçalho pode persistir por causa de disciplinas cursando —
+  // por isso a asserção é no nível da linha, não do total)
   await row.getByRole("button", { name: "Limpar" }).click();
   await expect(row.getByText("Disponível")).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByText(/Projetado:/)).toHaveCount(0);
+  await expect(row.getByText("Simulada")).toHaveCount(0);
 });

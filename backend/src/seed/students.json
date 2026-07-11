@@ -1,0 +1,26 @@
+{
+  "_doc": "Modelo de contas-aluno semeadas. Cada item vira um usuário USER matriculado no curso. Para criar mais contas conforme o desenvolvimento, basta adicionar objetos aqui (idempotente por e-mail). 'profile' aponta um JSON de baseline em src/seed/ (opcional); sem ele, a conta nasce só com as seqs/extras inline. Senha = SEED_STUDENT_PASSWORD (ou SEED_ADMIN_PASSWORD).",
+  "students": [
+    {
+      "name": "Aluno Padrão",
+      "email": "painel@aluno.com",
+      "matricula": "20240010000",
+      "shift": "matutino",
+      "courseSlug": "engcomp-ufg-2021",
+      "startTerm": "2024.1",
+      "approvedSeq": [1, 4, 5, 9, 10, 15, 16, 25, 32],
+      "enrolledSeq": [27, 35],
+      "extras": [
+        { "name": "Libras", "code": "FL0001", "ch": 64, "cat": "NL", "done": true },
+        { "name": "Atividades Complementares (parcial)", "code": "", "ch": 80, "cat": "AC", "done": true }
+      ]
+    },
+    {
+      "name": "Higor Ferreira Silva",
+      "email": "higor_ferreira@discente.ufg.br",
+      "shift": "noturno",
+      "courseSlug": "engcomp-ufg-2021",
+      "profile": "perfil-higor.json"
+    }
+  ]
+}

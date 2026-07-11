@@ -51,7 +51,10 @@ npm install
 # 3) Migrar o schema (gera o Prisma Client e cria as tabelas)
 npm run migrate            # prisma migrate dev --name init (na 1ª vez pede o nome)
 
-# 4) Popular o banco (curso EngComp + sua conta) — senha via env, nunca versionada
+# 4) Popular o banco (curso EngComp + contas-modelo) — senha via env, nunca versionada.
+# Cria: painel@admin.com (ADMIN, sem matrícula) e as contas-aluno de src/seed/students.json
+# (painel@aluno.com de demonstração + higor_ferreira@discente.ufg.br com a baseline).
+# Adicione objetos em students.json para semear mais alunos. SEED_STUDENT_PASSWORD é opcional.
 SEED_ADMIN_PASSWORD='defina-uma-senha-forte' npm run seed
 
 # 5) Rodar a API
@@ -73,7 +76,7 @@ npm run typecheck          # checagem de tipos (tsc --noEmit)
 cd frontend
 npm install
 npm run dev                # http://localhost:5173
-# login com a conta do seed (fhigor295@gmail.com) e a senha definida em SEED_ADMIN_PASSWORD
+# login: painel@admin.com (admin) ou painel@aluno.com (aluno) com a senha do SEED
 ```
 
 Páginas: Login, **Cadastro** (auto-registro, RF-17), Convite, Visão geral, Disciplinas (com os

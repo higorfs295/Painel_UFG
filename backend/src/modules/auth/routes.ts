@@ -56,7 +56,7 @@ export async function authRoutes(app: FastifyInstance) {
     reply.setCookie(REFRESH_COOKIE, refresh, refreshCookieOptions());
     return reply.code(201).send({
       accessToken: signAccess(user),
-      user: { id: user.id, name: user.name, email: user.email, role: user.role, theme: user.theme },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, theme: user.theme, matricula: user.matricula, shift: user.shift },
     });
   });
 
@@ -81,7 +81,7 @@ export async function authRoutes(app: FastifyInstance) {
     reply.setCookie(REFRESH_COOKIE, refresh, refreshCookieOptions());
     return reply.send({
       accessToken: signAccess(user),
-      user: { id: user.id, name: user.name, email: user.email, role: user.role, theme: user.theme },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, theme: user.theme, matricula: user.matricula, shift: user.shift },
     });
   });
 

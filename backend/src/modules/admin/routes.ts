@@ -6,21 +6,40 @@ import { TERM_RE, resolvePeriod } from "../../domain/period.js";
 
 export async function adminRoutes(app: FastifyInstance) {
   app.get("/stats", { preHandler: app.requireAdmin }, async () => {
-    const [users, admins, pendingInvites, courses, enrollments, statuses, extras, scenarios] =
-      await Promise.all([
-        app.prisma.user.count(),
-        app.prisma.user.count({ where: { role: "ADMIN" } }),
-        app.prisma.user.count({ where: { passwordHash: null } }),
-        app.prisma.course.count(),
-        app.prisma.enrollment.count(),
-        app.prisma.subjectStatus.count(),
-        app.prisma.extraComponent.count(),
-        app.prisma.scenario.count(),
-      ]);
+    const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const [
+      users, admins, pendingInvites, courses, enrollments, statuses, extras, scenarios,
+      newUsers30d, byCourseRaw, courseRows,
+    ] = await Promise.all([
+      app.prisma.user.count(),
+      app.prisma.user.count({ where: { role: "ADMIN" } }),
+      app.prisma.user.count({ where: { passwordHash: null } }),
+      app.prisma.course.count(),
+      app.prisma.enrollment.count(),
+      app.prisma.subjectStatus.count(),
+      app.prisma.extraComponent.count(),
+      app.prisma.scenario.count(),
+      // +1 métrica admin: crescimento — cadastros nos últimos 30 dias
+      app.prisma.user.count({ where: { createdAt: { gte: since30d } } }),
+      // +2 métrica admin: distribuição de matrículas por curso
+      app.prisma.enrollment.groupBy({ by: ["courseId"], _count: { _all: true } }),
+      app.prisma.course.findMany({ select: { id: true, slug: true, name: true } }),
+    ]);
+
+    const nameById = new Map(courseRows.map((c) => [c.id, c]));
+    const byCourse = byCourseRaw
+      .map((g) => ({
+        slug: nameById.get(g.courseId)?.slug ?? "?",
+        name: nameById.get(g.courseId)?.name ?? "(curso removido)",
+        count: g._count._all,
+      }))
+      .sort((a, b) => b.count - a.count);
+
     return {
-      users: { total: users, admins, pendingInvites },
+      users: { total: users, admins, pendingInvites, newUsers30d },
       courses,
       enrollments,
+      byCourse,
       activity: { subjectStatuses: statuses, extras, scenarios },
     };
   });

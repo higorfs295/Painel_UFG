@@ -3,7 +3,7 @@ import { expect, type Page } from "@playwright/test";
 
 // Conta-aluno semeada (o admin não tem matrícula e cai em /admin — os fluxos de aluno
 // precisam da conta de demonstração criada pelo seed).
-export const EMAIL = process.env.E2E_USER_EMAIL ?? "aluno@painel.local";
+export const EMAIL = process.env.E2E_USER_EMAIL ?? "painel@aluno.com";
 export const PASSWORD = process.env.E2E_USER_PASSWORD ?? "";
 
 export function requireCredentials() {

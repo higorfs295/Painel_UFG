@@ -39,7 +39,7 @@ Depois do cadastro, matricule-se com `POST /me/enrollments`.
 ```bash
 curl -i -X POST http://localhost:3333/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"email":"fhigor295@gmail.com","password":"sua-senha"}'
+  -d '{"email":"painel@aluno.com","password":"sua-senha"}'
 ```
 `200` → devolve o access token e seta o cookie `rt` (httpOnly):
 ```json
@@ -127,10 +127,12 @@ Remove o usuário (cascade). `204` · `400` se for a própria conta.
 ## Administração — `/admin` `ADMIN`
 
 ### GET /admin/stats (RF-21)
-Números agregados da instância:
+Números agregados da instância — inclui crescimento (`newUsers30d`) e distribuição de
+matrículas por curso (`byCourse`, ordenada desc):
 ```json
-{ "users": { "total": 12, "admins": 1, "pendingInvites": 3 },
+{ "users": { "total": 12, "admins": 1, "pendingInvites": 3, "newUsers30d": 4 },
   "courses": 2, "enrollments": 14,
+  "byCourse": [ { "slug": "engcomp-ufg-2021", "name": "…", "count": 9 } ],
   "activity": { "subjectStatuses": 310, "extras": 41, "scenarios": 9 } }
 ```
 
@@ -304,14 +306,18 @@ Perfil do usuário logado + período letivo **global** (RF-20 v2), resolvido do 
 acadêmico (ver `/admin/periods`); sem calendário, cai na heurística de meses:
 ```json
 { "id":"...", "name":"...", "email":"...", "role":"USER", "theme":"dark",
+  "matricula":"20240010000", "shift":"matutino",
   "period": { "term":"2026.1", "onBreak":false, "label":"2026.1",
               "nextTerm":"2026.2", "source":"calendar", "nextStartsAt":"2026-07-06T03:00:00.000Z" } }
 ```
 Em férias: `{ "term":null, "onBreak":true, "label":"Férias", "nextTerm":"2026.2", "source":"calendar" }`.
 `source:"heuristic"` indica que ainda não há calendário cadastrado (o valor é uma sugestão).
+`matricula` (nº de matrícula, opcional) e `shift` (turno) podem ser `null`.
 
 ### PATCH /me/settings
-Tema (RF-15) e/ou nome. `{ "theme":"light" }` → `200` com o perfil atualizado.
+Perfil do próprio usuário (`.strict()`): `theme` (RF-15), `name`, `matricula` (opcional, `""`/`null`
+limpa) e `shift` (`matutino|vespertino|noturno|integral` ou `null`). `{ "matricula":"20240010000",
+"shift":"noturno" }` → `200` com o perfil atualizado.
 
 ### POST /me/password
 Troca de senha autenticada. Exige a senha atual; **revoga todas as sessões** (os refresh tokens

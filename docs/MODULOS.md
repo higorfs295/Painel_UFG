@@ -78,11 +78,14 @@ Cada função registra os handlers da área. Contrato detalhado em [`API.md`](AP
 
 ## Dados e testes
 
-- `prisma/schema.prisma`: 14 entidades + enums; `@@unique` e `@@index` nas FKs consultadas
+- `prisma/schema.prisma`: 15 entidades + enums; `User` tem `matricula`/`shift` opcionais;
+  `AcademicPeriod` guarda o calendário global. `@@unique`/`@@index` nas FKs consultadas
   (`RefreshToken.userId/expiresAt`, `Requisite.subjectId/requiresSubjectId`, `ExtraComponent.enrollmentId`,
-  `Scenario.enrollmentId`, `ScenarioDiscipline.scenarioId`, `InviteToken.userId`).
-- `seed/seed.ts`: usa `importCourse` para a matriz e popula a conta baseline (RF-14); exige
-  `SEED_ADMIN_PASSWORD`. JSONs: `matriz-engcomp-2021.json`, `perfil-higor.json`.
+  `Scenario.enrollmentId`, `ScenarioDiscipline.scenarioId`, `InviteToken.userId`, `AcademicPeriod.startsAt`).
+- `seed/seed.ts`: `importCourse` para a matriz, cria o **admin sem matrícula** (painel@admin.com) e
+  itera `students.json` (modelo extensível de contas-aluno: painel@aluno.com de demonstração +
+  higor_ferreira@discente.ufg.br com a baseline de `perfil-higor.json`); semeia o calendário exemplo.
+  Exige `SEED_ADMIN_PASSWORD`; `SEED_STUDENT_PASSWORD` opcional.
 - `test/unit/`: domínio + crypto (sem banco). `test/integration/`: rotas via `app.inject` + concorrência
   de sessão (contra Postgres real; `TEST_DATABASE_URL` opcional).
 
@@ -134,9 +137,9 @@ src/
 | `SubjectsPage` | `/disciplinas` | tabela com status, filtros e os três estados (Aprovada/**Cursando**/Simular) (só aluno) |
 | `ExtrasPage` | `/extras` | CRUD de extras; alterna concluído/planejado (só aluno) |
 | `SchedulePage` | `/cronograma` | cenários, disciplinas (SIGAA), grade **navegável por teclado** (roving tabindex) + pintura (só aluno) |
-| `SettingsPage` | `/config` | nome, **troca de senha**, tema; para aluno também **matrículas** (com período de ingresso) e backup |
-| `admin/AdminHomePage` | `/admin` | **visão do sistema**: stat-cards (usuários/cursos/período vigente/atividade) + atalhos |
-| `admin/AdminUsersPage` | `/admin/usuarios` | criar/convidar, **papel por select**, **matricular/desmatricular**, remover |
+| `SettingsPage` | `/config` | nome, **dados acadêmicos** (matrícula/turno), **troca de senha**, tema; p/ aluno também **matrículas** (ingresso) e backup |
+| `admin/AdminHomePage` | `/admin` | **visão do sistema**: stat-cards com contadores animados (usuários, **novos 30d**, cursos, atividade), **matrículas por curso**, período vigente + atalhos |
+| `admin/AdminUsersPage` | `/admin/usuarios` | criar/convidar, **papel por select**, **matricular/desmatricular**, remover; mostra **matrícula/turno** |
 | `admin/AdminCoursesPage` | `/admin/cursos` | catálogo de matrizes + importação (RF-13) |
 | `admin/AdminPeriodsPage` | `/admin/periodos` | **calendário acadêmico global**: agenda viradas (TERM/BREAK) + linha do tempo (RF-20 v2) |
 
@@ -150,7 +153,11 @@ cursa** — `AppLayout` pula matrícula/`CoursePicker` e as páginas de aluno re
 - `styles/theme.css`: tokens da paleta **cerrado/pôr do sol/povos nativos** em dark e light
   (terra/urucum, ocre, oliva, entardecer, jenipapo) + gradientes (`--sunset`, `--dawnwash`).
 - `styles/app.css`: componentes, **animações** (com `prefers-reduced-motion`), **responsividade**
-  (breakpoints 820/520px) e **acessibilidade** (`:focus-visible`, `.skiplink`, `.sr-only`, foco da grade).
+  (breakpoints 1100/900/520px) e **acessibilidade** (`:focus-visible`, `.skiplink`, `.sr-only`, foco da grade).
+  Design v5 mescla mais fundo os templates de referência: mosaico **bento**, numerais fantasma,
+  faixa **marquee** inclinada, **callout** de borda cônica, **orbes** de fundo flutuantes,
+  contadores animados (`useCountUp`/`CountNum`), **controle segmentado**, aparição por rolagem
+  (`Reveal`/IntersectionObserver) e wordmark de rodapé.
 
 ---
 

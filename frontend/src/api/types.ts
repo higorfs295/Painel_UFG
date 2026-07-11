@@ -17,8 +17,11 @@ export type AcademicPeriodEntry = {
   id: string; type: "TERM" | "BREAK"; term: string | null; startsAt: string; createdAt: string;
 };
 
+export type Shift = "matutino" | "vespertino" | "noturno" | "integral";
+
 export type User = {
   id: string; name: string; email: string; role: Role; theme: Theme;
+  matricula?: string | null; shift?: Shift | null;
   createdAt?: string; period?: PeriodInfo;
 };
 
@@ -67,12 +70,14 @@ export type Scenario = { id: string; enrollmentId: string; name: string; discipl
 
 export type AdminUser = {
   id: string; name: string; email: string; role: Role; createdAt: string;
+  matricula: string | null; shift: Shift | null;
   active: boolean; courses: { enrollmentId: string; slug: string; name: string }[];
 };
 
 export type AdminStats = {
-  users: { total: number; admins: number; pendingInvites: number };
+  users: { total: number; admins: number; pendingInvites: number; newUsers30d: number };
   courses: number;
   enrollments: number;
+  byCourse: { slug: string; name: string; count: number }[];
   activity: { subjectStatuses: number; extras: number; scenarios: number };
 };

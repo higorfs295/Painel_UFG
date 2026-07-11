@@ -3,7 +3,7 @@
 import { test, expect } from "@playwright/test";
 import { PASSWORD, requireCredentials } from "./helpers";
 
-const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? "fhigor295@gmail.com";
+const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? "painel@admin.com";
 
 test.beforeAll(() => requireCredentials());
 

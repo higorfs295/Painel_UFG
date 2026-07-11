@@ -99,7 +99,10 @@ export default function SchedulePage() {
 
   return (
     <div className="stack">
-      <h1>Cronograma</h1>
+      <header className="page-head">
+        <span className="eyebrow">grade semanal</span>
+        <h1>Cronograma</h1>
+      </header>
 
       <Card tight>
         <div className="row wrap spread">

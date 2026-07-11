@@ -31,7 +31,10 @@ export default function ExtrasPage() {
 
   return (
     <div className="stack">
-      <h1>Componentes extras</h1>
+      <header className="page-head">
+        <span className="eyebrow">além da matriz</span>
+        <h1>Componentes <em>extras</em></h1>
+      </header>
       <p className="mut">Optativas fora da matriz, Núcleo Livre, Atividades Complementares e registros (estágio, ligas, IC). Planejados não somam.</p>
 
       <Card>

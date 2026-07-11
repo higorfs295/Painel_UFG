@@ -7,16 +7,17 @@ import { me } from "../api/endpoints";
 import { useApp } from "../store/app";
 import Card from "../components/ui/Card";
 import Reveal from "../components/ui/Reveal";
+import CountNum from "../components/ui/CountNum";
 import { IconTarget, IconCheck, IconFlame } from "../components/ui/Icons";
 import type { Composition, Recommendation } from "../api/types";
 
-function StatCell({ icon: Icon, num, unit, label }: {
-  icon: ComponentType<SVGProps<SVGSVGElement>>; num: string | number; unit?: string; label: string;
+function StatCell({ icon: Icon, value, unit, label }: {
+  icon: ComponentType<SVGProps<SVGSVGElement>>; value: number | null; unit?: string; label: string;
 }) {
   return (
-    <section className="b-cell sp4">
+    <section className="b-cell sp4 stat-cell">
       <div className="stat-ico"><Icon /></div>
-      <div className="stat-num">{num}{unit && <small> {unit}</small>}</div>
+      <div className="stat-num">{value === null ? "—" : <CountNum value={value} />}{value !== null && unit && <small> {unit}</small>}</div>
       <div className="stat-lbl">{label}</div>
     </section>
   );
@@ -100,7 +101,7 @@ export default function OverviewPage() {
         <section className="b-cell sp7">
           <span className="ghostnum" aria-hidden="true">01</span>
           <span className="eyebrow">integralização</span>
-          <div className="hero-pct">{Math.round(prog.totals.pct)}<small>%</small></div>
+          <div className="hero-pct"><CountNum value={prog.totals.pct} /><small>%</small></div>
           <p className="mut" style={{ margin: "0 0 12px" }}>
             {prog.totals.hours.toLocaleString("pt-BR")}h de {prog.totals.required.toLocaleString("pt-BR")}h
             {" "}integralizadas · {doneCount} disciplinas concluídas
@@ -112,11 +113,11 @@ export default function OverviewPage() {
           <Donut pct={prog.totals.pct} label="integralizado" />
         </section>
 
-        <StatCell icon={IconCheck} num={doneCount} label="Concluídas" />
-        <StatCell icon={IconTarget} num={availCount} label="Disponíveis agora" />
+        <StatCell icon={IconCheck} value={doneCount} label="Concluídas" />
+        <StatCell icon={IconTarget} value={availCount} label="Disponíveis agora" />
         <StatCell icon={IconFlame}
-          num={nextMilestone ? Math.max(0, nextMilestone.hours - prog.totals.hours).toLocaleString("pt-BR") : "—"}
-          {...(nextMilestone ? { unit: "h" } : {})}
+          value={nextMilestone ? Math.max(0, nextMilestone.hours - prog.totals.hours) : null}
+          unit="h"
           label={nextMilestone ? `Até o marco ${nextMilestone.key}` : "Marcos concluídos"} />
       </div>
 

@@ -69,15 +69,22 @@ export default function SubjectsPage() {
 
   return (
     <div className="stack">
-      <h1>Disciplinas</h1>
+      <header className="page-head">
+        <span className="eyebrow">matriz curricular</span>
+        <h1>Disciplinas</h1>
+      </header>
 
       <Card tight>
         <div className="row wrap spread">
-          <div className="row wrap" style={{ gap: 8 }}>
+          <div className="row wrap" style={{ gap: 10 }}>
             <input placeholder="Buscar por nome ou código…" value={q} onChange={(e) => setQ(e.target.value)} style={{ minWidth: 240 }} />
-            <select value={filter} onChange={(e) => setFilter(e.target.value as GraphStatus | "all")}>
-              {STATUS_OPTS.map((o) => <option key={o.v} value={o.v}>{o.label}</option>)}
-            </select>
+            <div className="seg" role="tablist" aria-label="Filtrar por situação">
+              {STATUS_OPTS.map((o) => (
+                <button key={o.v} type="button" role="tab" aria-selected={filter === o.v}
+                  className={"seg-btn" + (filter === o.v ? " on" : "")}
+                  onClick={() => setFilter(o.v)}>{o.label}</button>
+              ))}
+            </div>
           </div>
           <div className="row" style={{ gap: 14 }}>
             <span className="mut">Oficial: <b>{prog.totals.hours}h</b></span>

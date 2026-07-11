@@ -13,6 +13,7 @@ export async function userRoutes(app: FastifyInstance) {
       orderBy: { createdAt: "asc" },
       select: {
         id: true, name: true, email: true, role: true, createdAt: true,
+        matricula: true, shift: true,
         passwordHash: true, // usado só para derivar `active`; não é retornado
         enrollments: { select: { id: true, course: { select: { slug: true, name: true } } } },
       },

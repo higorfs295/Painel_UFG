@@ -40,7 +40,7 @@ export default function AdminUsersPage() {
   return (
     <div className="stack">
       <header className="page-head">
-        <span className="eyebrow">Administração · contas</span>
+        <span className="eyebrow">administração · contas</span>
         <h1>Usuários</h1>
       </header>
 
@@ -76,12 +76,13 @@ export default function AdminUsersPage() {
         {users.isLoading ? <div className="spinner" role="status">Carregando…</div> : (
           <div className="tablewrap">
             <table>
-              <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Situação</th><th>Cursos</th><th style={{ textAlign: "right" }}>Ações</th></tr></thead>
+              <thead><tr><th>Nome</th><th>E-mail</th><th>Matrícula</th><th>Papel</th><th>Situação</th><th>Cursos</th><th style={{ textAlign: "right" }}>Ações</th></tr></thead>
               <tbody>
                 {users.data?.map((u) => (
                   <tr key={u.id}>
-                    <td>{u.name}</td>
+                    <td>{u.name}{u.shift && <span className="badge" style={{ marginLeft: 6 }}>{u.shift}</span>}</td>
                     <td className="mut">{u.email}</td>
+                    <td className="mut">{u.matricula || "—"}</td>
                     <td>
                       <select value={u.role} aria-label={`Papel de ${u.name}`}
                         onChange={(e) => patchRole.mutate({ id: u.id, role: e.target.value as "ADMIN" | "USER" })}>

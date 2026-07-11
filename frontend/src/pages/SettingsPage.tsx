@@ -7,6 +7,12 @@ import { me, courses } from "../api/endpoints";
 import { useAuth, applyTheme } from "../store/auth";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
+import type { Shift } from "../api/types";
+
+const SHIFTS: { v: Shift; label: string }[] = [
+  { v: "matutino", label: "Matutino" }, { v: "vespertino", label: "Vespertino" },
+  { v: "noturno", label: "Noturno" }, { v: "integral", label: "Integral" },
+];
 
 const TERM_RE = /^\d{4}\.[12]$/;
 
@@ -21,6 +27,9 @@ export default function SettingsPage() {
 
   // perfil
   const [name, setName] = useState(user?.name ?? "");
+  // dados acadêmicos (aluno): matrícula (opcional) e turno
+  const [acad, setAcad] = useState({ matricula: user?.matricula ?? "", shift: user?.shift ?? "" });
+  const [acadMsg, setAcadMsg] = useState("");
   // senha
   const [pwd, setPwd] = useState({ current: "", next: "", confirm: "" });
   const [pwdMsg, setPwdMsg] = useState<{ ok?: string; err?: string }>({});
@@ -38,6 +47,18 @@ export default function SettingsPage() {
       patchUser({ name: updated.name });
       setMsg("Nome atualizado.");
     } catch { setErr("Falha ao salvar o nome."); }
+  }
+
+  async function saveAcad() {
+    setAcadMsg("");
+    try {
+      const updated = await me.updateSettings({
+        matricula: acad.matricula.trim() || null,
+        shift: (acad.shift || null) as Shift | null,
+      });
+      patchUser({ matricula: updated.matricula, shift: updated.shift });
+      setAcadMsg("Dados acadêmicos salvos.");
+    } catch { setAcadMsg("Falha ao salvar."); }
   }
 
   async function changePwd(e: React.FormEvent) {
@@ -106,7 +127,10 @@ export default function SettingsPage() {
 
   return (
     <div className="stack">
-      <h1>Ajustes</h1>
+      <header className="page-head">
+        <span className="eyebrow">preferências</span>
+        <h1>Ajustes</h1>
+      </header>
 
       <Card>
         <h3>Conta</h3>
@@ -120,6 +144,30 @@ export default function SettingsPage() {
         {msg && <div className="ok mt">{msg}</div>}
         {err && <div className="err mt">{err}</div>}
       </Card>
+
+      {!isAdmin && (
+        <Card>
+          <h3>Dados acadêmicos</h3>
+          <p className="mut">Número de matrícula (opcional) e turno das aulas — usados para identificar e organizar o cronograma.</p>
+          <div className="row wrap mt" style={{ alignItems: "flex-end", gap: 10 }}>
+            <label className="field" style={{ flex: "1 1 200px" }}>Nº de matrícula
+              <input value={acad.matricula} onChange={(e) => setAcad({ ...acad, matricula: e.target.value })}
+                placeholder="ex.: 20240010000" maxLength={30} inputMode="numeric" />
+            </label>
+            <label className="field" style={{ width: 170 }}>Turno
+              <select value={acad.shift} onChange={(e) => setAcad({ ...acad, shift: e.target.value as Shift | "" })}>
+                <option value="">— não informado —</option>
+                {SHIFTS.map((s) => <option key={s.v} value={s.v}>{s.label}</option>)}
+              </select>
+            </label>
+            <Button onClick={saveAcad}
+              disabled={acad.matricula === (user?.matricula ?? "") && acad.shift === (user?.shift ?? "")}>
+              Salvar
+            </Button>
+          </div>
+          {acadMsg && <div className={acadMsg.includes("salvos") ? "ok mt" : "err mt"}>{acadMsg}</div>}
+        </Card>
+      )}
 
       <Card>
         <h3>Senha</h3>

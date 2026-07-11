@@ -72,7 +72,7 @@ jobs:
       DATABASE_URL: postgresql://painel:painel@localhost:5432/painel_e2e?schema=public
       DIRECT_URL: postgresql://painel:painel@localhost:5432/painel_e2e?schema=public
       JWT_SECRET: ci-secret-please-change-me-0123456789abcdef
-      E2E_USER_EMAIL: aluno@painel.local
+      E2E_USER_EMAIL: painel@aluno.com
       E2E_USER_PASSWORD: ci-e2e-password-123
       CI: "true"
     steps:

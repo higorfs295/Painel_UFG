@@ -85,6 +85,7 @@ export default function AppLayout() {
 
   return (
     <div className="shell">
+      <div className="orbs" aria-hidden="true"><span className="orb a" /><span className="orb b" /><span className="orb c" /></div>
       <a href="#conteudo" className="skiplink">Pular para o conteúdo</a>
       <Sidebar onLogout={logout} open={navOpen} onClose={() => setNavOpen(false)} />
       {navOpen && <button className="scrim" aria-label="Fechar menu" onClick={() => setNavOpen(false)} />}

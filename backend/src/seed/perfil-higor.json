@@ -1,8 +1,9 @@
 {
+ "_doc": "Baseline auditada (RF-14). A identidade da conta vem de students.json (nome/e-mail); aqui só valem enrollment.startTerm, approvedSeq e extras.",
  "user": {
   "name": "Higor Ferreira Silva",
-  "email": "fhigor295@gmail.com",
-  "role": "ADMIN"
+  "email": "higor_ferreira@discente.ufg.br",
+  "role": "USER"
  },
  "enrollment": {
   "courseSlug": "engcomp-ufg-2021",

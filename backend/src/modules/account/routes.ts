@@ -14,7 +14,10 @@ export async function accountRoutes(app: FastifyInstance) {
     const [user, calendar] = await Promise.all([
       app.prisma.user.findUnique({
         where: { id: req.user.sub },
-        select: { id: true, name: true, email: true, role: true, theme: true, createdAt: true },
+        select: {
+          id: true, name: true, email: true, role: true, theme: true,
+          matricula: true, shift: true, createdAt: true,
+        },
       }),
       app.prisma.academicPeriod.findMany({ orderBy: { startsAt: "asc" } }),
     ]);
@@ -42,15 +45,20 @@ export async function accountRoutes(app: FastifyInstance) {
     return reply.code(204).send();
   });
 
-  // RF-15: tema (e nome) por usuário, persistido.
+  // RF-15: perfil por usuário, persistido — tema, nome e dados acadêmicos (matrícula/turno).
+  // `null` limpa o campo opcional; chave ausente não toca (semântica de PATCH via stripUndefined).
   app.patch("/settings", { preHandler: app.requireAuth }, async (req) => {
     const patch = z.object({
       theme: z.enum(["dark", "light"]).optional(),
       name: z.string().min(2).optional(),
-    }).parse(req.body);
+      matricula: z.string().trim().max(30).transform((v) => v || null).nullable().optional(),
+      shift: z.enum(["matutino", "vespertino", "noturno", "integral"]).nullable().optional(),
+    }).strict().parse(req.body);
     return app.prisma.user.update({
       where: { id: req.user.sub }, data: stripUndefined(patch),
-      select: { id: true, name: true, email: true, role: true, theme: true },
+      select: {
+        id: true, name: true, email: true, role: true, theme: true, matricula: true, shift: true,
+      },
     });
   });
 

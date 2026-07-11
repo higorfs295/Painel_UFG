@@ -2,7 +2,7 @@
 import { api, setAccessToken } from "./client";
 import type {
   User, Enrollment, Progress, Recommendation, Extra, CourseSummary, Scenario, AdminUser,
-  AdminStats, SubjectState, ExtraCategory, Theme, AcademicPeriodEntry, PeriodInfo,
+  AdminStats, SubjectState, ExtraCategory, Theme, AcademicPeriodEntry, PeriodInfo, Shift,
 } from "./types";
 
 // ---- auth ----
@@ -37,7 +37,7 @@ export const auth = {
 // ---- conta ----
 export const me = {
   profile: () => api<User>("/me"),
-  updateSettings: (patch: { theme?: Theme; name?: string }) =>
+  updateSettings: (patch: { theme?: Theme; name?: string; matricula?: string | null; shift?: Shift | null }) =>
     api<User>("/me/settings", { method: "PATCH", body: JSON.stringify(patch) }),
   changePassword: (current: string, next: string) =>
     api<void>("/me/password", { method: "POST", body: JSON.stringify({ current, next }) }),
