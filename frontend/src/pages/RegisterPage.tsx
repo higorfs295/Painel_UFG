@@ -50,16 +50,23 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="auth-split">
+    <div className="authpage">
+      <div className="orbs" aria-hidden="true"><span className="orb a" /><span className="orb b" /><span className="orb c" /></div>
+      <div className="auth-split">
       <section className="auth-hero" aria-hidden="true" onMouseMove={heroGlow}>
         <span className="auth-glow" />
-        <div className="auth-brand"><span className="dot" />{APP_NAME}</div>
+        <span className="auth-spark"><i>✦</i><i>✦</i><i>✦</i></span>
+        <div className="auth-brand"><span className="side-logo">{APP_NAME.split(/\s+/).map((w) => w[0]).join("").slice(0, 2)}</span>{APP_NAME}</div>
         <h1 className="auth-headline">Comece hoje a enxergar o seu <em>caminho</em>.</h1>
         <p className="auth-sub">{APP_TAGLINE}</p>
         <div className="auth-points">
           <span className="auth-point"><IconSun /> Visão geral com marcos e progresso real</span>
           <span className="auth-point"><IconBook /> Aprovadas, cursando e simuladas — lado a lado</span>
           <span className="auth-point"><IconClock /> Grade semanal navegável até por teclado</span>
+        </div>
+        <div className="auth-social">
+          <div className="auth-avatars"><span>AM</span><span>JS</span><span>LR</span><span>+</span></div>
+          <small>cadastro leva <b>menos de um minuto</b></small>
         </div>
       </section>
 
@@ -85,6 +92,7 @@ export default function RegisterPage() {
           </form>
         </Card>
       </section>
+      </div>
     </div>
   );
 }

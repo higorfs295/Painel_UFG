@@ -24,25 +24,25 @@ export default function AdminHomePage() {
       </header>
 
       <div className="bento">
-        <div className="b-cell sp3 stat-cell">
+        <div className="b-cell sp3 stat-cell tint-copper">
           <span className="stat-ico"><IconUsers /></span>
           <span className="stat-num">{s ? <CountNum value={s.users.total} /> : "…"}</span>
           <span className="stat-lbl">usuários</span>
           <span className="stat-sub">{s ? `${s.users.admins} admin(s) · ${s.users.pendingInvites} convite(s) pendente(s)` : ""}</span>
         </div>
-        <div className="b-cell sp3 stat-cell">
+        <div className="b-cell sp3 stat-cell tint-savanna">
           <span className="stat-ico"><IconSprout /></span>
           <span className="stat-num">{s ? <><span className="plus">+</span><CountNum value={s.users.newUsers30d} /></> : "…"}</span>
           <span className="stat-lbl">novos (30 dias)</span>
           <span className="stat-sub">crescimento recente de contas</span>
         </div>
-        <div className="b-cell sp3 stat-cell">
+        <div className="b-cell sp3 stat-cell tint-jenipapo">
           <span className="stat-ico"><IconBook /></span>
           <span className="stat-num">{s ? <CountNum value={s.courses} /> : "…"}</span>
           <span className="stat-lbl">cursos</span>
           <span className="stat-sub">{s ? `${s.enrollments} matrícula(s)` : ""}</span>
         </div>
-        <div className="b-cell sp3 stat-cell">
+        <div className="b-cell sp3 stat-cell tint-dusk">
           <span className="stat-ico"><IconFlame /></span>
           <span className="stat-num">{s ? <CountNum value={s.activity.subjectStatuses} /> : "…"}</span>
           <span className="stat-lbl">disciplinas marcadas</span>

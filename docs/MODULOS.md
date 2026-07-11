@@ -143,21 +143,27 @@ src/
 | `admin/AdminCoursesPage` | `/admin/cursos` | catálogo de matrizes + importação (RF-13) |
 | `admin/AdminPeriodsPage` | `/admin/periodos` | **calendário acadêmico global**: agenda viradas (TERM/BREAK) + linha do tempo (RF-20 v2) |
 
-Camada de layout: `Sidebar` é **papel-consciente** (aluno vê a jornada; ADMIN vê só a gestão) e
-no mobile (≤900px) vira **gaveta off-canvas** com hambúrguer na `Topbar` + scrim. O ADMIN **não
-cursa** — `AppLayout` pula matrícula/`CoursePicker` e as páginas de aluno redirecionam para
-`/admin`. `Topbar` exibe o **chip de período/férias** global (do calendário, via `GET /me`).
+Camada de layout **v6 — "app-card" flutuante**: o app inteiro vive num painel arredondado
+(`.page > .shell`) com **sidebar em gradiente de pôr-do-sol** (ilha `--side-grad`, texto claro nos
+dois temas) + área de conteúdo em superfície (`--surface`). `Sidebar` é **papel-consciente** (aluno
+vê a jornada; ADMIN vê a gestão), **colapsável** no desktop (localStorage `side-collapsed`) e no
+mobile (≤900px) vira **gaveta off-canvas** com hambúrguer na `Topbar` + scrim. O ADMIN **não cursa**
+— `AppLayout` pula matrícula/`CoursePicker` e as páginas de aluno redirecionam para `/admin`.
+`Topbar` exibe o **chip de período/férias** global (do calendário, via `GET /me`).
 
 ## Estilos e acessibilidade
 
-- `styles/theme.css`: tokens da paleta **cerrado/pôr do sol/povos nativos** em dark e light
-  (terra/urucum, ocre, oliva, entardecer, jenipapo) + gradientes (`--sunset`, `--dawnwash`).
+- `styles/theme.css`: tokens da paleta **cerrado/pôr do sol/povos nativos** em dark e light; v6 acresce
+  raios maiores (`--radius` 22 / `--radius-lg` 32), superfície do conteúdo (`--surface`), sombra do
+  painel flutuante (`--shadow-card`) e o gradiente da sidebar-ilha (`--side-grad` + `--side-tx/…`).
 - `styles/app.css`: componentes, **animações** (com `prefers-reduced-motion`), **responsividade**
-  (breakpoints 1100/900/520px) e **acessibilidade** (`:focus-visible`, `.skiplink`, `.sr-only`, foco da grade).
-  Design v5 mescla mais fundo os templates de referência: mosaico **bento**, numerais fantasma,
-  faixa **marquee** inclinada, **callout** de borda cônica, **orbes** de fundo flutuantes,
-  contadores animados (`useCountUp`/`CountNum`), **controle segmentado**, aparição por rolagem
-  (`Reveal`/IntersectionObserver) e wordmark de rodapé.
+  (breakpoints 1100/900/700/520/460px) e **acessibilidade** (`:focus-visible`, `.skiplink`, `.sr-only`, foco da grade).
+- **Design v6 (redesign drástico a partir de novos templates, mantendo a identidade cerrado):**
+  *app-card* flutuante e sidebar em gradiente (smart-home), **cartões de estatística coloridos** por
+  tintura (`.tint-*`, Sales Dashboard), **auth imersiva** — card dividido com herói em gradiente, brilho,
+  estrelas cintilantes e prova social (VR Landing). Herdado do v5: mosaico **bento**, numerais fantasma,
+  **marquee**, **callout** cônico, **orbes** flutuantes, contadores animados (`useCountUp`/`CountNum`),
+  **controle segmentado**, `Reveal`/IntersectionObserver e wordmark de rodapé.
 
 ---
 

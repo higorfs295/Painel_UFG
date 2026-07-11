@@ -11,11 +11,11 @@ import CountNum from "../components/ui/CountNum";
 import { IconTarget, IconCheck, IconFlame } from "../components/ui/Icons";
 import type { Composition, Recommendation } from "../api/types";
 
-function StatCell({ icon: Icon, value, unit, label }: {
-  icon: ComponentType<SVGProps<SVGSVGElement>>; value: number | null; unit?: string; label: string;
+function StatCell({ icon: Icon, value, unit, label, tint }: {
+  icon: ComponentType<SVGProps<SVGSVGElement>>; value: number | null; unit?: string; label: string; tint?: string;
 }) {
   return (
-    <section className="b-cell sp4 stat-cell">
+    <section className={`b-cell sp4 stat-cell${tint ? " " + tint : ""}`}>
       <div className="stat-ico"><Icon /></div>
       <div className="stat-num">{value === null ? "—" : <CountNum value={value} />}{value !== null && unit && <small> {unit}</small>}</div>
       <div className="stat-lbl">{label}</div>
@@ -113,11 +113,11 @@ export default function OverviewPage() {
           <Donut pct={prog.totals.pct} label="integralizado" />
         </section>
 
-        <StatCell icon={IconCheck} value={doneCount} label="Concluídas" />
-        <StatCell icon={IconTarget} value={availCount} label="Disponíveis agora" />
+        <StatCell icon={IconCheck} value={doneCount} label="Concluídas" tint="tint-savanna" />
+        <StatCell icon={IconTarget} value={availCount} label="Disponíveis agora" tint="tint-jenipapo" />
         <StatCell icon={IconFlame}
           value={nextMilestone ? Math.max(0, nextMilestone.hours - prog.totals.hours) : null}
-          unit="h"
+          unit="h" tint="tint-copper"
           label={nextMilestone ? `Até o marco ${nextMilestone.key}` : "Marcos concluídos"} />
       </div>
 

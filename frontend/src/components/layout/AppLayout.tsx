@@ -55,6 +55,11 @@ export default function AppLayout() {
   const isAdmin = user?.role === "ADMIN";
   const { enrollmentId, setEnrollment } = useApp();
   const [navOpen, setNavOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem("side-collapsed") === "1");
+
+  function toggleCollapse() {
+    setCollapsed((v) => { localStorage.setItem("side-collapsed", v ? "0" : "1"); return !v; });
+  }
 
   const { data: enrollments, isLoading } = useQuery({
     queryKey: ["enrollments"],
@@ -84,21 +89,24 @@ export default function AppLayout() {
       : <Outlet />;
 
   return (
-    <div className="shell">
+    <div className="page">
       <div className="orbs" aria-hidden="true"><span className="orb a" /><span className="orb b" /><span className="orb c" /></div>
       <a href="#conteudo" className="skiplink">Pular para o conteúdo</a>
-      <Sidebar onLogout={logout} open={navOpen} onClose={() => setNavOpen(false)} />
-      {navOpen && <button className="scrim" aria-label="Fechar menu" onClick={() => setNavOpen(false)} />}
-      <div className="shell-main">
-        <Topbar enrollments={isAdmin ? [] : enrollments ?? []} selectedId={enrollmentId}
-          onSelect={setEnrollment} onMenu={() => setNavOpen((v) => !v)} menuOpen={navOpen} />
-        <main id="conteudo" className="content">
-          {isAdmin ? <Outlet /> : studentBody}
-          <footer className="foot" aria-hidden="true">
-            <span className="foot-word">{APP_NAME}</span>
-            <small>feito no cerrado · {new Date().getFullYear()}</small>
-          </footer>
-        </main>
+      <div className={"shell" + (collapsed ? " collapsed" : "")}>
+        <Sidebar onLogout={logout} open={navOpen} onClose={() => setNavOpen(false)}
+          collapsed={collapsed} onToggleCollapse={toggleCollapse} />
+        {navOpen && <button className="scrim" aria-label="Fechar menu" onClick={() => setNavOpen(false)} />}
+        <div className="shell-main">
+          <Topbar enrollments={isAdmin ? [] : enrollments ?? []} selectedId={enrollmentId}
+            onSelect={setEnrollment} onMenu={() => setNavOpen((v) => !v)} menuOpen={navOpen} />
+          <main id="conteudo" className="content">
+            {isAdmin ? <Outlet /> : studentBody}
+            <footer className="foot" aria-hidden="true">
+              <span className="foot-word">{APP_NAME}</span>
+              <small>feito no cerrado · {new Date().getFullYear()}</small>
+            </footer>
+          </main>
+        </div>
       </div>
     </div>
   );

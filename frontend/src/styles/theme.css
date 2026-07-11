@@ -26,7 +26,9 @@
 
   --trace:#332017;
   --shadow: 0 18px 50px -18px rgba(0,0,0,.55);
-  --radius: 18px;
+  /* v6: superfície do conteúdo (área "muted" do app-card) e sombra do painel flutuante */
+  --surface:#191108;
+  --shadow-card: 0 34px 90px -34px rgba(0,0,0,.66), 0 12px 34px -18px rgba(0,0,0,.42);
   --sunset: linear-gradient(90deg,#8C63B0 0%,#D25440 42%,#DB6B33 68%,#F0A83C 100%);
   /* atmosfera: poente em camadas + horizonte baixo */
   --atmo:
@@ -52,7 +54,8 @@ html[data-theme="light"] {
 
   --trace:#E7DAC6;
   --shadow: 0 18px 44px -20px rgba(76,52,30,.28);
-  --radius: 18px;
+  --surface:#F1E7D6;
+  --shadow-card: 0 34px 84px -34px rgba(76,52,30,.32), 0 12px 30px -18px rgba(76,52,30,.20);
   --sunset: linear-gradient(90deg,#6C4A94 0%,#B23A2E 42%,#B85427 68%,#C07C18 100%);
   --atmo:
     radial-gradient(1100px 480px at 82% -12%, rgba(184,84,39,.12), transparent 62%),
@@ -67,4 +70,18 @@ html[data-theme="light"] {
   --font-body: "Sora", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
   --silk: cubic-bezier(0.16, 1, 0.3, 1);
   --silk-fast: cubic-bezier(0.25, 1, 0.4, 1);
+
+  /* v6 — raios maiores/mais fluidos (independentes de tema) */
+  --radius: 22px;      /* cartões */
+  --radius-lg: 32px;   /* o app-card flutuante */
+  --radius-sm: 14px;   /* inputs, chips grandes, ícones */
+
+  /* v6 — a sidebar é uma "ilha" com gradiente de pôr-do-sol do cerrado (igual nos dois temas);
+     texto sempre claro para contraste sobre o gradiente. */
+  --side-grad: linear-gradient(168deg, #3B2A4E 0%, #6C3A50 34%, #A8492A 70%, #DD8A34 100%);
+  --side-tx: #FBEFE0;
+  --side-mut: color-mix(in srgb, #FBEFE0 66%, transparent);
+  --side-dim: color-mix(in srgb, #FBEFE0 42%, transparent);
+  --side-hi: color-mix(in srgb, #FFFFFF 15%, transparent);   /* pílula ativa/hover */
+  --side-line: color-mix(in srgb, #FFFFFF 12%, transparent);
 }
