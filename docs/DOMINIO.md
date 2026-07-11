@@ -205,13 +205,20 @@ Nem tudo que conta para a formatura está na matriz. `ExtraComponent` registra:
 
 | Categoria | O que é | Efeito nas somas |
 | --- | --- | --- |
-| `OPT` | optativa cursada **fora** das tabelas da matriz | soma em OPT (⚠️ equivalência depende da coordenação) |
+| `NC` | reclassificação: conta como Núcleo Comum | soma em NC |
+| `NE` | reclassificação: conta como Núcleo Específico obrigatório | soma em NEO |
+| `OPT` | optativa / **NE optativa** (fora das tabelas da matriz) | soma em OPT (⚠️ equivalência depende da coordenação) |
 | `NL` | disciplina de Núcleo Livre (qualquer curso da universidade) | soma em NL |
 | `AC` | horas de Atividades Complementares (extrato) | soma em AC |
 | `NONE` | registro sem horas contáveis (estágio, IC, ligas) | não soma — é memória do histórico |
 
-Cada extra tem `done` (concluído/planejado): **planejado não soma** em nada — serve para anotar
-intenções ("vou fazer IoT semestre que vem") sem poluir os números.
+**Reclassificação:** a categoria de qualquer extra é editável (na página Extras, um select por
+linha) — assim um Núcleo Livre pode ser convertido em `NC`, `NE` ou `OPT` (NE optativa) e passa a
+somar na composição correspondente.
+
+Cada extra tem `status` (planejado | em andamento | concluído), espelhando os estados de disciplina:
+**Concluído** soma no oficial e na projeção; **Em andamento** soma **só na projeção** (como
+CURSANDO); **Planejado** não soma em nada — serve para anotar intenções sem poluir os números.
 
 ---
 
@@ -356,7 +363,7 @@ trocar de servidor ou clonar o próprio perfil num ambiente de teste.
 | **APPROVED / ENROLLED / SIMULATED** | Estado **persistido** que o aluno marca: aprovada / cursando / planejada |
 | **Oficial × Projetado** | Números com só APPROVED × com os três estados (o "e se tudo der certo") |
 | **Enrollment (matrícula)** | Vínculo usuário×curso; dono de status, extras e cenários |
-| **Extra (componente)** | Item fora da matriz: OPT/NL/AC/NONE, com `done` (planejado não soma) |
+| **Extra (componente)** | Item fora da matriz: categoria NC/NE/OPT/NL/AC/NONE (reclassificável) + `status` planejado/em andamento/concluído |
 | **Cenário** | Hipótese de grade semanal: disciplinas com código SIGAA + células pintadas |
 | **Slot** | Uma célula dia×aula da grade (`"2-M1"` = segunda, 1ª aula da manhã) |
 | **Período (`2026.2`)** | Semestre letivo; **global**, resolvido do calendário acadêmico agendado (admin), com heurística de fallback |

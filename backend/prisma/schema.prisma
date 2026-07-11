@@ -31,10 +31,18 @@ enum SubjectState {
 } // APPROVED=oficial · ENROLLED=cursando agora · SIMULATED=planejada · ausência = pendente
 
 enum ExtraCategory {
-  OPT
-  NL
-  AC
-  NONE
+  NC        // Núcleo Comum (reclassificação de um extra)
+  NE        // Núcleo Específico obrigatório (reclassificação)
+  OPT       // Optativa / NE optativa
+  NL        // Núcleo Livre
+  AC        // Atividade Complementar
+  NONE      // registro (não soma)
+}
+
+enum ExtraStatus {
+  PLANNED       // planejado — não soma
+  IN_PROGRESS   // em andamento — soma só na projeção (como CURSANDO)
+  DONE          // concluído — soma no oficial e na projeção
 }
 
 enum PeriodType {
@@ -185,7 +193,7 @@ model ExtraComponent {                             // optativas fora da matriz, 
   code         String?
   hours        Int           @default(0)
   category     ExtraCategory
-  done         Boolean       @default(true)
+  status       ExtraStatus   @default(DONE)        // planejado | em andamento | concluído (RF-09)
   createdAt    DateTime      @default(now())
   @@index([enrollmentId])                          // list/delete filtram por enrollmentId
 }

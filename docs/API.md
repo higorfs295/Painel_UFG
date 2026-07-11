@@ -255,13 +255,14 @@ não aparecem.
 ```bash
 curl -X POST http://localhost:3333/me/enrollments/$ENR/extras \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  -d '{"name":"Internet das Coisas","code":"INF0423","hours":64,"category":"NL","done":true}'
+  -d '{"name":"Internet das Coisas","code":"INF0423","hours":64,"category":"NL","status":"IN_PROGRESS"}'
 ```
-`category`: `OPT` (optativa fora da matriz) · `NL` · `AC` · `NONE` (registro, não soma).
-`done:false` = planejado (não soma no progresso).
+`category`: `NC` · `NE` · `OPT` (NE optativa) · `NL` · `AC` · `NONE` (registro, não soma) — editável,
+o que permite **reclassificar** um extra (ex.: um NL vira NC/NE/OPT). `status`: `PLANNED` (não soma) ·
+`IN_PROGRESS` (soma só na projeção, como CURSANDO) · `DONE` (soma no oficial; default).
 
 ### PATCH /me/extras/:extraId · DELETE /me/extras/:extraId
-Edita/alterna `done` ou remove. `403/404` se não for do usuário.
+Edita `status`/`category`/campos ou remove. `403/404` se não for do usuário.
 
 ---
 
@@ -387,7 +388,7 @@ curl -s -X PUT $API/me/enrollments/$ENR/subjects/$SUBJ -H "Authorization: Bearer
 # 6) Um extra de Núcleo Livre concluído (RF-09)
 curl -s -X POST $API/me/enrollments/$ENR/extras -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' \
-  -d '{"name":"Libras","code":"FL0001","hours":64,"category":"NL","done":true}'
+  -d '{"name":"Libras","code":"FL0001","hours":64,"category":"NL","status":"DONE"}'
 
 # 7) O progresso agregado (RF-05): somas com teto, marcos, projeção, recomendações
 curl -s $API/me/enrollments/$ENR/progress -H "Authorization: Bearer $TOKEN" | python -m json.tool

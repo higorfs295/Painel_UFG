@@ -12,7 +12,11 @@
 // Nota de import: com moduleResolution node16/nodenext, caminhos relativos exigem a extensão
 // ".js" explícita (mesmo apontando para um arquivo .ts) — é o padrão NodeNext.
 import type { Subject } from "./graph.js";
-export type Extra = { hours: number; category: "OPT" | "NL" | "AC" | "NONE"; done: boolean };
+export type ExtraCategoryKind = "NC" | "NE" | "OPT" | "NL" | "AC" | "NONE";
+export type ExtraStatusKind = "PLANNED" | "IN_PROGRESS" | "DONE";
+// `extras` recebido por `sums` já vem FILTRADO pelo chamador (o que conta no oficial vs projeção);
+// aqui todo extra da lista é contado, roteado pela categoria. NONE nunca soma.
+export type Extra = { hours: number; category: ExtraCategoryKind; status: ExtraStatusKind };
 export type Requirement = { key: string; label: string; hours: number };
 
 // mínimos por composição do curso (parametrizável; no backend virão de CompositionRequirement)
@@ -31,13 +35,18 @@ export function sums(
   extras: Extra[],
   minimums: Minimums,
 ) {
-  let nc = 0, neo = 0, opt = 0;
+  let nc = 0, neo = 0, opt = 0, nl = 0, ac = 0;
   for (const s of subjects) if (approved.has(s.seq))
     s.groupOpt > 0 ? (opt += s.hours) : s.nucleus === "NC" ? (nc += s.hours) : (neo += s.hours);
-  let nl = 0, ac = 0;
-  for (const x of extras) if (x.done)
-    x.category === "OPT" ? (opt += x.hours) : x.category === "NL" ? (nl += x.hours)
-      : x.category === "AC" ? (ac += x.hours) : void 0;
+  // extras já vêm filtrados; um extra reclassificado soma na composição da sua categoria
+  for (const x of extras) switch (x.category) {
+    case "NC": nc += x.hours; break;
+    case "NE": neo += x.hours; break;   // NE obrigatório
+    case "OPT": opt += x.hours; break;  // NE optativa
+    case "NL": nl += x.hours; break;
+    case "AC": ac += x.hours; break;
+    // NONE: registro, não soma
+  }
 
   const raw = { nc, neo, opt, nl, ac };
   const comp = {} as Record<keyof Minimums, CompositionSum>;

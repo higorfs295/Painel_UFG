@@ -135,7 +135,7 @@ src/
 | `InvitePage` | `/convite/:token`, `/reset/:token` | define a própria senha |
 | `OverviewPage` | `/` | mosaico **bento** v5: hero de integralização, donut, composições, callout do próximo marco, stickers, recomendações (só aluno) |
 | `SubjectsPage` | `/disciplinas` | tabela com status, filtros e os três estados (Aprovada/**Cursando**/Simular) (só aluno) |
-| `ExtrasPage` | `/extras` | CRUD de extras; alterna concluído/planejado (só aluno) |
+| `ExtrasPage` | `/extras` | CRUD de extras; **3 estados** (planejado/em andamento/concluído) e **categoria reclassificável** por linha (NL→NC/NE/optativa) (só aluno) |
 | `SchedulePage` | `/cronograma` | cenários, disciplinas (SIGAA), grade **navegável por teclado** (roving tabindex) + pintura (só aluno) |
 | `SettingsPage` | `/config` | nome, **dados acadêmicos** (matrícula/turno), **troca de senha**, tema; p/ aluno também **matrículas** (ingresso) e backup |
 | `admin/AdminHomePage` | `/admin` | **visão do sistema**: stat-cards com contadores animados (usuários, **novos 30d**, cursos, atividade), **matrículas por curso**, período vigente + atalhos |

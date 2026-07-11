@@ -23,8 +23,9 @@ export const backupSchema = z.object({
     })).default([]),
     extras: z.array(z.object({
       name: z.string(), code: z.string().nullable().optional(),
-      hours: z.number().int().min(0), category: z.enum(["OPT", "NL", "AC", "NONE"]),
-      done: z.boolean(),
+      hours: z.number().int().min(0), category: z.enum(["NC", "NE", "OPT", "NL", "AC", "NONE"]),
+      status: z.enum(["PLANNED", "IN_PROGRESS", "DONE"]).optional(),
+      done: z.boolean().optional(), // legado: backups antigos traziam done em vez de status
     })).default([]),
     scenarios: z.array(z.object({
       name: z.string(),
@@ -62,7 +63,7 @@ export async function exportUser(prisma: PrismaClient, userId: string): Promise<
       currentTerm: e.currentTerm,
       subjects: e.statuses.map(s => ({ seq: s.subject.seq, state: s.state })),
       extras: e.extras.map(x => ({
-        name: x.name, code: x.code, hours: x.hours, category: x.category, done: x.done,
+        name: x.name, code: x.code, hours: x.hours, category: x.category, status: x.status,
       })),
       scenarios: e.scenarios.map(sc => ({
         name: sc.name,
@@ -110,7 +111,12 @@ export async function importUser(prisma: PrismaClient, userId: string, raw: unkn
       await tx.extraComponent.deleteMany({ where: { enrollmentId: enrollment.id } });
       for (const x of enr.extras)
         await tx.extraComponent.create({
-          data: { enrollmentId: enrollment.id, name: x.name, code: x.code ?? null, hours: x.hours, category: x.category, done: x.done },
+          data: {
+            enrollmentId: enrollment.id, name: x.name, code: x.code ?? null, hours: x.hours,
+            category: x.category,
+            // status novo; se vier de backup legado, deriva de `done`
+            status: x.status ?? (x.done === false ? "PLANNED" : "DONE"),
+          },
         });
 
       // substitui cenários (cascade remove disciplinas/pinturas antigas)

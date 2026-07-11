@@ -78,8 +78,13 @@ export function computeProgress(input: {
   // projeção: oficial ∪ cursando ∪ simuladas ("como fico se tudo der certo")
   const projected = new Set(statuses.map(s => s.seq));
 
-  const official = sums(subjects, approved, extras, minimums);
-  const proj = sums(subjects, projected, extras, minimums);
+  // extras: só CONCLUÍDO conta no oficial; EM ANDAMENTO também entra na projeção (como cursando);
+  // PLANEJADO não soma em nenhum dos dois.
+  const extrasDone = extras.filter(x => x.status === "DONE");
+  const extrasProjected = extras.filter(x => x.status === "DONE" || x.status === "IN_PROGRESS");
+
+  const official = sums(subjects, approved, extrasDone, minimums);
+  const proj = sums(subjects, projected, extrasProjected, minimums);
 
   const subjectProgress: SubjectProgress[] = subjects.map(s => ({
     ...s,

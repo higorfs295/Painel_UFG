@@ -3,7 +3,8 @@ export type Role = "ADMIN" | "USER";
 export type Theme = "dark" | "light";
 export type SubjectState = "APPROVED" | "SIMULATED" | "ENROLLED";
 export type GraphStatus = "done" | "avail" | "co" | "lock";
-export type ExtraCategory = "OPT" | "NL" | "AC" | "NONE";
+export type ExtraCategory = "NC" | "NE" | "OPT" | "NL" | "AC" | "NONE";
+export type ExtraStatus = "PLANNED" | "IN_PROGRESS" | "DONE";
 
 // RF-20 v2 — período letivo GLOBAL resolvido pelo servidor a partir do calendário
 // acadêmico agendado pelos admins (fallback: heurística de meses).
@@ -56,7 +57,7 @@ export type Recommendation = { seq: number; code: string; name: string; hours: n
 
 export type Extra = {
   id: string; enrollmentId: string; name: string; code: string | null;
-  hours: number; category: ExtraCategory; done: boolean; createdAt: string;
+  hours: number; category: ExtraCategory; status: ExtraStatus; createdAt: string;
 };
 
 export type CourseSummary = { id: string; slug: string; name: string; totalHours: number };

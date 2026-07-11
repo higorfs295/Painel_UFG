@@ -11,8 +11,10 @@
       "approvedSeq": [1, 4, 5, 9, 10, 15, 16, 25, 32],
       "enrolledSeq": [27, 35],
       "extras": [
-        { "name": "Libras", "code": "FL0001", "ch": 64, "cat": "NL", "done": true },
-        { "name": "Atividades Complementares (parcial)", "code": "", "ch": 80, "cat": "AC", "done": true }
+        { "name": "Libras", "code": "FL0001", "ch": 64, "cat": "NL", "status": "DONE" },
+        { "name": "Introdução à Ciência de Dados (reclassificada como NE)", "code": "INF0999", "ch": 64, "cat": "NE", "status": "DONE" },
+        { "name": "Extensão universitária em andamento", "code": "", "ch": 30, "cat": "AC", "status": "IN_PROGRESS" },
+        { "name": "Atividades Complementares (parcial)", "code": "", "ch": 80, "cat": "AC", "status": "DONE" }
       ]
     },
     {

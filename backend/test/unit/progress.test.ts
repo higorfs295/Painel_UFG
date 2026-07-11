@@ -26,8 +26,8 @@ const requirements: Requirement[] = [
   { key: "AC", label: "Atividades", hours: 100 },
 ];
 const extras: Extra[] = [
-  { hours: 128, category: "NL", done: true },
-  { hours: 50, category: "AC", done: false }, // planejado: não soma
+  { hours: 128, category: "NL", status: "DONE" },
+  { hours: 50, category: "AC", status: "PLANNED" }, // planejado: não soma
 ];
 // oficiais: 1,2 aprovadas; 3 simulada
 const statuses: StatusRecord[] = [
@@ -52,7 +52,7 @@ describe("computeProgress (integralização limitada ao mínimo por composição
     expect(nc.over).toBe(100);  // +100h além do mínimo
   });
 
-  it("planejado (done=false) não conta", () => {
+  it("planejado (status PLANNED) não conta", () => {
     const ac = r.compositions.find(c => c.key === "AC")!;
     expect(ac.hours).toBe(0);
   });
@@ -72,6 +72,27 @@ describe("computeProgress (integralização limitada ao mínimo por composição
     expect(r.projected.totals.hours).toBe(428);
     expect(r.projected.milestones.CH1).toBe(true);
     expect(r.projected.milestones.CH2).toBe(false);
+  });
+});
+
+describe("extras: estado em andamento e reclassificação de categoria", () => {
+  it("EM ANDAMENTO conta na projeção mas não no oficial (como CURSANDO)", () => {
+    // AC min 100. Um extra AC de 40h em andamento: oficial 0, projeção 40.
+    const ex: Extra[] = [{ hours: 40, category: "AC", status: "IN_PROGRESS" }];
+    const r = computeProgress({ subjects, milestones, requirements, statuses: [], extras: ex, totalHours: 1148 });
+    expect(r.compositions.find(c => c.key === "AC")!.hours).toBe(0);          // oficial
+    expect(r.projected.compositions.find(c => c.key === "AC")!.hours).toBe(40); // projeção
+  });
+
+  it("um extra NL reclassificado soma na composição da nova categoria (NC/NE/OPT)", () => {
+    const asNC: Extra[] = [{ hours: 60, category: "NC", status: "DONE" }];
+    const rNC = computeProgress({ subjects, milestones, requirements, statuses: [], extras: asNC, totalHours: 1148 });
+    expect(rNC.compositions.find(c => c.key === "NC")!.hours).toBe(60);
+    expect(rNC.compositions.find(c => c.key === "NL")!.hours).toBe(0);
+
+    const asOPT: Extra[] = [{ hours: 60, category: "OPT", status: "DONE" }];
+    const rOPT = computeProgress({ subjects, milestones, requirements, statuses: [], extras: asOPT, totalHours: 1148 });
+    expect(rOPT.compositions.find(c => c.key === "OPT")!.hours).toBe(60);
   });
 });
 

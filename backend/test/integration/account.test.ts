@@ -56,7 +56,7 @@ describe("backup export/import (RF-16)", () => {
     const { enr, accessToken } = await enrolledUser();
     // estado inicial: 1 aprovada + 1 extra + tema light
     await app.inject({ method: "PUT", url: `/me/enrollments/${enr.id}/subjects/${subjBySeq.get(1)}`, headers: authHeader(accessToken), payload: { state: "APPROVED" } });
-    await app.inject({ method: "POST", url: `/me/enrollments/${enr.id}/extras`, headers: authHeader(accessToken), payload: { name: "Curso Extra", hours: 40, category: "NL", done: true } });
+    await app.inject({ method: "POST", url: `/me/enrollments/${enr.id}/extras`, headers: authHeader(accessToken), payload: { name: "Curso Extra", hours: 40, category: "NL", status: "DONE" } });
     await app.inject({ method: "PATCH", url: "/me/settings", headers: authHeader(accessToken), payload: { theme: "light" } });
 
     const exp = await app.inject({ method: "GET", url: "/me/export", headers: authHeader(accessToken) });

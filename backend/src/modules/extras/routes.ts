@@ -7,8 +7,10 @@ import { stripUndefined } from "../../lib/strip.js";
 
 const extraSchema = z.object({
   name: z.string().min(2), code: z.string().optional(),
-  hours: z.number().int().min(0), category: z.enum(["OPT", "NL", "AC", "NONE"]),
-  done: z.boolean().default(true),                 // planejado (false) não soma no progresso
+  hours: z.number().int().min(0),
+  // NC/NE permitem reclassificar um extra (ex.: um Núcleo Livre que conta como NC/NE/optativa)
+  category: z.enum(["NC", "NE", "OPT", "NL", "AC", "NONE"]),
+  status: z.enum(["PLANNED", "IN_PROGRESS", "DONE"]).default("DONE"), // só DONE soma no oficial
 });
 
 export async function extraRoutes(app: FastifyInstance) {

@@ -18,7 +18,7 @@ const prisma = new PrismaClient();
 
 const ADMIN = { name: "Administrador", email: "painel@admin.com" };
 
-type Extra = { name: string; code?: string; ch: number; cat: string; done: boolean };
+type Extra = { name: string; code?: string; ch: number; cat: string; status?: string; done?: boolean };
 type Baseline = {
   courseSlug: string; startTerm?: string; matricula?: string; shift?: string;
   approvedSeq?: number[]; enrolledSeq?: number[]; extras?: Extra[];
@@ -65,7 +65,8 @@ async function seedStudent(def: StudentDef, hash: string) {
 
   for (const x of base.extras ?? []) {
     const existing = await prisma.extraComponent.findFirst({ where: { enrollmentId: enr.id, name: x.name } });
-    const data = { enrollmentId: enr.id, name: x.name, code: x.code || null, hours: x.ch, category: x.cat as any, done: x.done };
+    const status = (x.status ?? (x.done === false ? "PLANNED" : "DONE")) as any; // aceita status ou done legado
+    const data = { enrollmentId: enr.id, name: x.name, code: x.code || null, hours: x.ch, category: x.cat as any, status };
     if (existing) await prisma.extraComponent.update({ where: { id: existing.id }, data });
     else await prisma.extraComponent.create({ data });
   }
