@@ -138,26 +138,39 @@ code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-siz
 
 .side-nav { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
 .side-link {
-  display: flex; align-items: center; gap: 12px;
-  padding: 11px 13px; border-radius: 13px;
+  display: flex; align-items: center; gap: 11px;
+  padding: 8px 11px; border-radius: 13px;
   color: var(--side-mut); font-size: .85rem; font-weight: 550; white-space: nowrap;
-  position: relative; overflow: hidden;
+  position: relative;
   transition: color .45s var(--silk), background .45s var(--silk);
 }
-.side-link svg { flex: none; opacity: .85; transition: transform .45s var(--silk); }
+/* ícone dentro de "azulejo" colorido (--ic por item) — riqueza de cor na navegação */
+.side-ico {
+  width: 30px; height: 30px; border-radius: 9px; flex: none;
+  display: grid; place-items: center; color: var(--ic, var(--side-tx));
+  background: color-mix(in srgb, var(--ic, #fff) 20%, transparent);
+  transition: transform .45s var(--silk), background .45s var(--silk);
+}
 .side-link:hover { color: var(--side-tx); background: var(--side-hi); }
-.side-link:hover svg { transform: scale(1.08) rotate(-4deg); }
+.side-link:hover .side-ico { transform: scale(1.08) rotate(-4deg); background: color-mix(in srgb, var(--ic, #fff) 32%, transparent); }
 .side-link.active {
   color: #2A160C; font-weight: 650;
   background: linear-gradient(135deg, #FFE5C0, #FFF6E8);
   box-shadow: 0 8px 20px -10px rgba(0,0,0,.45);
 }
-.side-link.active svg { opacity: 1; }
-.shell.collapsed .side-link span, .shell.collapsed .side-group-label,
+.side-link.active .side-ico {
+  color: color-mix(in srgb, var(--ic) 62%, #4a2a10);
+  background: color-mix(in srgb, var(--ic) 34%, #fff);
+}
+/* ── colapsado (desktop): tudo empilhado e centrado — sem sobreposição ── */
+.shell.collapsed .side-link span:not(.side-ico), .shell.collapsed .side-group-label,
 .shell.collapsed .side-brand-name, .shell.collapsed .side-user-info { display: none; }
-.shell.collapsed .side-link { justify-content: center; padding: 11px 0; }
-.shell.collapsed .side-brand { justify-content: center; }
-.shell.collapsed .side-user { justify-content: center; }
+.shell.collapsed .side-nav { align-items: center; }
+.shell.collapsed .side-group { align-items: center; width: 100%; }
+.shell.collapsed .side-link { justify-content: center; padding: 6px; gap: 0; }
+.shell.collapsed .side-brand { flex-direction: column; gap: 10px; padding: 6px 0 14px; }
+.shell.collapsed .side-collapse { margin-left: 0; }
+.shell.collapsed .side-user { flex-direction: column; gap: 10px; padding: 10px 4px; }
 
 .side-user {
   display: flex; align-items: center; gap: 10px;
@@ -748,6 +761,15 @@ tbody tr:hover { background: color-mix(in srgb, var(--sun) 5%, transparent); }
   transition: transform .5s var(--silk);
 }
 .linkcard:hover .linkcard-go { transform: translateX(4px); }
+
+/* ── cartões de recomendação (top 3 em destaque) ── */
+.rec-card { display: flex; flex-direction: column; }
+.rec-rank {
+  position: absolute; right: 16px; top: 14px; z-index: 1;
+  font-family: var(--font-display); font-weight: 700; font-size: 1.5rem;
+  color: transparent; -webkit-text-stroke: 1.4px var(--hairline-hi);
+}
+.rec-card .btn { margin-top: auto; align-self: flex-start; }
 
 /* ── controle segmentado (pílulas de filtro — Frost/SaaS) ── */
 .seg {

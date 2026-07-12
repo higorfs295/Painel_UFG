@@ -236,4 +236,25 @@ describe("admin ampliado (RF-21)", () => {
     const nope = await app.inject({ method: "GET", url: "/admin/stats", headers: authHeader(alvoToken) });
     expect(nope.statusCode).toBe(403);
   });
+
+  it("expõe configurações da instância e testa o e-mail (sem SMTP -> 400)", async () => {
+    const admin = await createUser(app, { role: "ADMIN", password: "senha-admin-123" });
+    const { accessToken } = await login(app, admin.email, "senha-admin-123");
+
+    const cfg = (await app.inject({ method: "GET", url: "/admin/config", headers: authHeader(accessToken) })).json();
+    expect(cfg).toHaveProperty("mail");
+    expect(cfg.mail).toHaveProperty("configured");
+    expect(cfg.registration).toHaveProperty("allowed");
+
+    // sem SMTP configurado no ambiente de teste, o envio de teste falha com 400 (motivo no corpo)
+    const test = await app.inject({ method: "POST", url: "/admin/mail/test", headers: authHeader(accessToken) });
+    expect(test.statusCode).toBe(400);
+    expect(test.json().sent).toBe(false);
+
+    // usuário comum não acessa as configurações
+    const user = await createUser(app, { password: "senha-forte-123" });
+    const { accessToken: userToken } = await login(app, user.email, "senha-forte-123");
+    const nope = await app.inject({ method: "GET", url: "/admin/config", headers: authHeader(userToken) });
+    expect(nope.statusCode).toBe(403);
+  });
 });

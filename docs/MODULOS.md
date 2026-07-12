@@ -74,7 +74,7 @@ Cada função registra os handlers da área. Contrato detalhado em [`API.md`](AP
 | `extras` | 08/09 | `GET/POST /me/enrollments/:id/extras`, `PATCH/DELETE /me/extras/:id` |
 | `schedules` | 10/11/12 | CRUD de `scenarios`/`disciplines` (valida SIGAA) + `PUT .../paint`; exporta `SigaaError` |
 | `account` | 15/16/**20** | `GET /me` (+período), `PATCH /me/settings`, `POST /me/password`, `GET /me/export`, `POST /me/import` |
-| `admin` | **20/21** | `GET /admin/stats` (números agregados) · `GET/POST/DELETE /admin/periods` (calendário acadêmico global) |
+| `admin` | **20/21** | `GET /admin/stats` (números agregados) · `GET/POST/DELETE /admin/periods` (calendário) · `GET /admin/config` + `POST /admin/mail/test` (instância/SMTP) |
 
 ## Dados e testes
 
@@ -137,11 +137,14 @@ src/
 | `SubjectsPage` | `/disciplinas` | tabela com status, filtros e os três estados (Aprovada/**Cursando**/Simular) (só aluno) |
 | `ExtrasPage` | `/extras` | CRUD de extras; **3 estados** (planejado/em andamento/concluído) e **categoria reclassificável** por linha (NL→NC/NE/optativa) (só aluno) |
 | `SchedulePage` | `/cronograma` | cenários, disciplinas (SIGAA), grade **navegável por teclado** (roving tabindex) + pintura (só aluno) |
+| `RecommendationsPage` | `/recomendacoes` | ranking completo do que mais **destrava** (top-3 em destaque + tabela) com marcar-cursando (só aluno) |
+| `HelpPage` | `/ajuda` | **Ajuda & sobre** — FAQ das regras (integralização, estados, SIGAA, período); todos os papéis |
 | `SettingsPage` | `/config` | nome, **dados acadêmicos** (matrícula/turno), **troca de senha**, tema; p/ aluno também **matrículas** (ingresso) e backup |
 | `admin/AdminHomePage` | `/admin` | **visão do sistema**: stat-cards com contadores animados (usuários, **novos 30d**, cursos, atividade), **matrículas por curso**, período vigente + atalhos |
 | `admin/AdminUsersPage` | `/admin/usuarios` | criar/convidar, **papel por select**, **matricular/desmatricular**, remover; mostra **matrícula/turno** |
 | `admin/AdminCoursesPage` | `/admin/cursos` | catálogo de matrizes + importação (RF-13) |
 | `admin/AdminPeriodsPage` | `/admin/periodos` | **calendário acadêmico global**: agenda viradas (TERM/BREAK) + linha do tempo (RF-20 v2) |
+| `admin/AdminConfigPage` | `/admin/config` | **configurações da instância**: estado do SMTP + **enviar e-mail de teste**, cadastro público, validade de convite, URL |
 
 Camada de layout **v6 — "app-card" flutuante**: o app inteiro vive num painel arredondado
 (`.page > .shell`) com **sidebar em gradiente de pôr-do-sol** (ilha `--side-grad`, texto claro nos

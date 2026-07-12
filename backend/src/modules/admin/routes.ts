@@ -3,8 +3,36 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { TERM_RE, resolvePeriod } from "../../domain/period.js";
+import { env, mailerConfigured, allowRegistration } from "../../env.js";
+import { sendTestEmail } from "../../lib/mailer.js";
 
 export async function adminRoutes(app: FastifyInstance) {
+  // Configurações da instância (somente leitura — vêm do ambiente) + estado do e-mail.
+  app.get("/config", { preHandler: app.requireAdmin }, async () => ({
+    registration: { allowed: allowRegistration },
+    invite: { expiresHours: env.INVITE_EXPIRES_HOURS },
+    appUrl: env.APP_URL,
+    mail: {
+      configured: mailerConfigured,
+      host: env.SMTP_HOST ?? null,
+      port: env.SMTP_PORT,
+      from: env.MAIL_FROM,
+      user: env.SMTP_USER ?? null,
+    },
+  }));
+
+  // Envia um e-mail de teste para o próprio admin — valida o SMTP.
+  app.post("/mail/test", { preHandler: app.requireAdmin }, async (req, reply) => {
+    const me = await app.prisma.user.findUnique({ where: { id: req.user.sub }, select: { email: true } });
+    if (!me) return reply.code(404).send({ error: "usuário não encontrado" });
+    try {
+      await sendTestEmail(me.email);
+      return { sent: true, to: me.email };
+    } catch (err) {
+      return reply.code(400).send({ sent: false, error: err instanceof Error ? err.message : "falha ao enviar" });
+    }
+  });
+
   app.get("/stats", { preHandler: app.requireAdmin }, async () => {
     const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const [

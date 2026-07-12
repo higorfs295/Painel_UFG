@@ -2,7 +2,7 @@
 import { api, setAccessToken } from "./client";
 import type {
   User, Enrollment, Progress, Recommendation, Extra, CourseSummary, Scenario, AdminUser,
-  AdminStats, SubjectState, ExtraCategory, Theme, AcademicPeriodEntry, PeriodInfo, Shift,
+  AdminStats, SubjectState, ExtraCategory, Theme, AcademicPeriodEntry, PeriodInfo, Shift, AdminConfig,
 } from "./types";
 
 // ---- auth ----
@@ -117,6 +117,8 @@ export const admin = {
     api<void>(`/users/${id}/enrollments/${enrollmentId}`, { method: "DELETE" }),
   removeUser: (id: string) => api<void>(`/users/${id}`, { method: "DELETE" }),
   stats: () => api<AdminStats>("/admin/stats"),
+  config: () => api<AdminConfig>("/admin/config"),
+  testMail: () => api<{ sent: boolean; to?: string; error?: string }>("/admin/mail/test", { method: "POST" }),
   // calendário acadêmico global (RF-20 v2)
   periods: () => api<{ entries: AcademicPeriodEntry[]; current: PeriodInfo }>("/admin/periods"),
   addPeriod: (data: { type: "TERM" | "BREAK"; term?: string | null; startsAt: string }) =>

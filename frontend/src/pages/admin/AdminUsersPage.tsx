@@ -10,6 +10,7 @@ export default function AdminUsersPage() {
   const [form, setForm] = useState({ name: "", email: "", role: "USER" as "USER" | "ADMIN", courseSlug: "" });
   const [lastLink, setLastLink] = useState<{ link: string; emailed: boolean } | null>(null);
   const [enrollPick, setEnrollPick] = useState<Record<string, string>>({}); // userId -> slug
+  const [q, setQ] = useState("");
 
   const users = useQuery({ queryKey: ["admin-users"], queryFn: admin.listUsers });
   const courseList = useQuery({ queryKey: ["courses"], queryFn: courses.list });
@@ -72,13 +73,19 @@ export default function AdminUsersPage() {
       </Card>
 
       <Card tight>
-        <h3 style={{ padding: "6px 8px 0" }}>Usuários</h3>
+        <div className="row spread wrap" style={{ padding: "6px 8px 0", gap: 10 }}>
+          <h3 style={{ margin: 0 }}>Usuários {users.data && <span className="badge" style={{ marginLeft: 4 }}>{users.data.length}</span>}</h3>
+          <input placeholder="Buscar por nome, e-mail ou matrícula…" value={q} onChange={(e) => setQ(e.target.value)} style={{ minWidth: 260 }} />
+        </div>
         {users.isLoading ? <div className="spinner" role="status">Carregando…</div> : (
           <div className="tablewrap">
             <table>
               <thead><tr><th>Nome</th><th>E-mail</th><th>Matrícula</th><th>Papel</th><th>Situação</th><th>Cursos</th><th style={{ textAlign: "right" }}>Ações</th></tr></thead>
               <tbody>
-                {users.data?.map((u) => (
+                {users.data?.filter((u) => {
+                  const n = q.trim().toLowerCase();
+                  return !n || u.name.toLowerCase().includes(n) || u.email.toLowerCase().includes(n) || (u.matricula ?? "").toLowerCase().includes(n);
+                }).map((u) => (
                   <tr key={u.id}>
                     <td>{u.name}{u.shift && <span className="badge" style={{ marginLeft: 6 }}>{u.shift}</span>}</td>
                     <td className="mut">{u.email}</td>

@@ -82,3 +82,10 @@ export type AdminStats = {
   byCourse: { slug: string; name: string; count: number }[];
   activity: { subjectStatuses: number; extras: number; scenarios: number };
 };
+
+export type AdminConfig = {
+  registration: { allowed: boolean };
+  invite: { expiresHours: number };
+  appUrl: string;
+  mail: { configured: boolean; host: string | null; port: number; from: string; user: string | null };
+};

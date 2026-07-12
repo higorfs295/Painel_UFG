@@ -153,6 +153,16 @@ heurística de meses.
   `201` entrada criada · `400` `TERM` sem `term` ou formato inválido · `403` não-admin.
 - **DELETE /admin/periods/:id** — remove uma virada. `204`.
 
+### GET /admin/config · POST /admin/mail/test (RF-18/21) `ADMIN`
+Configurações da instância (somente leitura — vêm do ambiente) e teste de e-mail:
+```json
+{ "registration": { "allowed": true }, "invite": { "expiresHours": 72 },
+  "appUrl": "http://localhost:5173",
+  "mail": { "configured": false, "host": null, "port": 587, "from": "…", "user": null } }
+```
+`POST /admin/mail/test` envia um e-mail de teste para o próprio admin → `200 { "sent": true, "to": "…" }`
+· `400 { "sent": false, "error": "SMTP não configurado (defina SMTP_HOST)." }` quando o SMTP não está ativo.
+
 ---
 
 ## Cursos — `/courses`

@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { admin } from "../../api/endpoints";
 import Reveal from "../../components/ui/Reveal";
 import CountNum from "../../components/ui/CountNum";
-import { IconUsers, IconBook, IconFlame, IconSprout, IconGrid } from "../../components/ui/Icons";
+import { IconUsers, IconBook, IconFlame, IconSprout, IconGrid, IconServer } from "../../components/ui/Icons";
 
 const fmt = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" });
 
@@ -107,6 +107,12 @@ export default function AdminHomePage() {
           <span className="linkcard-ico"><IconGrid /></span>
           <strong>Períodos</strong>
           <span className="mut">calendário acadêmico global e agendado</span>
+          <span className="linkcard-go" aria-hidden="true">→</span>
+        </Link>
+        <Link to="/admin/config" className="linkcard">
+          <span className="linkcard-ico"><IconServer /></span>
+          <strong>Configurações</strong>
+          <span className="mut">e-mail (SMTP), cadastro e instância</span>
           <span className="linkcard-go" aria-hidden="true">→</span>
         </Link>
       </div>

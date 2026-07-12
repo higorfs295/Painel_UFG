@@ -56,3 +56,21 @@ export const IconMenu = (p: SVGProps<SVGSVGElement>) => (
 export const IconX = (p: SVGProps<SVGSVGElement>) => (
   <I {...p}><path d="m6 6 12 12M18 6 6 18" /></I>
 );
+export const IconStar = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><path d="m12 3.2 2.5 5.2 5.7.8-4.1 4 1 5.7L12 21l-5.1 2.7 1-5.7-4.1-4 5.7-.8Z" /></I>
+);
+export const IconMail = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><rect x="3.2" y="5" width="17.6" height="14" rx="2.6" /><path d="m4 7 8 5.6L20 7" /></I>
+);
+export const IconServer = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><rect x="3.5" y="4" width="17" height="7" rx="2" /><rect x="3.5" y="13" width="17" height="7" rx="2" /><path d="M7 7.5h0M7 16.5h0" /></I>
+);
+export const IconInfo = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><circle cx="12" cy="12" r="8.6" /><path d="M12 11v5M12 7.6h0" /></I>
+);
+export const IconSearch = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><circle cx="10.5" cy="10.5" r="6.3" /><path d="m15.4 15.4 4 4" /></I>
+);
+export const IconSend = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><path d="M21 4 3 11l6.5 2.5L12 20l3-6L21 4Z" /><path d="m9.5 13.5 3-3" /></I>
+);

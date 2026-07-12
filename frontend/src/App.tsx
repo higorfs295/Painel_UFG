@@ -14,11 +14,14 @@ const OverviewPage = lazy(() => import("./pages/OverviewPage"));
 const SubjectsPage = lazy(() => import("./pages/SubjectsPage"));
 const ExtrasPage = lazy(() => import("./pages/ExtrasPage"));
 const SchedulePage = lazy(() => import("./pages/SchedulePage"));
+const RecommendationsPage = lazy(() => import("./pages/RecommendationsPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const HelpPage = lazy(() => import("./pages/HelpPage"));
 const AdminHomePage = lazy(() => import("./pages/admin/AdminHomePage"));
 const AdminUsersPage = lazy(() => import("./pages/admin/AdminUsersPage"));
 const AdminCoursesPage = lazy(() => import("./pages/admin/AdminCoursesPage"));
 const AdminPeriodsPage = lazy(() => import("./pages/admin/AdminPeriodsPage"));
+const AdminConfigPage = lazy(() => import("./pages/admin/AdminConfigPage"));
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const status = useAuth((s) => s.status);
@@ -75,11 +78,14 @@ export default function App() {
             <Route path="/disciplinas" element={<StudentPage><SubjectsPage /></StudentPage>} />
             <Route path="/extras" element={<StudentPage><ExtrasPage /></StudentPage>} />
             <Route path="/cronograma" element={<StudentPage><SchedulePage /></StudentPage>} />
+            <Route path="/recomendacoes" element={<StudentPage><RecommendationsPage /></StudentPage>} />
             <Route path="/config" element={<SettingsPage />} />
+            <Route path="/ajuda" element={<HelpPage />} />
             <Route path="/admin" element={<RequireAdmin><AdminHomePage /></RequireAdmin>} />
             <Route path="/admin/usuarios" element={<RequireAdmin><AdminUsersPage /></RequireAdmin>} />
             <Route path="/admin/cursos" element={<RequireAdmin><AdminCoursesPage /></RequireAdmin>} />
             <Route path="/admin/periodos" element={<RequireAdmin><AdminPeriodsPage /></RequireAdmin>} />
+            <Route path="/admin/config" element={<RequireAdmin><AdminConfigPage /></RequireAdmin>} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

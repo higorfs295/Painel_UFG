@@ -2,6 +2,7 @@
 // estatística, faixa marquee inclinada com as recomendações, composições com numeral
 // fantasma, callout do próximo marco (borda cônica) e stickers de marcos.
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import type { ComponentType, SVGProps } from "react";
 import { me } from "../api/endpoints";
 import { useApp } from "../store/app";
@@ -176,7 +177,10 @@ export default function OverviewPage() {
 
       <Reveal>
         <Card>
-          <h3>Recomendações <span className="mut" style={{ fontWeight: 400 }}>— disponíveis que mais destravam</span></h3>
+          <div className="row spread wrap" style={{ alignItems: "baseline" }}>
+            <h3>Recomendações <span className="mut" style={{ fontWeight: 400 }}>— disponíveis que mais destravam</span></h3>
+            <Link to="/recomendacoes" className="btn ghost sm">Ver todas →</Link>
+          </div>
           {!recs || recs.length === 0 ? (
             <div className="muted-box">Nenhuma disciplina disponível no momento.</div>
           ) : (
@@ -184,7 +188,7 @@ export default function OverviewPage() {
               <table>
                 <thead><tr><th>Código</th><th>Disciplina</th><th>CH</th><th>Destrava (obrig.)</th></tr></thead>
                 <tbody>
-                  {recs.map((r) => (
+                  {recs.slice(0, 6).map((r) => (
                     <tr key={r.seq}>
                       <td className="mut">{r.code}</td>
                       <td>{r.name}</td>
