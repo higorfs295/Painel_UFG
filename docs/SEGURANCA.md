@@ -106,6 +106,14 @@ Dois níveis, sempre no servidor:
 
 Guardas anti-pé-no-próprio-pé do admin: não remove a própria conta, não rebaixa o próprio papel.
 
+### 5.1 Superfícies com guarda extra
+
+| Superfície | Guarda |
+| --- | --- |
+| `/admin/dev/*` (gerador de dados) | ADMIN **e** `DEV_TOOLS=true` **e** `NODE_ENV != production` — as três; em produção responde 403 mesmo com a flag ligada |
+| `/docs` (OpenAPI) | desligada em produção por padrão (`DOCS_ENABLED` + `!isProd`) — expor a superfície inteira ajuda quem integra tanto quanto quem ataca |
+| `/admin/metrics`, `/admin/audit` | ADMIN; métricas agregam por **rota padronizada** (`/me/enrollments/:id`), nunca por URL concreta, para não vazar identificadores |
+
 ## 6. Superfície HTTP
 
 - **helmet** na API (headers padrão) + headers no edge (Caddy: HSTS, CSP restritiva, XFO,
@@ -116,13 +124,46 @@ Guardas anti-pé-no-próprio-pé do admin: não remove a própria conta, não re
   `TRUST_PROXY=true` garante que o IP limitado é o do cliente, não o do balanceador. Com
   réplicas, `REDIS_URL` muda o store para Redis (senão o limite efetivo multiplica por N).
 - **Validação** zod em toda entrada; o handler de erro central mapeia
-  Zod→400, posse→403/404, Prisma P2002→409/P2025→404, resto→500 **sem stack trace** (RNF-04).
+  Zod→400, posse→403/404, negócio (`AppError`)→status próprio, Prisma P2002→409/P2025→404,
+  resto→500 **sem stack trace** (RNF-04).
+- **Backpressure**: sob event loop/heap/RSS travados, o `under-pressure` devolve 503 com
+  `Retry-After` em vez de aceitar trabalho que não consegue concluir.
 
 ## 7. Dados pessoais (LGPD)
 
 Coleta mínima: nome, e-mail e dados acadêmicos que o próprio usuário insere. Exclusão de conta
 remove tudo por cascade (enrollments → status/extras/cenários; tokens). Logs não registram
 segredos (redaction) e o backup (RF-16) dá portabilidade dos dados ao titular.
+
+### 7.1 Cifra de campo em repouso (AES-256-GCM)
+
+TLS protege o dado **em trânsito** e o argon2 protege a senha (via única). Nenhum dos dois
+protege um **dump do banco** — daí uma terceira camada para o dado que é PII e precisa ser lido
+de volta: o número de matrícula.
+
+- **Algoritmo**: AES-256-GCM (cifra autenticada: além de esconder, detecta adulteração).
+- **Formato**: `v1:<iv>:<tag>:<dados>` em base64url. O prefixo de versão permite rotação de chave
+  no futuro sem migração destrutiva.
+- **Chave**: `FIELD_ENCRYPTION_KEY`, 32 bytes em base64 ou hex, resolvida **no boot** — chave
+  malformada derruba o servidor na largada, não no meio de uma request.
+- **Retrocompatível**: sem chave, o sistema opera transparente (grava em claro) e valores legados
+  sem o prefixo passam direto. Instalações existentes não quebram ao atualizar.
+- **Falha fechada, sem cascata**: chave errada ou dado adulterado devolvem `null` para aquele
+  campo em vez de estourar — uma configuração ruim não derruba a listagem inteira de usuários.
+- **Escrita e leitura em um lugar só**: `encryptField` na gravação e `toPublicUser` na leitura
+  (usado por auth, `/me`, listagem do admin, seed e dev-tools).
+- **A chave nunca vaza pela API**: `/admin/config` expõe apenas o booleano
+  `security.fieldEncryption`.
+
+> ⚠️ **Perder a chave torna as matrículas já cifradas irrecuperáveis.** Guarde-a no cofre de
+> segredos do provedor, junto do `JWT_SECRET`, e faça backup dela separado do backup do banco.
+
+### 7.2 Trilha de auditoria
+
+Ações sensíveis geram registro em `AuditLog` (quem, o quê, quando, IP): login e falha de login,
+mudança de papel, importação de matriz, calendário acadêmico, avisos e uso das dev-tools. É
+**best-effort por desenho** — se a gravação da auditoria falhar, ela nunca derruba a operação em
+curso. O `meta` guarda só identificadores e contexto; segredos nunca entram ali.
 
 ## 8. Checklist de produção
 
@@ -132,8 +173,14 @@ segredos (redaction) e o backup (RF-16) dá portabilidade dos dados ao titular.
 - [ ] `COOKIE_SAMESITE` correto para a topologia (§2.3)
 - [ ] `CORS_ORIGIN` sem curingas — origens explícitas
 - [ ] `ALLOW_REGISTRATION` conforme a política da instância
-- [ ] Backup do banco agendado (`pg_dump` / snapshot do Neon)
+- [ ] `FIELD_ENCRYPTION_KEY` definida (32 bytes) **e no cofre** — sem ela a matrícula fica em claro;
+      perdê-la torna as já cifradas irrecuperáveis (§7.1)
+- [ ] `DEV_TOOLS` ausente ou `false` (em produção o endpoint recusa de qualquer forma)
+- [ ] `DOCS_ENABLED=false` se não quiser a API documentada publicamente
+- [ ] Backup do banco agendado (`pg_dump` / snapshot do Neon) — e a chave de cifra guardada
+      **separada** do backup, senão os dois vazam juntos
 - [ ] Dependências: `npm audit` no CI de tempos em tempos
+- [ ] `/admin/metrics` e `/health/pressure` sendo observados (latência p95/p99, 5xx, memória)
 
 ## 9. Operando uma instância pública (cadastro aberto)
 

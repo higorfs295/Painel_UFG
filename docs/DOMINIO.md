@@ -318,6 +318,39 @@ Regras do importador (`importCourse.ts`):
 
 ---
 
+## 8.5 Histórico, média e conquistas (RF-22/23)
+
+Quando o aluno lança **nota**, **faltas** e o **período** em que cursou, o mesmo `SubjectStatus`
+passa a alimentar o histórico escolar — sem tabela nova.
+
+**A média é ponderada pela carga horária**, como nas federais:
+
+```
+média = Σ(nota × CH) / Σ(CH)    — só disciplinas APROVADAS e COM nota lançada
+```
+
+Uma disciplina de 96h pesa três vezes mais que uma de 32h. Isso vale por período e no global
+(a MGA). Duas decisões que evitam mentir sobre o desempenho:
+
+- **sem nenhuma nota lançada, a média é `null`, nunca `0`** — "não informado" e "tirou zero" são
+  coisas diferentes, e a UI mostra "—";
+- disciplinas **sem nota** ainda somam carga horária no período (o aluno cursou), mas ficam fora
+  do cálculo da média.
+
+Status sem `term` informado entram num balde "sem período": contam horas, mas não aparecem na
+linha do tempo — o que evita inventar um período que o aluno não declarou.
+
+**Ritmo e estimativa de formatura.** A média de CH aprovada nos últimos períodos, dividida pelas
+horas que faltam, estima quantos períodos restam. É uma projeção honesta, não uma promessa: com
+histórico curto ela oscila muito (um único período de 64h registrado projeta dezenas de períodos).
+Já integralizado devolve `0`; sem histórico nenhum devolve `null` em vez de um número inventado.
+
+**Conquistas** (`domain/achievements.ts`) são **derivadas a cada leitura e nunca gravadas**. Mesma
+entrada, mesmas conquistas — não há estado a migrar, a sincronizar nem a corromper. Mudar um
+limiar reclassifica todo mundo instantaneamente, sem script de migração.
+
+---
+
 ## 9. Backup portátil (RF-16)
 
 O export serializa **tudo que é do usuário** — status por `seq`, extras, cenários (disciplinas +
@@ -338,11 +371,15 @@ trocar de servidor ou clonar o próprio perfil num ambiente de teste.
 | Destravamento transitivo | `domain/graph.ts:unlockCount` | `unit/graph.test.ts` |
 | Efeitos de APPROVED/ENROLLED/SIMULATED | `domain/progress.ts` | `integration/features.test.ts` |
 | Parser SIGAA | `domain/sigaa.ts` | `unit/sigaa.test.ts` |
-| Período/férias | `domain/period.ts` | `integration/features.test.ts` |
+| Período/férias | `domain/period.ts` | `unit/period.test.ts`, `integration/features.test.ts` |
+| Histórico por período / MGA / ritmo | `domain/history.ts` | `unit/history.test.ts` |
+| Conquistas (derivadas) | `domain/achievements.ts` | `unit/history.test.ts` |
+| Contexto único da matrícula | `modules/progress/service.ts` | `integration/gestao.test.ts` |
+| Cifra de campo (PII em repouso) | `lib/fieldCrypto.ts` | `unit/cache.test.ts`, `integration/seguranca.test.ts` |
 | Importação idempotente | `domain/importCourse.ts` | exercido por todos os testes de integração |
 | Backup portátil | `lib/backup.ts` | `integration/account.test.ts` (roundtrip) |
 
-> O frontend espelha `graph/sigaa/sums` em `frontend/src/lib/` **apenas** para feedback imediato
+> O frontend espelha `graph/sigaa` em `frontend/src/lib/` **apenas** para feedback imediato
 > na grade; o servidor sempre recalcula. Se mudar um, mude o outro (ou extraia um pacote comum —
 > backlog).
 

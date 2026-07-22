@@ -75,34 +75,82 @@ erros conhecidos do Prisma (`P2002→409`, `P2025→404`) e o resto para `500` g
 O backend separa **lógica de domínio pura** (testável sem banco) de **efeitos** (rotas HTTP e acesso a
 dados). Essa é a decisão estrutural mais importante — o servidor é a fonte de verdade dos cálculos.
 
+Desde a refatoração de arquitetura, cada módulo segue **três arquivos com papéis fixos**:
+
+```
+modules/<área>/
+  routes.ts    HTTP: valida (zod) → chama o serviço → responde. Sem regra de negócio.
+  service.ts   Orquestração: posse + Prisma + domínio. Não conhece `request`/`reply`.
+  schemas.ts   Contrato de entrada em zod, reaproveitável por testes e documentação.
+```
+
 ```mermaid
 flowchart TD
-  subgraph HTTP
-    R["modules/*/routes.ts<br/>Fastify + zod + posse"]
+  subgraph HTTP["routes.ts (HTTP fino)"]
+    R["Fastify + zod + preHandler de papel"]
+  end
+  subgraph Serviço["service.ts (orquestração)"]
+    SV["loadEnrollmentContext · buildProgress/History/Achievements"]
   end
   subgraph Domínio["domain/ (puro, testado)"]
     G["graph.ts — status e destravamento"]
     S["sums.ts — somas com teto 100%"]
     P["progress.ts — computeProgress / recommend"]
+    H["history.ts — períodos, MGA, ritmo"]
+    A["achievements.ts — conquistas derivadas"]
     SI["sigaa.ts — parser de horário"]
-    L["loadCourse.ts — Prisma→domínio + cache"]
-    I["importCourse.ts — matriz→banco (tx)"]
   end
-  subgraph Serviços["lib/ (efeitos isolados)"]
+  subgraph Kit["lib/ (efeitos e utilidades)"]
     C["crypto · session · invite · backup · ownership"]
+    K["cache · fieldCrypto · userView · errors · schemas · audit"]
   end
-  R --> Domínio
-  R --> Serviços
-  L --> PR[("Prisma")]
-  I --> PR
-  Serviços --> PR
-  R --> PR
+  R --> Serviço
+  Serviço --> Domínio
+  Serviço --> Kit
+  R --> Kit
+  Serviço --> PR[("Prisma")]
+  Kit --> PR
 ```
 
-- `domain/graph.ts`, `sums.ts`, `sigaa.ts`, `progress.ts` **não importam Prisma nem HTTP** — recebem
-  formas simples e são cobertos por testes unitários rápidos.
-- `loadCourse.ts` é a ponte Prisma→domínio (com cache em memória por curso, TTL 5 min).
-- `lib/*` concentra os efeitos com segredo (hash de tokens, rotação de refresh, backup).
+- O domínio **não importa Prisma nem HTTP** — recebe formas simples e é coberto por testes
+  unitários rápidos (`graph`, `sums`, `sigaa`, `progress`, `period`, `history`, `achievements`).
+- `loadCourse.ts` é a ponte Prisma→domínio, com cache em memória por curso (TTL 5 min) sobre o
+  `TtlCache` compartilhado.
+- **Por que o serviço existe:** os quatro endpoints de progresso (progresso, histórico, conquistas,
+  recomendações) repetiam o mesmo preâmbulo — checar posse, carregar o grafo, buscar status e
+  extras — e cada um remontava os dados do seu jeito. `loadEnrollmentContext()` faz isso **uma
+  vez**, em consultas paralelas, e devolve também as formas derivadas (`statuses`, `historyItems`)
+  que os builders reaproveitam. Ao mudar regra de progresso, o lugar é o serviço ou o domínio —
+  nunca a rota.
+- `lib/*` concentra efeitos com segredo (hash e rotação de tokens, backup) e o kit compartilhado:
+  cache TTL, **cifra de campo** (§4.1), forma pública do usuário, erros de negócio e auditoria.
+
+### 4.1 Camadas de proteção do dado
+
+Três camadas distintas, cada uma para um risco diferente:
+
+| Camada | Onde | Protege de |
+| --- | --- | --- |
+| TLS | borda (Caddy/Render) | interceptação **em trânsito** |
+| Hash argon2 | `User.passwordHash` | vazamento de senha (via única — não é reversível) |
+| **Cifra de campo AES-256-GCM** | `User.matricula` | vazamento do **dado em repouso** (dump, backup, réplica) |
+
+A matrícula precisa ser *lida de volta*, então usa cifra simétrica autenticada, não hash. O
+formato é versionado (`v1:iv:tag:dados`) para permitir rotação de chave, e valores legados sem
+prefixo passam direto — a adoção é retrocompatível. Sem `FIELD_ENCRYPTION_KEY` o sistema opera
+transparente (grava em claro); com chave errada ou dado adulterado, a tag GCM rejeita e o campo
+volta `null` em vez de derrubar a listagem inteira.
+
+### 4.2 Plugins de borda
+
+Registrados antes das rotas, em ordem: segurança → desempenho → dados → auth → métricas → docs.
+
+| Plugin | O que entrega |
+| --- | --- |
+| `security` | helmet, CORS restrito, rate limit (store Redis quando há `REDIS_URL`) |
+| `performance` | compressão br/gzip (≥1KB), ETag fraco (revalidação 304) e **under-pressure** — sob event loop/heap/RSS travados devolve 503 com `Retry-After` em vez de degradar em silêncio |
+| `metrics` | contadores por classe de status, latências p50/p95/p99 e agregados por rota |
+| `docs` | OpenAPI 3.1 + Swagger UI em `/docs` (desligado em produção) |
 
 ## 5. Fluxo de autenticação (RF-01..04)
 
@@ -143,7 +191,7 @@ sequenceDiagram
 O "claim" atômico (`updateMany where revokedAt=null`) garante que sob dois refresh concorrentes com o
 mesmo token apenas **um** vença — fechando a corrida de rotação e a proliferação de tokens.
 
-## 6. Modelo de dados (14 entidades)
+## 6. Modelo de dados (19 entidades)
 
 ```mermaid
 erDiagram
@@ -161,6 +209,11 @@ erDiagram
   Enrollment ||--o{ Scenario : possui
   Scenario ||--o{ ScenarioDiscipline : contém
   Scenario ||--o{ ScenarioPaint : contém
+  Enrollment ||--o{ StudyTask : "agenda (provas/entregas)"
+  Enrollment ||--o{ SubjectNote : "anotações"
+  Subject ||--o{ SubjectNote : "anotada em"
+  User ||--o{ Announcement : "publica (admin)"
+  User ||--o{ AuditLog : "gera"
 
   User {
     string id PK
@@ -224,6 +277,20 @@ flowchart LR
 - **Oficial × simulado** (RF-06): `APPROVED` conta no oficial; `SIMULATED` só na projeção.
 - **Recomendações** (RF-07): para cada disciplina disponível, conta quantas outras ela destrava
   transitivamente no grafo, priorizando obrigatórias.
+
+### 7.1 Histórico, média e ritmo (RF-22/23)
+
+Sobre os mesmos status — agora com `grade`, `absences` e `term` — o domínio deriva o histórico
+escolar sem persistir nada novo:
+
+- **Média ponderada por carga horária**, como nas federais: `Σ(nota × CH) / Σ(CH)`, contando só
+  disciplinas com nota lançada. Vale por período e no global (MGA). Sem nota nenhuma, é `null` —
+  nunca zero, que mentiria sobre o desempenho.
+- **Ritmo**: média de CH aprovada nos últimos períodos; dividida pelas horas que faltam, estima
+  quantos períodos restam. Com histórico curto a estimativa é instável — é uma projeção, não uma
+  promessa.
+- **Conquistas** (`achievements.ts`): derivadas do progresso a cada leitura, **nunca gravadas**.
+  Mesma entrada, mesmas conquistas — não há estado a migrar nem a corromper.
 
 ## 8. Estrutura do frontend
 

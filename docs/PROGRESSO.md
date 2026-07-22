@@ -175,11 +175,40 @@ o mesmo MITM pode afetar o `npm ci` — em rede sem interceptação os Dockerfil
 - A suíte E2E encontrou e motivou o fix de um **bug real**: o cliente enviava `Content-Type: application/json`
   sem corpo e o Fastify respondia 400 em todos os DELETEs da UI.
 
+## Escala da gestão acadêmica (RF-22..27) — feito
+- **Domínio novo e puro**: `history.ts` (histórico por período, **MGA ponderada por CH**, ritmo e
+  estimativa de formatura) e `achievements.ts` (14 conquistas derivadas, nunca persistidas).
+- **Dados**: `SubjectStatus` ganhou `grade`/`absences`; novos `Announcement`, `StudyTask`,
+  `SubjectNote` e `AuditLog` (19 entidades no total).
+- **Módulos**: `planner` (agenda + anotações), `announcements` (feed por audiência),
+  `observability` (métricas + auditoria) e `devtools` (massa de dados, tripla trava).
+- **Observabilidade**, que era o maior vazio para publicar: `/admin/metrics` (p50/p95/p99, status
+  por classe, rotas mais usadas/lentas, memória, ping do banco) e `/admin/audit` (trilha
+  filtrável). Painel **Monitor** consome os dois.
+- **Sessões ativas** visíveis e revogáveis sem expor token nem hash.
+- Frontend: páginas Histórico, Agenda, Monitor e Avisos.
+
+## Refatoração de arquitetura — feito
+- **Camadas por módulo**: `routes` (HTTP fino) / `service` (orquestração) / `schemas` (zod), com o
+  domínio seguindo puro. `loadEnrollmentContext()` eliminou a duplicação do preâmbulo nos quatro
+  endpoints de progresso (posse + grafo + status + extras), agora em consultas paralelas.
+- **Componentização**: `lib/userView.ts` (forma pública do usuário, antes duplicada em três rotas),
+  `lib/errors.ts` (`AppError`), `lib/schemas.ts` (primitivos zod) e `lib/cache.ts` (TtlCache com
+  teto/despejo/stats, que substituiu o cache ad-hoc do `loadCourse`).
+- **Camada extra de criptografia**: cifra de campo AES-256-GCM (`v1:iv:tag:dados`) para a matrícula
+  em repouso, aplicada em todas as bordas; sem chave opera transparente (retrocompatível).
+- **Escala/desempenho**: compressão br/gzip, ETag (304), `under-pressure` (503 + `Retry-After`,
+  `/health/pressure`) e **OpenAPI 3.1 + Swagger UI em `/docs`** (fora de produção). Índices novos
+  em `Announcement(audience,pinned,createdAt)` e `AuditLog(userId)`.
+- **Animações**: entrada de rota, cascata, esqueletos e pulso — desligadas por `prefers-reduced-motion`.
+- Estado dos testes: **43 unitários + 42 de integração + 6 E2E**, CI verde nos 3 jobs.
+
 ## Pendências / próximos passos sugeridos
-- **Levar à `main`**: a branch já contém o merge da main (com limpeza do node_modules commitado e
-  unificação da lineage de migração). Abra o PR e mescle — atenção: o banco do checkout principal
-  usa a migração antiga; após atualizar, rode `npx prisma migrate reset` + seed.
-- **6.5 Revisão de segurança final** em produção: `NODE_ENV=production` (cookies `secure`),
-  segredos fora do repo, backup automatizado do banco.
-- Testes de integração ainda usam o banco de dev por padrão (`TEST_DATABASE_URL` opcional já suportado).
+- **Frontend será substituído** — o backend e o contrato (`/docs`) estão prontos para servir a
+  nova interface sem alteração.
+- `ALLOW_REGISTRATION` ainda vem do ambiente; torná-lo editável em runtime exigiria movê-lo para
+  o banco (a tela de Configurações hoje só o exibe).
+- A estimativa de formatura oscila com histórico curto — considerar esconder abaixo de N períodos.
 - Detecção de conflito de horário na grade (o parser valida SIGAA; falta o realce visual).
+- Cache é **por processo**: com várias réplicas, migrar o `TtlCache` para Redis (a interface já
+  isola essa troca).

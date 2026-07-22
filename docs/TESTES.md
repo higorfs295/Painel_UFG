@@ -7,9 +7,9 @@ geral é testar **comportamento** (o que o usuário/consumidor da API observa), 
 
 | Camada | Onde | O que cobre | Custo | Precisa de |
 | --- | --- | --- | --- | --- |
-| **Unitários** | `backend/test/unit/` | domínio puro: grafo, somas, parser SIGAA, crypto | ~ms | nada |
-| **Integração** | `backend/test/integration/` | rotas HTTP reais (zod→posse→domínio→Prisma), auth, concorrência | ~s | Postgres |
-| **E2E** | `frontend/e2e/` | fluxos completos no navegador (login, simulação, grade por teclado) | ~20s | stack inteira |
+| **Unitários** (43) | `backend/test/unit/` | domínio puro: grafo, somas, parser SIGAA, período, histórico/MGA, conquistas, crypto, cache | ~ms | nada |
+| **Integração** (42) | `backend/test/integration/` | rotas HTTP reais (zod→posse→serviço→domínio→Prisma), auth, concorrência, gestão acadêmica, **cifra de campo** | ~s | Postgres |
+| **E2E** (6) | `frontend/e2e/` | fluxos completos no navegador (login, simulação, extras, grade por teclado, admin) | ~30s | stack inteira |
 
 Filosofia: a lógica acadêmica (a parte com mais nuance) fica em funções puras testadas em
 milissegundos; a integração garante que a orquestração HTTP (validação, posse, transação) está

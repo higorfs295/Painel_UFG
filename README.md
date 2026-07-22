@@ -5,6 +5,22 @@ papéis (admin/usuário), cadastro público, múltiplos cursos e os módulos de 
 aprovada/cursando/simulada), optativas, atividades, período letivo e cronograma.
 Leia primeiro `ESPECIFICACAO.md`; para entender o domínio a fundo, `docs/DOMINIO.md`.
 
+**O que o sistema faz hoje**
+
+| Para o aluno | Para o administrador |
+| --- | --- |
+| Integralização com regra do teto, marcos e projeção | Visão do sistema (usuários, cursos, crescimento, distribuição) |
+| Disciplinas com três estados + **nota, faltas e período** | Gestão de usuários, papéis, convites e matrículas |
+| **Histórico escolar** por período, **média ponderada por CH (MGA)** e ritmo de formatura | Catálogo e **importação de matrizes** (JSON) |
+| Recomendações por destravamento transitivo | **Calendário acadêmico global** e agendável |
+| Extras (optativas, Núcleo Livre, AC) com 3 estados e reclassificação | **Avisos** por audiência |
+| **Agenda** de provas/entregas e anotações por disciplina | **Monitor**: métricas p50/p95/p99, memória, ping do banco |
+| Cronograma semanal com códigos SIGAA | **Auditoria** de ações sensíveis |
+| **Conquistas** derivadas do progresso | Configurações, teste de SMTP e gerador de dados de teste |
+
+Segurança: sessão com refresh rotativo (detecção de reuso), autorização por posse, auditoria e
+**cifra de campo AES-256-GCM** para PII em repouso. Detalhes em [`docs/SEGURANCA.md`](docs/SEGURANCA.md).
+
 ## Documentação
 
 | Documento | Conteúdo |
@@ -59,16 +75,27 @@ SEED_ADMIN_PASSWORD='defina-uma-senha-forte' npm run seed
 
 # 5) Rodar a API
 npm run dev                # http://localhost:3333  (GET /health -> {"ok":true})
+#    documentação OpenAPI: http://localhost:3333/docs (desliga sozinha em produção)
 ```
+
+> **Opcional, recomendado:** cifre o nº de matrícula (PII) em repouso — gere a chave e cole no
+> `.env` como `FIELD_ENCRYPTION_KEY`. Sem ela o sistema funciona igual, só que em claro.
+> ```bash
+> node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+> ```
+> Depois de adotar, guarde a chave: perdê-la torna as matrículas já cifradas irrecuperáveis.
 
 ## Testes
 
 ```bash
 cd backend
-npm test                   # unitários: domínio puro + crypto (não precisam de banco)
-npm run test:integration   # integração: rotas via app.inject (precisa do Postgres migrado)
+npm test                   # 43 unitários: domínio puro, cache e cripto (não precisam de banco)
+npm run test:integration   # 42 de integração: rotas via app.inject (precisa do Postgres migrado)
 npm run typecheck          # checagem de tipos (tsc --noEmit)
 ```
+
+No `frontend/`, `node node_modules/@playwright/test/cli.js test` roda os 6 E2E (no Windows/git-bash
+o `npx.cmd` engole prefixos de env). Detalhes em [`docs/TESTES.md`](docs/TESTES.md).
 
 ## Frontend (React + Vite + TanStack Query)
 
@@ -79,10 +106,14 @@ npm run dev                # http://localhost:5173
 # login: painel@admin.com (admin) ou painel@aluno.com (aluno) com a senha do SEED
 ```
 
-Páginas: Login, **Cadastro** (auto-registro, RF-17), Convite, Visão geral, Disciplinas (com os
-três estados: aprovada/cursando/simulada), Extras, Cronograma, Ajustes (senha, período letivo,
-matrículas, tema, backup) e Admin (estatísticas, papéis, matrículas). Consome a API via TanStack
-Query; sessão com refresh automático; chip de período/férias no topo; tema claro/escuro persistido.
+Páginas — **aluno**: Visão geral, Disciplinas (três estados + nota/faltas/período), Extras,
+Cronograma, Recomendações, Histórico, Agenda, Ajustes e Ajuda.
+**Admin**: Visão do sistema, Usuários, Cursos, Períodos, Avisos, Monitor e Configurações.
+Fora da sessão: Login, **Cadastro** (auto-registro, RF-17) e Convite/redefinição.
+
+Consome a API via TanStack Query; sessão com refresh automático; chip de período/férias no topo;
+tema claro/escuro persistido; animações de entrada, cascata e esqueletos — todas desligadas sob
+`prefers-reduced-motion`.
 
 ## Batizando o sistema (nome próprio em 1 linha)
 

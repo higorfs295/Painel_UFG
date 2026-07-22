@@ -65,9 +65,22 @@ valores marcados `sync: false`:
 | `DIRECT_URL` | a string **direta** do Neon |
 | `APP_URL` | a URL do frontend na Vercel (ex.: `https://painel-ufg.vercel.app`) — **é a base dos links de convite/reset!** |
 | `CORS_ORIGIN` | a mesma URL da Vercel (ou lista: `https://painel.vercel.app,https://painel-git-main-voce.vercel.app`) |
+| `FIELD_ENCRYPTION_KEY` | **recomendado** — cifra a matrícula (PII) em repouso. Gere com `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` |
 
 (`JWT_SECRET` é gerado automaticamente; `COOKIE_SAMESITE=none` e `TRUST_PROXY=true` já vêm do
 blueprint.)
+
+**Sobre a chave de cifra:** sem ela o sistema funciona igual, só que a matrícula fica em claro no
+banco. Definindo-a, os valores gravados a partir daí ficam cifrados (AES-256-GCM) e os antigos
+continuam legíveis — a adoção é incremental. Depois de adotar, **guarde a chave no cofre**: perdê-la
+torna as matrículas já cifradas irrecuperáveis. Não a coloque no mesmo lugar do backup do banco.
+
+Duas variáveis que valem revisar antes de publicar:
+
+| Variável | Padrão | Em produção |
+| --- | --- | --- |
+| `DOCS_ENABLED` | `true` | a documentação OpenAPI em `/docs` é **desligada automaticamente** quando `NODE_ENV=production`; deixe `false` também para não confiar só nisso |
+| `DEV_TOOLS` | `false` | mantenha desligada — o gerador de dados fictícios recusa em produção mesmo se ligada, mas a flag não deveria existir lá |
 
 **B) Manual:** *New → Web Service* → repo → Root Directory `backend` → Build
 `npm ci && npx prisma generate && npm run build` → Start
@@ -154,9 +167,32 @@ Opções gratuitas testadas pela comunidade: **Gmail** (senha de app; limite ~50
 (3k/mês; exige domínio verificado para FROM próprio), **Brevo** (300/dia). A falha de SMTP nunca
 quebra o fluxo: o sistema loga o erro e o link continua disponível no painel admin.
 
-## 7. Solução de problemas
+## 7. Depois de publicar: o que observar
 
-### 7.1 "O convite não chega / o link do convite não abre" ⭐
+A instância expõe os próprios sinais — não é preciso montar stack de monitoramento para começar.
+
+| Endpoint | Quem acessa | Para quê |
+| --- | --- | --- |
+| `GET /health` | público | *liveness* — é o health check do Render |
+| `GET /health/pressure` | público | event loop, heap e RSS; devolve 503 quando o processo está sob pressão |
+| `GET /admin/metrics` | ADMIN | contadores por classe de status, latências **p50/p95/p99**, rotas mais usadas e mais lentas, memória, uptime e ping do banco |
+| `GET /admin/audit` | ADMIN | trilha de ações sensíveis (login, papéis, importações, calendário), filtrável por ação/usuário |
+
+Na prática, três coisas dizem quase tudo nas primeiras semanas:
+
+1. **p95 subindo** sem aumento de tráfego → normalmente é consulta sem índice ou banco hibernando;
+   `db.pingMs` no mesmo payload separa um caso do outro.
+2. **5xx > 0** → vá direto ao `/admin/audit` e aos logs do Render no mesmo horário.
+3. **`rssMb` crescendo e não voltando** → vazamento; o `under-pressure` vai começar a devolver 503
+   antes de o processo morrer, o que dá tempo de reiniciar.
+
+O painel **Monitor** (`/admin/monitor`) lê exatamente esses dois endpoints, então dá para acompanhar
+tudo pela própria interface. Para stacks externas (Prometheus/Grafana), o snapshot é JSON estável —
+basta um *scraper* que traduza os campos.
+
+## 8. Solução de problemas
+
+### 8.1 "O convite não chega / o link do convite não abre" ⭐
 
 O caso mais comum tem duas metades:
 
@@ -171,43 +207,43 @@ O caso mais comum tem duas metades:
    Outras causas: token **expirado** (72h) ou **já usado** (uso único) — reemita pelo painel;
    e senha com **menos de 10 caracteres** é recusada.
 
-### 7.2 CORS bloqueando no trio free
+### 8.2 CORS bloqueando no trio free
 
 `Access to fetch … has been blocked by CORS` → a origem do frontend não está em `CORS_ORIGIN`
 da API. Lembre que preview da Vercel tem URL própria. Vírgula separa múltiplas origens.
 
-### 7.3 Login funciona mas a sessão não sobrevive ao reload (cross-site)
+### 8.3 Login funciona mas a sessão não sobrevive ao reload (cross-site)
 
 Cookie de refresh não está indo. Verifique `COOKIE_SAMESITE=none` na API (e https em ambos os
 lados — `None` exige `Secure`). No DevTools → Application → Cookies, o `rt` deve aparecer no
 domínio da API com `SameSite=None`.
 
-### 7.4 `prisma migrate` falha no Neon com timeout/lock
+### 8.4 `prisma migrate` falha no Neon com timeout/lock
 
 Está usando a URL **pooled** para migrar. Migração usa `DIRECT_URL` — confira que ela está
 definida e **sem** `-pooler` no host.
 
-### 7.5 `Environment variable not found: DIRECT_URL`
+### 8.5 `Environment variable not found: DIRECT_URL`
 
 O schema declara `directUrl`. Em qualquer ambiente (dev local, CI, compose), defina `DIRECT_URL`
 — localmente é **igual** à `DATABASE_URL` (o `.env.example` já traz).
 
-### 7.6 Render dorme e o primeiro request falha no frontend
+### 8.6 Render dorme e o primeiro request falha no frontend
 
 O fetch estoura timeout durante o *cold start*. Recarregue após ~30s ou configure o ping do
 §3.2. (Melhoria futura: tela de "acordando o servidor…" com retry no cliente.)
 
-### 7.7 Windows: `npm install` trava ou falha com `UNABLE_TO_VERIFY_LEAF_SIGNATURE`
+### 8.7 Windows: `npm install` trava ou falha com `UNABLE_TO_VERIFY_LEAF_SIGNATURE`
 
 Antivírus interceptando TLS (Avast et al.). Aponte o Node para o CA do próprio antivírus, sem
 desligar verificação: `NODE_EXTRA_CA_CERTS="C:\ProgramData\Avast Software\Avast\wscert.pem"`.
 
-### 7.8 Windows: variável de ambiente "some" ao rodar Playwright/np​x
+### 8.8 Windows: variável de ambiente "some" ao rodar Playwright/np​x
 
 O wrapper `npx.cmd` sob git-bash descarta prefixos `VAR=x`. Use
 `node node_modules/@playwright/test/cli.js test …` (ou exporte no PowerShell).
 
-## 8. Matriz de variáveis por ambiente
+## 9. Matriz de variáveis por ambiente
 
 | Variável | Dev local | Compose | Render (free trio) |
 | --- | --- | --- | --- |
@@ -220,3 +256,7 @@ O wrapper `npx.cmd` sob git-bash descarta prefixos `VAR=x`. Use
 | `ALLOW_REGISTRATION` | `true` | à sua escolha | à sua escolha |
 | `SMTP_*` | opcional | opcional | recomendado (§6) |
 | `JWT_SECRET` | ≥32 chars | `.env` | gerado pelo blueprint |
+| `FIELD_ENCRYPTION_KEY` | opcional (sem ela, matrícula em claro) | opcional | **recomendado** — e no cofre |
+| `DOCS_ENABLED` | `true` (`/docs`) | `true` | irrelevante: desliga sozinho em produção |
+| `DEV_TOOLS` | `true` para gerar massa | `false` | **nunca** |
+| `REDIS_URL` | — | opcional | recomendado com réplicas (rate limit compartilhado) |
