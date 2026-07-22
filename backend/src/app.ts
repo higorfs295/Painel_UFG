@@ -13,7 +13,10 @@ import { extraRoutes } from "./modules/extras/routes.js";
 import { scheduleRoutes, SigaaError } from "./modules/schedules/routes.js";
 import { accountRoutes } from "./modules/account/routes.js";
 import { OwnershipError } from "./lib/ownership.js";
-import { env, isProd } from "./env.js";
+import { AppError } from "./lib/errors.js";
+import { env, isProd, docsEnabled } from "./env.js";
+import { performancePlugin } from "./plugins/performance.js";
+import { docsPlugin } from "./plugins/docs.js";
 import { adminRoutes } from "./modules/admin/routes.js";
 import { metricsPlugin } from "./plugins/metrics.js";
 import { observabilityRoutes } from "./modules/observability/routes.js";
@@ -38,16 +41,18 @@ export async function buildApp() {
       },
     },
   });
-  await app.register(securityPlugin);   // helmet + cors + rate limit (RNF-01..03)
+  await app.register(securityPlugin);    // helmet + cors + rate limit (RNF-01..03)
+  await app.register(performancePlugin); // compressão + ETag + backpressure
   await app.register(prismaPlugin);
-  await app.register(authPlugin);       // jwt + decorators requireAuth/requireAdmin
-  await app.register(metricsPlugin);    // observabilidade: contadores/latências em memória
+  await app.register(authPlugin);        // jwt + decorators requireAuth/requireAdmin
+  await app.register(metricsPlugin);     // observabilidade: contadores/latências em memória
+  if (docsEnabled) await app.register(docsPlugin); // OpenAPI em /docs (fora de produção)
 
   // Erro centralizado: validação, posse e conflitos viram status claros; nada de stack trace (RNF-04).
   app.setErrorHandler((err: FastifyError, req, reply) => {
     if (err instanceof ZodError)
       return reply.code(400).send({ error: "payload inválido", issues: err.issues });
-    if (err instanceof OwnershipError)
+    if (err instanceof OwnershipError || err instanceof AppError)
       return reply.code(err.status).send({ error: err.message });
     if (err instanceof SigaaError)
       return reply.code(400).send({ error: "código SIGAA inválido", tokens: err.errs });

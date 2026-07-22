@@ -7,6 +7,7 @@ import { issueInvite } from "../../lib/invite.js";
 import { sendInviteEmail } from "../../lib/mailer.js";
 import { stripUndefined } from "../../lib/strip.js";
 import { audit } from "../../lib/audit.js";
+import { toPublicUser } from "../../lib/userView.js";
 
 export async function userRoutes(app: FastifyInstance) {
   app.get("/", { preHandler: app.requireAdmin }, async () => {
@@ -20,7 +21,7 @@ export async function userRoutes(app: FastifyInstance) {
       },
     });
     return users.map(({ passwordHash, enrollments, ...u }) => ({
-      ...u,
+      ...toPublicUser(u),                          // decifra a matrícula (PII em repouso)
       active: passwordHash !== null,               // já definiu senha?
       courses: enrollments.map(e => ({ enrollmentId: e.id, ...e.course })),
     }));

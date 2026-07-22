@@ -3,9 +3,10 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { TERM_RE, resolvePeriod } from "../../domain/period.js";
-import { env, mailerConfigured, allowRegistration, devToolsEnabled } from "../../env.js";
+import { env, mailerConfigured, allowRegistration, devToolsEnabled, docsEnabled } from "../../env.js";
 import { sendTestEmail } from "../../lib/mailer.js";
 import { audit } from "../../lib/audit.js";
+import { fieldCryptoEnabled } from "../../lib/fieldCrypto.js";
 
 export async function adminRoutes(app: FastifyInstance) {
   // Configurações da instância (somente leitura — vêm do ambiente) + estado do e-mail.
@@ -22,6 +23,9 @@ export async function adminRoutes(app: FastifyInstance) {
       from: env.MAIL_FROM,
       user: env.SMTP_USER ?? null,
     },
+    // estado das camadas de proteção/ferramentas (só o BOOLEANO — nunca a chave em si)
+    security: { fieldEncryption: fieldCryptoEnabled },
+    tools: { devTools: devToolsEnabled, docs: docsEnabled },
   }));
 
   // Envia um e-mail de teste para o próprio admin — valida o SMTP.

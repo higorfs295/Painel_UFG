@@ -255,6 +255,8 @@ model Announcement {                                // RF-24: avisos/comunicados
   pinned    Boolean  @default(false)
   createdAt DateTime @default(now())
   @@index([createdAt])
+  // o feed filtra por audiência e ordena por fixado+recência — índice composto cobre a consulta
+  @@index([audience, pinned, createdAt])
 }
 
 enum TaskKind {
@@ -301,4 +303,5 @@ model AuditLog {                                    // RF-27: trilha de auditori
   createdAt DateTime @default(now())
   @@index([createdAt])
   @@index([action])
+  @@index([userId])   // "o que este usuário fez?" é a consulta natural da auditoria
 }

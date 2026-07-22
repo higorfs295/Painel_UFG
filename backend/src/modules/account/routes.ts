@@ -8,24 +8,21 @@ import { resolvePeriod } from "../../domain/period.js";
 import { REFRESH_COOKIE } from "../../plugins/auth.js";
 import { hashToken } from "../../lib/crypto.js";
 import { audit } from "../../lib/audit.js";
+import { publicUserSelect, toPublicUser } from "../../lib/userView.js";
+import { encryptField } from "../../lib/fieldCrypto.js";
+import { notFound } from "../../lib/errors.js";
 
 export async function accountRoutes(app: FastifyInstance) {
   // Perfil do usuário autenticado (o frontend usa após login/refresh).
   // Inclui o período letivo GLOBAL (RF-20 v2): resolvido pelo calendário acadêmico agendado
   // pelos admins; sem calendário, cai na heurística de meses como sugestão.
-  app.get("/", { preHandler: app.requireAuth }, async (req, reply) => {
+  app.get("/", { preHandler: app.requireAuth }, async (req) => {
     const [user, calendar] = await Promise.all([
-      app.prisma.user.findUnique({
-        where: { id: req.user.sub },
-        select: {
-          id: true, name: true, email: true, role: true, theme: true,
-          matricula: true, shift: true, createdAt: true,
-        },
-      }),
+      app.prisma.user.findUnique({ where: { id: req.user.sub }, select: publicUserSelect }),
       app.prisma.academicPeriod.findMany({ orderBy: { startsAt: "asc" } }),
     ]);
-    if (!user) return reply.code(404).send({ error: "usuário não encontrado" });
-    return { ...user, period: resolvePeriod(calendar) };
+    if (!user) throw notFound("usuário não encontrado");
+    return { ...toPublicUser(user), period: resolvePeriod(calendar) };
   });
 
   // Troca de senha autenticada (exige a senha atual; revoga as outras sessões por segurança).
@@ -57,12 +54,15 @@ export async function accountRoutes(app: FastifyInstance) {
       matricula: z.string().trim().max(30).transform((v) => v || null).nullable().optional(),
       shift: z.enum(["matutino", "vespertino", "noturno", "integral"]).nullable().optional(),
     }).strict().parse(req.body);
-    return app.prisma.user.update({
-      where: { id: req.user.sub }, data: stripUndefined(patch),
-      select: {
-        id: true, name: true, email: true, role: true, theme: true, matricula: true, shift: true,
-      },
+    // a matrícula é PII: vai CIFRADA para o banco (AES-256-GCM) e volta decifrada pelo mapper
+    const data = stripUndefined({
+      ...patch,
+      ...(patch.matricula !== undefined ? { matricula: encryptField(patch.matricula) } : {}),
     });
+    const saved = await app.prisma.user.update({
+      where: { id: req.user.sub }, data, select: publicUserSelect,
+    });
+    return toPublicUser(saved);
   });
 
   // RF-16: exportar backup JSON dos próprios dados (download).

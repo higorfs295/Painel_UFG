@@ -100,7 +100,10 @@ export default function AppLayout() {
           <Topbar enrollments={isAdmin ? [] : enrollments ?? []} selectedId={enrollmentId}
             onSelect={setEnrollment} onMenu={() => setNavOpen((v) => !v)} menuOpen={navOpen} />
           <main id="conteudo" className="content">
-            {isAdmin ? <Outlet /> : studentBody}
+            {/* a key da rota reinicia a animação de entrada a cada navegação */}
+            <div key={location.pathname} className="route-enter">
+              {isAdmin ? <Outlet /> : studentBody}
+            </div>
             <footer className="foot" aria-hidden="true">
               <span className="foot-word">{APP_NAME}</span>
               <small>feito no cerrado · {new Date().getFullYear()}</small>

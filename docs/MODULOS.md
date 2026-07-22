@@ -34,6 +34,9 @@ test/{unit,integration}/  # Vitest
 | Arquivo | Papel | Detalhes |
 | --- | --- | --- |
 | `security.ts` | `securityPlugin` | helmet + CORS restrito + rate limit; store **Redis** se `REDIS_URL`, senão memória |
+| `performance.ts` | `performancePlugin` | **compressão** (br/gzip, ≥1KB) + **ETag** fraco (revalidação 304) + **under-pressure** (503 com Retry-After sob event loop/heap/RSS travados; expõe `/health/pressure`) |
+| `docs.ts` | `docsPlugin` | **OpenAPI 3.1** + Swagger UI em `/docs`; desligado em produção (`DOCS_ENABLED`) |
+| `metrics.ts` | `metricsPlugin`, `metricsSnapshot()` | contadores por classe de status, latências p50/p95/p99 (janela deslizante) e agregados por rota; `fp()` p/ valer em toda a app |
 | `prisma.ts` | `prismaPlugin` | instancia `PrismaClient`, `app.decorate("prisma")`, desconecta no `onClose` |
 | `auth.ts` | `authPlugin` | registra `@fastify/cookie` e `@fastify/jwt`; decorators `requireAuth`/`requireAdmin` (tipados como `preHandler`); tipagem do payload JWT (`AccessClaims`); `refreshCookieOptions()` (httpOnly, `secure` em prod, `sameSite=lax`, `path=/auth`) |
 
@@ -48,6 +51,12 @@ test/{unit,integration}/  # Vitest
 | `backup.ts` | `exportUser()`, `importUser()`, `backupSchema` | monta e restaura (transacional) o backup do usuário, portável por `seq` |
 | `mailer.ts` | `sendInviteEmail()` | RF-18: envia convite/reset via SMTP (nodemailer, lazy); sem `SMTP_HOST` só loga o link; **nunca lança** (fluxo manual continua) |
 | `strip.ts` | `stripUndefined()` | remove chaves `undefined` de patches parciais do zod antes do Prisma (`exactOptionalPropertyTypes`) |
+| `cache.ts` | `TtlCache` | cache TTL genérico **por processo** com teto de entradas, despejo do mais antigo e `stats` (hits/misses/evictions); `wrap()` nunca memoriza `null` |
+| `fieldCrypto.ts` | `encryptField()`, `decryptField()`, `fieldCryptoEnabled` | **camada extra de criptografia**: AES-256-GCM para PII em repouso (matrícula), formato versionado `v1:iv:tag:dados`; sem `FIELD_ENCRYPTION_KEY` opera transparente; valor adulterado → `null` |
+| `userView.ts` | `publicUserSelect`, `toPublicUser()` | forma pública canônica do usuário (nunca `passwordHash`) e decifra a matrícula — um único lugar em vez de três |
+| `errors.ts` | `AppError`, `notFound()`, `badRequest()` | erro de negócio com status HTTP: o serviço sinaliza sem depender de `reply` |
+| `schemas.ts` | `idParam`, `paramOf()`, `termString`, `limitQuery()` | primitivos zod compartilhados entre módulos |
+| `audit.ts` | `audit()` | RF-27: trilha de auditoria **best-effort** (nunca lança, nunca derruba o fluxo) |
 
 ## Domínio (`src/domain/`) — puro, testado
 
@@ -60,6 +69,28 @@ test/{unit,integration}/  # Vitest
 | `progress.ts` | `computeProgress()`, `recommend()` | agrega composições+status+marcos+projeção; ranqueia recomendações |
 | `loadCourse.ts` | `loadCourseGraph()`, `invalidateCourseGraph()` | ponte Prisma→domínio com **cache** por curso (TTL 5 min) |
 | `importCourse.ts` | `importCourse()`, `matrizSchema` | importa a matriz numa **transação** (createMany dos requisitos; ignora órfãos); invalida o cache |
+
+## Arquitetura em camadas (por módulo)
+
+Cada módulo segue a mesma separação — o que torna previsível onde mexer:
+
+```
+modules/<área>/
+  routes.ts    HTTP: valida entrada (zod) → chama o serviço → devolve. Sem regra de negócio.
+  service.ts   Orquestração: posse, banco e chamadas ao domínio. Sem `reply`/`request`.
+  schemas.ts   Contrato de entrada em zod, reaproveitável por testes e documentação.
+```
+
+O domínio (`src/domain/`) permanece **puro** — sem Prisma, sem HTTP — e por isso é testável
+isoladamente. O ganho concreto: os quatro endpoints de progresso repetiam o mesmo preâmbulo
+(posse + grafo + status + extras); hoje `loadEnrollmentContext()` faz isso **uma vez**, em
+consultas paralelas, e os builders (`buildProgress`/`buildHistory`/`buildAchievements`/
+`buildRecommendations`) reaproveitam o mesmo contexto.
+
+| Módulo com serviço | Serviço | Papel |
+| --- | --- | --- |
+| `progress` | `loadEnrollmentContext()`, `buildProgress/History/Achievements/Recommendations` | contexto único da matrícula + montagem dos agregados |
+| `devtools` | `seedFakeStudents()`, `purgeFakeStudents()` | massa fictícia plausível (uma transação por aluno) |
 
 ## Rotas (`src/modules/<área>/routes.ts`)
 

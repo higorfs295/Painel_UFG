@@ -8,6 +8,7 @@ import { issueRefreshToken, rotateRefreshToken, revokeRefreshToken } from "../..
 import { sendInviteEmail } from "../../lib/mailer.js";
 import { allowRegistration } from "../../env.js";
 import { REFRESH_COOKIE, refreshCookieOptions, type AccessClaims } from "../../plugins/auth.js";
+import { toPublicUser } from "../../lib/userView.js";
 import { audit } from "../../lib/audit.js";
 
 export async function authRoutes(app: FastifyInstance) {
@@ -57,7 +58,7 @@ export async function authRoutes(app: FastifyInstance) {
     reply.setCookie(REFRESH_COOKIE, refresh, refreshCookieOptions());
     return reply.code(201).send({
       accessToken: signAccess(user),
-      user: { id: user.id, name: user.name, email: user.email, role: user.role, theme: user.theme, matricula: user.matricula, shift: user.shift },
+      user: toPublicUser(user),
     });
   });
 
@@ -89,7 +90,7 @@ export async function authRoutes(app: FastifyInstance) {
     reply.setCookie(REFRESH_COOKIE, refresh, refreshCookieOptions());
     return reply.send({
       accessToken: signAccess(user),
-      user: { id: user.id, name: user.name, email: user.email, role: user.role, theme: user.theme, matricula: user.matricula, shift: user.shift },
+      user: toPublicUser(user),
     });
   });
 

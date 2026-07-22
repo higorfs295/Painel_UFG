@@ -36,6 +36,15 @@ const schema = z.object({
   // Ferramentas de desenvolvimento (gerador de alunos fictícios etc.). NUNCA ligue em produção:
   // além da flag, o endpoint também recusa quando NODE_ENV === "production".
   DEV_TOOLS: z.enum(["true", "false"]).default("false"),
+
+  // Documentação OpenAPI em /docs. Fora de produção por padrão (expõe a superfície da API).
+  DOCS_ENABLED: z.enum(["true", "false"]).default("true"),
+
+  // Camada extra de criptografia: cifra de campo (AES-256-GCM) para PII em repouso —
+  // hoje o nº de matrícula. 32 bytes em base64 ou hex. Ausente = grava em claro (modo
+  // transparente, retrocompatível). Gere com:
+  //   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+  FIELD_ENCRYPTION_KEY: z.string().optional(),
 });
 export const env = schema.parse(process.env);
 export const isProd = env.NODE_ENV === "production";
@@ -43,3 +52,4 @@ export const corsOrigins = env.CORS_ORIGIN.split(",").map(s => s.trim()).filter(
 export const allowRegistration = env.ALLOW_REGISTRATION === "true";
 export const mailerConfigured = Boolean(env.SMTP_HOST);
 export const devToolsEnabled = env.DEV_TOOLS === "true" && !isProd;
+export const docsEnabled = env.DOCS_ENABLED === "true" && !isProd;

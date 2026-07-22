@@ -3,6 +3,7 @@
 import type { PrismaClient } from "@prisma/client";
 import type { Subject, Milestone } from "./graph.js";
 import type { Requirement } from "./sums.js";
+import { TtlCache } from "../lib/cache.js";
 
 export type CourseGraph = {
   courseId: string;
@@ -15,21 +16,18 @@ export type CourseGraph = {
 // Cache em memória do grafo do curso (imutável entre importações). Overview dispara progress +
 // recommendations, que antes recarregavam o curso inteiro 2x por request. TTL curto limita a
 // staleness entre réplicas; toda mutação de matriz chama invalidateCourseGraph().
-const CACHE_TTL_MS = 5 * 60 * 1000;
-const cache = new Map<string, { at: number; graph: CourseGraph }>();
+// Usa o TtlCache compartilhado (lib/cache) — mesma política de despejo e estatísticas do resto.
+const cache = new TtlCache<CourseGraph>(5 * 60 * 1000, 50);
 
 export function invalidateCourseGraph(courseId?: string) {
-  if (courseId) cache.delete(courseId);
-  else cache.clear();
+  cache.invalidate(courseId);
 }
 
-export async function loadCourseGraph(prisma: PrismaClient, courseId: string): Promise<CourseGraph | null> {
-  const hit = cache.get(courseId);
-  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.graph;
+/** Estatísticas do cache do grafo — expostas em /admin/metrics. */
+export const courseGraphCacheStats = () => cache.stats;
 
-  const graph = await loadCourseGraphUncached(prisma, courseId);
-  if (graph) cache.set(courseId, { at: Date.now(), graph });
-  return graph;
+export async function loadCourseGraph(prisma: PrismaClient, courseId: string): Promise<CourseGraph | null> {
+  return cache.wrap(courseId, () => loadCourseGraphUncached(prisma, courseId));
 }
 
 async function loadCourseGraphUncached(prisma: PrismaClient, courseId: string): Promise<CourseGraph | null> {

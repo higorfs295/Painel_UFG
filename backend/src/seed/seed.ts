@@ -9,6 +9,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { importCourse } from "../domain/importCourse.js";
+import { encryptField } from "../lib/fieldCrypto.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const readJson = (f: string) => JSON.parse(readFileSync(join(here, f), "utf-8"));
@@ -35,12 +36,14 @@ async function seedStudent(def: StudentDef, hash: string) {
   const subjects = await prisma.subject.findMany({ where: { courseId: course.id }, select: { id: true, seq: true } });
   const idBySeq = new Map(subjects.map((s) => [s.seq, s.id]));
 
+  // matrícula é PII: gravada cifrada (AES-256-GCM) quando há FIELD_ENCRYPTION_KEY
+  const matricula = encryptField(def.matricula);
   const user = await prisma.user.upsert({
     where: { email: def.email },
-    update: { name: def.name, role: "USER", ...(def.matricula ? { matricula: def.matricula } : {}), ...(def.shift ? { shift: def.shift } : {}) },
+    update: { name: def.name, role: "USER", ...(matricula ? { matricula } : {}), ...(def.shift ? { shift: def.shift } : {}) },
     create: {
       name: def.name, email: def.email, role: "USER", passwordHash: hash,
-      matricula: def.matricula ?? null, shift: def.shift ?? null,
+      matricula, shift: def.shift ?? null,
     },
   });
 
