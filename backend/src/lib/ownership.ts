@@ -30,3 +30,12 @@ export async function assertScenarioOwner(prisma: PrismaClient, scenarioId: stri
   if (scenario.enrollment.userId !== userId) throw new OwnershipError(403, "recurso de outro usuário");
   return scenario;
 }
+
+export async function assertTaskOwner(prisma: PrismaClient, taskId: string, userId: string) {
+  const task = await prisma.studyTask.findUnique({
+    where: { id: taskId }, include: { enrollment: true },
+  });
+  if (!task) throw new OwnershipError(404, "tarefa não encontrada");
+  if (task.enrollment.userId !== userId) throw new OwnershipError(403, "recurso de outro usuário");
+  return task;
+}

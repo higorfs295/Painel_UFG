@@ -1,52 +1,43 @@
-# Referência de API — Painel Acadêmico
-
-Base (dev): `http://localhost:3333`. Em produção, mesma origem atrás do Caddy (`https://seu-dominio`)
-ou cross-site (frontend na Vercel + API no Render — ver `DEPLOY.md`).
-Autenticação por **Bearer token** no header `Authorization` (access token curto) + cookie `httpOnly`
-de refresh. Todo payload é validado com zod; respostas de erro seguem um formato único.
-
-## Convenções
-
-- **Auth**: `público` (sem token), `autenticado` (qualquer usuário logado), `ADMIN`.
-- **Formato de erro** (RNF-04, nunca vaza stack):
-  ```json
-  { "error": "payload inválido", "issues": [ { "path": ["email"], "message": "Invalid email" } ] }
-  ```
-- **Status usados**: `200/201/204` sucesso · `400` validação · `401` não autenticado · `403` sem
-  permissão/posse · `404` inexistente · `409` conflito (duplicado) · `429` rate limit.
-- **Rate limit**: global 120 req/min por IP; rotas com segredo (`/auth/login`, `/auth/register`,
-  `/auth/invite/accept`, `/auth/password/forgot`) 10 req/min.
-- Em requests **sem corpo** (DELETE etc.), não envie `Content-Type: application/json` — o Fastify
-  rejeita corpo JSON vazio com 400.
 
 ---
 
-## Autenticação — `/auth`
+## Gestão acadêmica ampliada (RF-22..27)
 
-### POST /auth/register `público` (RF-17)
-Cadastro público (auto-registro). Desligável por instância com `ALLOW_REGISTRATION=false`.
-Autentica na resposta (mesmo shape do login).
-```bash
-curl -i -X POST http://localhost:3333/auth/register \
-  -H 'Content-Type: application/json' \
-  -d '{"name":"Ana Souza","email":"ana@ex.com","password":"senha-bem-forte"}'
-```
-`201` → `{ accessToken, user }` + cookie `rt` · `409` e-mail já cadastrado ·
-`403 { "error": "cadastro público desabilitado nesta instância" }`.
-Depois do cadastro, matricule-se com `POST /me/enrollments`.
+### Notas, faltas e histórico (RF-22/23) `autenticado`
+`PUT /me/enrollments/:id/subjects/:subjectId` aceita, além de `state`, os dados do histórico:
+`grade` (0–10), `absences` (inteiro) e `term` (`AAAA.S`). Todos opcionais e anuláveis.
 
-### POST /auth/login `público`
-```bash
-curl -i -X POST http://localhost:3333/auth/login \
-  -H 'Content-Type: application/json' \
-  -d '{"email":"painel@aluno.com","password":"sua-senha"}'
-```
-`200` → devolve o access token e seta o cookie `rt` (httpOnly):
-```json
-{ "accessToken": "eyJhbGc...",
-  "user": { "id":"cuid","name":"Higor","email":"...","role":"ADMIN","theme":"dark" } }
-```
-`401 { "error": "credenciais inválidas" }` (resposta uniforme, sem revelar se o e-mail existe).
+- **GET /me/enrollments/:id/history** — `terms[]` (CH, contagem e **média ponderada por CH**),
+  `noTerm`, `mga` (média global), `pace` (ritmo e estimativa de períodos restantes),
+  `totals` e `records[]` (histórico escolar).
+- **GET /me/enrollments/:id/achievements** — conquistas derivadas (`earned`/`total`), nunca persistidas.
+
+### Agenda e anotações (RF-25/26) `autenticado`
+- **GET/POST /me/enrollments/:id/tasks** · **PATCH/DELETE /me/tasks/:taskId** —
+  `kind`: `PROVA|TRABALHO|ENTREGA|OUTRO`, `dueAt`, `done`, `notes`, `subjectCode`.
+- **GET /me/enrollments/:id/notes** · **PUT/DELETE /me/enrollments/:id/subjects/:sid/note** —
+  uma anotação por disciplina (upsert); texto vazio remove (`204`).
+
+### Avisos (RF-24)
+- **GET /announcements** `autenticado` — feed já filtrado pela audiência do papel (fixados primeiro).
+- **GET/POST/PATCH/DELETE /admin/announcements** `ADMIN` — `audience`: `ALL|STUDENTS|ADMINS`, `pinned`.
+
+### Observabilidade (RF-27) `ADMIN`
+- **GET /admin/metrics** — `uptimeSec`, `process` (node/RSS/heap), `http` (total, classes de status,
+  `latencyMs` p50/p95/p99, `topRoutes`/`slowestRoutes`) e `db` (`ok`, `pingMs`).
+- **GET /admin/audit?action=&userId=&limit=&before=** — trilha de auditoria (filtro por prefixo de
+  ação, ex.: `auth.`). Ações registradas: `auth.login`, `auth.login_failed`, `auth.revoke_others`,
+  `user.role`, `course.import`, `period.schedule`, `period.delete`, `announcement.*`, `dev.*`.
+
+### Sessões (segurança) `autenticado`
+- **GET /me/sessions** — sessões ativas (só metadados; nunca o token nem o hash).
+- **POST /me/sessions/revoke-others** — encerra as demais, preservando a atual.
+
+### Ferramentas de desenvolvimento
+`POST/DELETE /admin/dev/students` e `POST /admin/dev/announcements` geram/limpam massa de dados
+(alunos `@dev.local` com notas, histórico e agenda). Exigem `ADMIN` **e** `DEV_TOOLS=true` **e**
+`NODE_ENV != production` — caso contrário respondem `403`.
+s" }` (resposta uniforme, sem revelar se o e-mail existe).
 
 ### POST /auth/refresh `público (cookie)`
 Renova a sessão pelo cookie de refresh; **rotaciona** o token.

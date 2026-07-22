@@ -8,6 +8,7 @@ import { APP_NAME } from "../../branding";
 import {
   IconSun, IconBook, IconSprout, IconGrid, IconSliders, IconShield,
   IconOut, IconUsers, IconCal, IconX, IconMenu, IconStar, IconServer, IconInfo,
+  IconChart, IconCheckList, IconPulse, IconMegaphone,
 } from "../ui/Icons";
 
 type Item = { to: string; label: string; icon: ComponentType<SVGProps<SVGSVGElement>>; color: string; end?: boolean };
@@ -28,6 +29,8 @@ const STUDENT_GROUPS: Group[] = [
       { to: "/extras", label: "Extras", icon: IconSprout, color: C.leaf },
       { to: "/cronograma", label: "Cronograma", icon: IconGrid, color: C.sky },
       { to: "/recomendacoes", label: "Recomendações", icon: IconStar, color: C.coral },
+      { to: "/historico", label: "Histórico", icon: IconChart, color: C.jeni },
+      { to: "/agenda", label: "Agenda", icon: IconCheckList, color: C.lav },
     ],
   },
   {
@@ -47,7 +50,9 @@ const ADMIN_GROUPS: Group[] = [
       { to: "/admin/usuarios", label: "Usuários", icon: IconUsers, color: C.mint },
       { to: "/admin/cursos", label: "Cursos", icon: IconBook, color: C.leaf },
       { to: "/admin/periodos", label: "Períodos", icon: IconCal, color: C.sky },
-      { to: "/admin/config", label: "Configurações", icon: IconServer, color: C.coral },
+      { to: "/admin/avisos", label: "Avisos", icon: IconMegaphone, color: C.coral },
+      { to: "/admin/monitor", label: "Monitor", icon: IconPulse, color: C.jeni },
+      { to: "/admin/config", label: "Configurações", icon: IconServer, color: C.lav },
     ],
   },
   {

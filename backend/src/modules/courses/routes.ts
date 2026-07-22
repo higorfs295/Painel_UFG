@@ -2,6 +2,7 @@
 // escrita/importação de novas matrizes somente ADMIN (é assim que os próximos 2 cursos entram).
 import type { FastifyInstance } from "fastify";
 import { importCourse } from "../../domain/importCourse.js";
+import { audit } from "../../lib/audit.js";
 
 export async function courseRoutes(app: FastifyInstance) {
   app.get("/", { preHandler: app.requireAuth }, async () =>
@@ -22,6 +23,10 @@ export async function courseRoutes(app: FastifyInstance) {
   // RF-13: importa/atualiza matriz por JSON (mesmo formato do seed). Idempotente.
   app.post("/import", { preHandler: app.requireAdmin }, async (req, reply) => {
     const result = await importCourse(app.prisma, req.body); // matrizSchema valida (zod) e lança em erro
+    await audit(app.prisma, {
+      userId: req.user.sub, action: "course.import", entity: "Course", entityId: result.slug,
+      meta: { subjects: result.subjects }, ip: req.ip,
+    });
     return reply.code(201).send(result);
   });
 }

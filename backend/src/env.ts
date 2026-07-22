@@ -32,9 +32,14 @@ const schema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   MAIL_FROM: z.string().default("Painel Acadêmico <no-reply@painel.local>"),
+
+  // Ferramentas de desenvolvimento (gerador de alunos fictícios etc.). NUNCA ligue em produção:
+  // além da flag, o endpoint também recusa quando NODE_ENV === "production".
+  DEV_TOOLS: z.enum(["true", "false"]).default("false"),
 });
 export const env = schema.parse(process.env);
 export const isProd = env.NODE_ENV === "production";
 export const corsOrigins = env.CORS_ORIGIN.split(",").map(s => s.trim()).filter(Boolean);
 export const allowRegistration = env.ALLOW_REGISTRATION === "true";
 export const mailerConfigured = Boolean(env.SMTP_HOST);
+export const devToolsEnabled = env.DEV_TOOLS === "true" && !isProd;

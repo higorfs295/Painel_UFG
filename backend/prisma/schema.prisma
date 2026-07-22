@@ -75,6 +75,8 @@ model User {
   invites      InviteToken[]
   refreshTokens RefreshToken[]
   enrollments  Enrollment[]
+  announcements Announcement[]
+  auditLogs    AuditLog[]
 }
 
 model InviteToken {                              // fluxo: admin cria usuário -> convite -> usuário define senha
@@ -144,6 +146,7 @@ model Subject {
   requires  Requisite[] @relation("requires")
   requiredBy Requisite[] @relation("requiredBy")
   statuses  SubjectStatus[]
+  notes     SubjectNote[]
   @@unique([courseId, seq])
   @@index([courseId, groupOpt])
 }
@@ -171,6 +174,8 @@ model Enrollment {                                 // 1 usuário pode ter N curs
   statuses    SubjectStatus[]
   extras      ExtraComponent[]
   scenarios   Scenario[]
+  tasks       StudyTask[]
+  notes       SubjectNote[]
   @@unique([userId, courseId])
 }
 
@@ -181,7 +186,9 @@ model SubjectStatus {                              // APPROVED = oficial; SIMULA
   subject      Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   subjectId    String
   state        SubjectState
-  term         String?
+  term         String?                             // período em que cursou ("2024.1") — base do histórico
+  grade        Float?                              // nota final 0..10 (RF-22: médias/MGA)
+  absences     Int?                                // faltas registradas (RF-22)
   @@unique([enrollmentId, subjectId])
 }
 
@@ -228,4 +235,70 @@ model ScenarioPaint {
   cellKey    String                                 // ex.: "2-M1", "D-X3"
   category   String
   @@unique([scenarioId, cellKey])
+}
+
+// ═══ Gestão acadêmica ampliada (RF-22..27) ═══
+
+enum Audience {
+  ALL        // todos os usuários
+  STUDENTS   // apenas alunos (USER)
+  ADMINS     // apenas administradores
+}
+
+model Announcement {                                // RF-24: avisos/comunicados da instância
+  id        String   @id @default(cuid())
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorId  String?
+  title     String
+  body      String
+  audience  Audience @default(ALL)
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+}
+
+enum TaskKind {
+  PROVA
+  TRABALHO
+  ENTREGA
+  OUTRO
+}
+
+model StudyTask {                                   // RF-25: agenda pessoal (provas, entregas...)
+  id           String     @id @default(cuid())
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollmentId String
+  title        String
+  kind         TaskKind   @default(OUTRO)
+  dueAt        DateTime?
+  done         Boolean    @default(false)
+  notes        String?
+  subjectCode  String?                              // referência livre à disciplina (ex.: "IME0080")
+  createdAt    DateTime   @default(now())
+  @@index([enrollmentId, dueAt])
+}
+
+model SubjectNote {                                 // RF-26: anotação pessoal por disciplina
+  id           String     @id @default(cuid())
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollmentId String
+  subject      Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId    String
+  text         String
+  updatedAt    DateTime   @updatedAt
+  @@unique([enrollmentId, subjectId])
+}
+
+model AuditLog {                                    // RF-27: trilha de auditoria (observabilidade/segurança)
+  id        String   @id @default(cuid())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    String?
+  action    String                                  // "auth.login", "user.role", "course.import"...
+  entity    String?
+  entityId  String?
+  meta      Json?
+  ip        String?
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+  @@index([action])
 }

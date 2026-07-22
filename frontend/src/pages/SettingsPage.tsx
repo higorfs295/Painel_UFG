@@ -30,6 +30,17 @@ export default function SettingsPage() {
   // dados acadêmicos (aluno): matrícula (opcional) e turno
   const [acad, setAcad] = useState({ matricula: user?.matricula ?? "", shift: user?.shift ?? "" });
   const [acadMsg, setAcadMsg] = useState("");
+  // sessões ativas (segurança)
+  const { data: sessions } = useQuery({ queryKey: ["sessions"], queryFn: me.sessions });
+  const [sessMsg, setSessMsg] = useState("");
+  async function revokeOthers() {
+    setSessMsg("");
+    try {
+      const res = await me.revokeOtherSessions();
+      qc.invalidateQueries({ queryKey: ["sessions"] });
+      setSessMsg(`${res.revoked} sessão(ões) encerrada(s).`);
+    } catch { setSessMsg("Falha ao encerrar as sessões."); }
+  }
   // senha
   const [pwd, setPwd] = useState({ current: "", next: "", confirm: "" });
   const [pwdMsg, setPwdMsg] = useState<{ ok?: string; err?: string }>({});
@@ -185,6 +196,37 @@ export default function SettingsPage() {
         </form>
         {pwdMsg.ok && <div className="ok mt">{pwdMsg.ok}</div>}
         {pwdMsg.err && <div className="err mt" role="alert">{pwdMsg.err}</div>}
+      </Card>
+
+      {/* Segurança: sessões ativas (refresh tokens vivos) — permite encerrar as outras */}
+      <Card>
+        <h3>Sessões ativas</h3>
+        <p className="mut">
+          Cada dispositivo onde você entrou mantém uma sessão. Se algo parecer estranho,
+          encerre as outras — elas precisarão entrar de novo.
+        </p>
+        {!sessions ? <div className="spinner" role="status">Carregando…</div> : (
+          <>
+            <ul className="enr-list">
+              {sessions.sessions.map((s, i) => (
+                <li key={s.id} className="row wrap" style={{ gap: 10 }}>
+                  <span className="chip avail"><span className="swatch" />sessão {i + 1}</span>
+                  <span className="mut" style={{ fontSize: ".84rem" }}>
+                    iniciada em {new Date(s.createdAt).toLocaleString("pt-BR")} · expira em{" "}
+                    {new Date(s.expiresAt).toLocaleDateString("pt-BR")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="row wrap mt" style={{ gap: 10 }}>
+              <Button onClick={revokeOthers} disabled={sessions.count < 2}>
+                Encerrar as outras sessões
+              </Button>
+              <span className="mut" style={{ fontSize: ".84rem" }}>{sessions.count} ativa(s)</span>
+            </div>
+            {sessMsg && <div className="ok mt">{sessMsg}</div>}
+          </>
+        )}
       </Card>
 
       {!isAdmin && (

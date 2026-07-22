@@ -5,6 +5,9 @@ import argon2 from "argon2";
 import { exportUser, importUser } from "../../lib/backup.js";
 import { stripUndefined } from "../../lib/strip.js";
 import { resolvePeriod } from "../../domain/period.js";
+import { REFRESH_COOKIE } from "../../plugins/auth.js";
+import { hashToken } from "../../lib/crypto.js";
+import { audit } from "../../lib/audit.js";
 
 export async function accountRoutes(app: FastifyInstance) {
   // Perfil do usuário autenticado (o frontend usa após login/refresh).
@@ -73,5 +76,35 @@ export async function accountRoutes(app: FastifyInstance) {
   // RF-16: importar/reconstruir a partir de um backup JSON.
   app.post("/import", { preHandler: app.requireAuth }, async (req) => {
     return importUser(app.prisma, req.user.sub, req.body);
+  });
+
+  // Segurança: sessões ativas (refresh tokens vivos) do próprio usuário. Nunca devolve o token
+  // nem seu hash — só metadados, para o usuário reconhecer e encerrar o que não for dele.
+  app.get("/sessions", { preHandler: app.requireAuth }, async (req) => {
+    const rows = await app.prisma.refreshToken.findMany({
+      where: { userId: req.user.sub, revokedAt: null, expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, createdAt: true, expiresAt: true },
+    });
+    return { sessions: rows, count: rows.length };
+  });
+
+  // Encerra TODAS as outras sessões (mantém a atual viva). Útil após suspeita de vazamento.
+  app.post("/sessions/revoke-others", { preHandler: app.requireAuth }, async (req) => {
+    const current = req.cookies[REFRESH_COOKIE];
+    const currentRow = current
+      ? await app.prisma.refreshToken.findUnique({ where: { tokenHash: hashToken(current) } })
+      : null;
+    const res = await app.prisma.refreshToken.updateMany({
+      where: {
+        userId: req.user.sub, revokedAt: null,
+        ...(currentRow ? { id: { not: currentRow.id } } : {}),
+      },
+      data: { revokedAt: new Date() },
+    });
+    await audit(app.prisma, {
+      userId: req.user.sub, action: "auth.revoke_others", meta: { revoked: res.count }, ip: req.ip,
+    });
+    return { revoked: res.count };
   });
 }

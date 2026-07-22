@@ -1,15 +1,40 @@
 // Admin · Configurações do sistema: estado do e-mail (SMTP), cadastro público e dados da
 // instância. As configurações vêm do ambiente (somente leitura); o e-mail pode ser testado.
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { admin } from "../../api/endpoints";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { admin, courses } from "../../api/endpoints";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import { IconMail, IconServer, IconSend } from "../../components/ui/Icons";
 
 export default function AdminConfigPage() {
+  const qc = useQueryClient();
   const { data: cfg, isLoading } = useQuery({ queryKey: ["admin-config"], queryFn: admin.config });
   const [msg, setMsg] = useState<{ ok?: string; err?: string }>({});
+
+  // ferramentas de desenvolvimento (gerador de massa)
+  const { data: courseList } = useQuery({ queryKey: ["courses"], queryFn: courses.list });
+  const [seed, setSeed] = useState({ count: 10, courseSlug: "" });
+  const [devMsg, setDevMsg] = useState("");
+  const afterDev = () => {
+    qc.invalidateQueries({ queryKey: ["admin-stats"] });
+    qc.invalidateQueries({ queryKey: ["admin-users"] });
+  };
+  const gen = useMutation({
+    mutationFn: () => admin.seedStudents({ count: seed.count, courseSlug: seed.courseSlug }),
+    onSuccess: (r) => { afterDev(); setDevMsg(`${r.created} aluno(s) criado(s). Senha de todos: ${r.password}`); },
+    onError: () => setDevMsg("Falha ao gerar alunos."),
+  });
+  const genAvisos = useMutation({
+    mutationFn: () => admin.seedAnnouncements(),
+    onSuccess: (r) => { qc.invalidateQueries({ queryKey: ["announcements-admin"] }); setDevMsg(`${r.created} aviso(s) de exemplo criado(s).`); },
+    onError: () => setDevMsg("Falha ao gerar avisos."),
+  });
+  const purge = useMutation({
+    mutationFn: () => admin.purgeDevStudents(),
+    onSuccess: (r) => { afterDev(); setDevMsg(`${r.removed} conta(s) de demonstração removida(s).`); },
+    onError: () => setDevMsg("Falha ao limpar."),
+  });
   const test = useMutation({
     mutationFn: () => admin.testMail(),
     onSuccess: (r) => setMsg(r.sent ? { ok: `E-mail de teste enviado para ${r.to}.` } : { err: r.error ?? "Falha ao enviar." }),
@@ -75,10 +100,48 @@ export default function AdminConfigPage() {
                   </tr>
                   <tr><td className="mut">Validade do convite</td><td>{cfg.invite.expiresHours}h</td></tr>
                   <tr><td className="mut">URL do painel</td><td><code>{cfg.appUrl}</code></td></tr>
+                  <tr><td className="mut">Ambiente</td><td><span className="badge">{cfg.env}</span></td></tr>
                 </tbody>
               </table>
             </div>
             <p className="mut mt" style={{ fontSize: ".82rem" }}>Estas opções vêm do ambiente do servidor (somente leitura por aqui).</p>
+          </Card>
+
+          {/* Ferramentas de desenvolvimento — só aparecem com DEV_TOOLS=true fora de produção */}
+          <Card>
+            <h3>Dados de demonstração</h3>
+            {!cfg.devTools ? (
+              <p className="mut">
+                Desativadas nesta instância. Para gerar alunos fictícios em desenvolvimento,
+                defina <code>DEV_TOOLS="true"</code> no <code>.env</code> do backend (nunca em produção).
+              </p>
+            ) : (
+              <>
+                <p className="mut">
+                  Gera alunos fictícios (<code>@dev.local</code>) matriculados, com notas, histórico e agenda —
+                  útil para exercitar o painel e tirar capturas. Some tudo com um clique.
+                </p>
+                <div className="row wrap mt" style={{ gap: 10, alignItems: "flex-end" }}>
+                  <label className="field" style={{ width: 110 }}>Quantos
+                    <input type="number" min={1} max={50} value={seed.count}
+                      onChange={(e) => setSeed({ ...seed, count: Number(e.target.value) })} />
+                  </label>
+                  <label className="field" style={{ flex: "1 1 220px" }}>Curso
+                    <select value={seed.courseSlug} onChange={(e) => setSeed({ ...seed, courseSlug: e.target.value })}>
+                      <option value="">— selecione —</option>
+                      {courseList?.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+                    </select>
+                  </label>
+                  <Button variant="prim" disabled={!seed.courseSlug || gen.isPending}
+                    onClick={() => gen.mutate()}>{gen.isPending ? "Gerando…" : "Gerar alunos"}</Button>
+                  <Button onClick={() => genAvisos.mutate()}>Gerar avisos</Button>
+                  <Button variant="warn" onClick={() => { if (confirm("Remover todos os alunos @dev.local?")) purge.mutate(); }}>
+                    Limpar dados de demo
+                  </Button>
+                </div>
+                {devMsg && <div className={devMsg.startsWith("Falha") ? "err mt" : "ok mt"}>{devMsg}</div>}
+              </>
+            )}
           </Card>
         </>
       )}

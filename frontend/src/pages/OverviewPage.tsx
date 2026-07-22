@@ -4,7 +4,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import type { ComponentType, SVGProps } from "react";
-import { me } from "../api/endpoints";
+import { me, announcements } from "../api/endpoints";
 import { useApp } from "../store/app";
 import Card from "../components/ui/Card";
 import Reveal from "../components/ui/Reveal";
@@ -78,6 +78,7 @@ export default function OverviewPage() {
   const { data: recs } = useQuery({
     queryKey: ["recs", enrollmentId], queryFn: () => me.recommendations(enrollmentId!, 8), enabled: !!enrollmentId,
   });
+  const { data: feed } = useQuery({ queryKey: ["announcements-feed"], queryFn: announcements.feed });
 
   if (isError) return (
     <div className="muted-box" role="alert">
@@ -123,6 +124,21 @@ export default function OverviewPage() {
       </div>
 
       {recs && <Strip recs={recs} />}
+
+      {/* RF-24: comunicados da instância (fixados primeiro) */}
+      {!!feed?.length && (
+        <Card>
+          <h3>Avisos</h3>
+          <ul className="enr-list">
+            {feed.slice(0, 3).map((a) => (
+              <li key={a.id} style={{ display: "block" }}>
+                <b>{a.pinned && "📌 "}{a.title}</b>
+                <br /><span className="mut" style={{ fontSize: ".86rem" }}>{a.body}</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       <div className="bento">
         <Reveal className="sp7">

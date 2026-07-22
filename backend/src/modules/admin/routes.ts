@@ -3,8 +3,9 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { TERM_RE, resolvePeriod } from "../../domain/period.js";
-import { env, mailerConfigured, allowRegistration } from "../../env.js";
+import { env, mailerConfigured, allowRegistration, devToolsEnabled } from "../../env.js";
 import { sendTestEmail } from "../../lib/mailer.js";
+import { audit } from "../../lib/audit.js";
 
 export async function adminRoutes(app: FastifyInstance) {
   // Configurações da instância (somente leitura — vêm do ambiente) + estado do e-mail.
@@ -12,6 +13,8 @@ export async function adminRoutes(app: FastifyInstance) {
     registration: { allowed: allowRegistration },
     invite: { expiresHours: env.INVITE_EXPIRES_HOURS },
     appUrl: env.APP_URL,
+    env: env.NODE_ENV,
+    devTools: devToolsEnabled,
     mail: {
       configured: mailerConfigured,
       host: env.SMTP_HOST ?? null,
@@ -98,12 +101,19 @@ export async function adminRoutes(app: FastifyInstance) {
         startsAt: body.startsAt,
       },
     });
+    await audit(app.prisma, {
+      userId: req.user.sub, action: "period.schedule", entity: "AcademicPeriod", entityId: entry.id,
+      meta: { type: entry.type, term: entry.term, startsAt: entry.startsAt.toISOString() }, ip: req.ip,
+    });
     return reply.code(201).send(entry);
   });
 
   app.delete("/periods/:id", { preHandler: app.requireAdmin }, async (req, reply) => {
     const { id } = z.object({ id: z.string() }).parse(req.params);
     await app.prisma.academicPeriod.delete({ where: { id } }).catch(() => null);
+    await audit(app.prisma, {
+      userId: req.user.sub, action: "period.delete", entity: "AcademicPeriod", entityId: id, ip: req.ip,
+    });
     return reply.code(204).send();
   });
 }

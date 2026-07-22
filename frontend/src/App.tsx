@@ -15,6 +15,8 @@ const SubjectsPage = lazy(() => import("./pages/SubjectsPage"));
 const ExtrasPage = lazy(() => import("./pages/ExtrasPage"));
 const SchedulePage = lazy(() => import("./pages/SchedulePage"));
 const RecommendationsPage = lazy(() => import("./pages/RecommendationsPage"));
+const HistoryPage = lazy(() => import("./pages/HistoryPage"));
+const TasksPage = lazy(() => import("./pages/TasksPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const HelpPage = lazy(() => import("./pages/HelpPage"));
 const AdminHomePage = lazy(() => import("./pages/admin/AdminHomePage"));
@@ -22,6 +24,8 @@ const AdminUsersPage = lazy(() => import("./pages/admin/AdminUsersPage"));
 const AdminCoursesPage = lazy(() => import("./pages/admin/AdminCoursesPage"));
 const AdminPeriodsPage = lazy(() => import("./pages/admin/AdminPeriodsPage"));
 const AdminConfigPage = lazy(() => import("./pages/admin/AdminConfigPage"));
+const AdminMonitorPage = lazy(() => import("./pages/admin/AdminMonitorPage"));
+const AdminAnnouncementsPage = lazy(() => import("./pages/admin/AdminAnnouncementsPage"));
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const status = useAuth((s) => s.status);
@@ -79,6 +83,8 @@ export default function App() {
             <Route path="/extras" element={<StudentPage><ExtrasPage /></StudentPage>} />
             <Route path="/cronograma" element={<StudentPage><SchedulePage /></StudentPage>} />
             <Route path="/recomendacoes" element={<StudentPage><RecommendationsPage /></StudentPage>} />
+            <Route path="/historico" element={<StudentPage><HistoryPage /></StudentPage>} />
+            <Route path="/agenda" element={<StudentPage><TasksPage /></StudentPage>} />
             <Route path="/config" element={<SettingsPage />} />
             <Route path="/ajuda" element={<HelpPage />} />
             <Route path="/admin" element={<RequireAdmin><AdminHomePage /></RequireAdmin>} />
@@ -86,6 +92,8 @@ export default function App() {
             <Route path="/admin/cursos" element={<RequireAdmin><AdminCoursesPage /></RequireAdmin>} />
             <Route path="/admin/periodos" element={<RequireAdmin><AdminPeriodsPage /></RequireAdmin>} />
             <Route path="/admin/config" element={<RequireAdmin><AdminConfigPage /></RequireAdmin>} />
+            <Route path="/admin/monitor" element={<RequireAdmin><AdminMonitorPage /></RequireAdmin>} />
+            <Route path="/admin/avisos" element={<RequireAdmin><AdminAnnouncementsPage /></RequireAdmin>} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

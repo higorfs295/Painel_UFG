@@ -8,6 +8,7 @@ import { issueRefreshToken, rotateRefreshToken, revokeRefreshToken } from "../..
 import { sendInviteEmail } from "../../lib/mailer.js";
 import { allowRegistration } from "../../env.js";
 import { REFRESH_COOKIE, refreshCookieOptions, type AccessClaims } from "../../plugins/auth.js";
+import { audit } from "../../lib/audit.js";
 
 export async function authRoutes(app: FastifyInstance) {
   const signAccess = (u: { id: string; role: "ADMIN" | "USER" }) =>
@@ -72,10 +73,17 @@ export async function authRoutes(app: FastifyInstance) {
     // vazar a existência da conta por timing (enumeração).
     if (!user || !user.passwordHash) {
       await argon2.hash(password);
+      // auditoria sem vazar existência: guarda só o e-mail tentado (nunca a senha)
+      await audit(app.prisma, { action: "auth.login_failed", meta: { email }, ip: req.ip });
       return reply.code(401).send({ error: "credenciais inválidas" });
     }
-    if (!(await argon2.verify(user.passwordHash, password)))
+    if (!(await argon2.verify(user.passwordHash, password))) {
+      await audit(app.prisma, {
+        userId: user.id, action: "auth.login_failed", meta: { email }, ip: req.ip,
+      });
       return reply.code(401).send({ error: "credenciais inválidas" });
+    }
+    await audit(app.prisma, { userId: user.id, action: "auth.login", ip: req.ip });
 
     const refresh = await issueRefreshToken(app.prisma, user.id);
     reply.setCookie(REFRESH_COOKIE, refresh, refreshCookieOptions());

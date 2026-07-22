@@ -74,3 +74,15 @@ export const IconSearch = (p: SVGProps<SVGSVGElement>) => (
 export const IconSend = (p: SVGProps<SVGSVGElement>) => (
   <I {...p}><path d="M21 4 3 11l6.5 2.5L12 20l3-6L21 4Z" /><path d="m9.5 13.5 3-3" /></I>
 );
+export const IconChart = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><path d="M4 20V5" /><path d="M4 20h16" /><path d="M8 20v-5.5M12.5 20V9M17 20v-8" /></I>
+);
+export const IconCheckList = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><path d="m3.6 6.6 1.6 1.6 3-3.2M3.6 13.4 5.2 15l3-3.2M3.6 20.2l1.6 1.6 3-3.2" /><path d="M12 6.5h8.5M12 13.4h8.5M12 20.2h8.5" /></I>
+);
+export const IconPulse = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><path d="M2.5 12.5h4l2-6 3.5 12 2.5-7.5 1.8 3.5h5.2" /></I>
+);
+export const IconMegaphone = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><path d="M4 10.5v3a2 2 0 0 0 2 2h1.5L18 20V4L7.5 8.5H6a2 2 0 0 0-2 2Z" /><path d="M20.5 10v4M7.5 15.5V20" /></I>
+);

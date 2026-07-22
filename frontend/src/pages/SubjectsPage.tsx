@@ -23,13 +23,28 @@ export default function SubjectsPage() {
     queryKey: ["progress", enrollmentId], queryFn: () => me.progress(enrollmentId), enabled: !!enrollmentId,
   });
 
+  const invalidateProgress = () => {
+    qc.invalidateQueries({ queryKey: ["progress", enrollmentId] });
+    qc.invalidateQueries({ queryKey: ["recs", enrollmentId] });
+    qc.invalidateQueries({ queryKey: ["history", enrollmentId] });
+    qc.invalidateQueries({ queryKey: ["achievements", enrollmentId] });
+  };
   const mutate = useMutation({
     mutationFn: ({ subjectId, state }: { subjectId: string; state: SubjectState | null }) =>
       me.setSubject(enrollmentId, subjectId, state),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["progress", enrollmentId] });
-      qc.invalidateQueries({ queryKey: ["recs", enrollmentId] });
-    },
+    onSuccess: invalidateProgress,
+  });
+
+  // RF-22: lançamento de nota/faltas/período de uma disciplina aprovada (alimenta o histórico)
+  const [gradeFor, setGradeFor] = useState<{ subjectId: string; name: string } | null>(null);
+  const [gradeForm, setGradeForm] = useState({ grade: "", absences: "", term: "" });
+  const saveGrade = useMutation({
+    mutationFn: () => me.setSubject(enrollmentId, gradeFor!.subjectId, "APPROVED", {
+      grade: gradeForm.grade === "" ? null : Number(gradeForm.grade),
+      absences: gradeForm.absences === "" ? null : Number(gradeForm.absences),
+      term: gradeForm.term.trim() || null,
+    }),
+    onSuccess: () => { invalidateProgress(); setGradeFor(null); setGradeForm({ grade: "", absences: "", term: "" }); },
   });
 
   // precisamos do subjectId real; o progresso traz seq — buscamos o curso para mapear seq->id
@@ -93,6 +108,31 @@ export default function SubjectsPage() {
         </div>
       </Card>
 
+      {/* RF-22: lançamento de nota/faltas/período — alimenta o Histórico e a média global */}
+      {gradeFor && (
+        <Card>
+          <h3>Lançar nota — {gradeFor.name}</h3>
+          <form className="row wrap" style={{ gap: 10, alignItems: "flex-end" }}
+            onSubmit={(e) => { e.preventDefault(); saveGrade.mutate(); }}>
+            <label className="field" style={{ width: 120 }}>Nota (0–10)
+              <input type="number" min={0} max={10} step="0.1" value={gradeForm.grade}
+                onChange={(e) => setGradeForm({ ...gradeForm, grade: e.target.value })} placeholder="8.5" />
+            </label>
+            <label className="field" style={{ width: 110 }}>Faltas
+              <input type="number" min={0} value={gradeForm.absences}
+                onChange={(e) => setGradeForm({ ...gradeForm, absences: e.target.value })} placeholder="0" />
+            </label>
+            <label className="field" style={{ width: 130 }}>Período
+              <input value={gradeForm.term} onChange={(e) => setGradeForm({ ...gradeForm, term: e.target.value })}
+                placeholder="2024.1" />
+            </label>
+            <Button type="submit" variant="prim" disabled={saveGrade.isPending}>Salvar</Button>
+            <Button variant="ghost" onClick={() => setGradeFor(null)}>Cancelar</Button>
+          </form>
+          {saveGrade.isError && <div className="err mt" role="alert">Verifique os valores (nota 0–10, período AAAA.S).</div>}
+        </Card>
+      )}
+
       <Card tight>
         <div className="tablewrap">
           <table>
@@ -118,6 +158,11 @@ export default function SubjectsPage() {
                           onClick={() => sid && mutate.mutate({ subjectId: sid, state: "ENROLLED" })}>Cursando</Button>
                         <Button size="sm" variant={s.state === "SIMULATED" ? "prim" : "default"} disabled={!sid || mutate.isPending}
                           onClick={() => sid && mutate.mutate({ subjectId: sid, state: "SIMULATED" })}>Simular</Button>
+                        {s.state === "APPROVED" && sid && (
+                          <Button size="sm" onClick={() => { setGradeFor({ subjectId: sid, name: s.name }); setGradeForm({ grade: "", absences: "", term: "" }); }}>
+                            Nota
+                          </Button>
+                        )}
                         <Button size="sm" variant="ghost" disabled={!sid || !s.state || mutate.isPending}
                           onClick={() => sid && mutate.mutate({ subjectId: sid, state: null })}>Limpar</Button>
                       </div>

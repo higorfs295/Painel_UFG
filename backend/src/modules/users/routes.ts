@@ -6,6 +6,7 @@ import { z } from "zod";
 import { issueInvite } from "../../lib/invite.js";
 import { sendInviteEmail } from "../../lib/mailer.js";
 import { stripUndefined } from "../../lib/strip.js";
+import { audit } from "../../lib/audit.js";
 
 export async function userRoutes(app: FastifyInstance) {
   app.get("/", { preHandler: app.requireAdmin }, async () => {
@@ -71,6 +72,12 @@ export async function userRoutes(app: FastifyInstance) {
         where: { id }, data: stripUndefined(patch),
         select: { id: true, name: true, email: true, role: true },
       });
+      // mudança de papel é ação sensível — vai para a trilha de auditoria (RF-27)
+      if (patch.role)
+        await audit(app.prisma, {
+          userId: req.user.sub, action: "user.role", entity: "User", entityId: id,
+          meta: { role: patch.role, target: user.email }, ip: req.ip,
+        });
       return user;
     } catch {
       return reply.code(404).send({ error: "usuário não encontrado" });

@@ -3,6 +3,8 @@ import { api, setAccessToken } from "./client";
 import type {
   User, Enrollment, Progress, Recommendation, Extra, CourseSummary, Scenario, AdminUser,
   AdminStats, SubjectState, ExtraCategory, Theme, AcademicPeriodEntry, PeriodInfo, Shift, AdminConfig,
+  History, Achievements, StudyTask, TaskKind, SubjectNote, Announcement, Audience,
+  Metrics, AuditEntry, SessionInfo,
 } from "./types";
 
 // ---- auth ----
@@ -49,10 +51,18 @@ export const me = {
   progress: (enrollmentId: string) => api<Progress>(`/me/enrollments/${enrollmentId}/progress`),
   recommendations: (enrollmentId: string, limit = 12) =>
     api<Recommendation[]>(`/me/enrollments/${enrollmentId}/recommendations?limit=${limit}`),
-  setSubject: (enrollmentId: string, subjectId: string, state: SubjectState | null) =>
+  // RF-06/22: estado + (opcional) nota, faltas e período em que cursou
+  setSubject: (
+    enrollmentId: string, subjectId: string, state: SubjectState | null,
+    detail?: { grade?: number | null; absences?: number | null; term?: string | null },
+  ) =>
     api<unknown>(`/me/enrollments/${enrollmentId}/subjects/${subjectId}`, {
-      method: "PUT", body: JSON.stringify({ state }),
+      method: "PUT", body: JSON.stringify({ state, ...detail }),
     }),
+  history: (enrollmentId: string) => api<History>(`/me/enrollments/${enrollmentId}/history`),
+  achievements: (enrollmentId: string) => api<Achievements>(`/me/enrollments/${enrollmentId}/achievements`),
+  sessions: () => api<{ sessions: SessionInfo[]; count: number }>("/me/sessions"),
+  revokeOtherSessions: () => api<{ revoked: number }>("/me/sessions/revoke-others", { method: "POST" }),
   exportBackup: () => api<unknown>("/me/export"),
   importBackup: (data: unknown) => api<{ restored: number; skippedCourses: string[] }>("/me/import", {
     method: "POST", body: JSON.stringify(data),
@@ -67,6 +77,32 @@ export const extras = {
   update: (extraId: string, patch: Partial<Extra>) =>
     api<Extra>(`/me/extras/${extraId}`, { method: "PATCH", body: JSON.stringify(patch) }),
   remove: (extraId: string) => api<void>(`/me/extras/${extraId}`, { method: "DELETE" }),
+};
+
+// ---- agenda e anotações (RF-25/26) ----
+export const planner = {
+  tasks: (enrollmentId: string) => api<StudyTask[]>(`/me/enrollments/${enrollmentId}/tasks`),
+  addTask: (enrollmentId: string, data: { title: string; kind?: TaskKind; dueAt?: string | null; subjectCode?: string | null; notes?: string | null }) =>
+    api<StudyTask>(`/me/enrollments/${enrollmentId}/tasks`, { method: "POST", body: JSON.stringify(data) }),
+  patchTask: (taskId: string, patch: Partial<Pick<StudyTask, "title" | "kind" | "dueAt" | "done" | "notes" | "subjectCode">>) =>
+    api<StudyTask>(`/me/tasks/${taskId}`, { method: "PATCH", body: JSON.stringify(patch) }),
+  removeTask: (taskId: string) => api<void>(`/me/tasks/${taskId}`, { method: "DELETE" }),
+  notes: (enrollmentId: string) => api<SubjectNote[]>(`/me/enrollments/${enrollmentId}/notes`),
+  saveNote: (enrollmentId: string, subjectId: string, text: string) =>
+    api<unknown>(`/me/enrollments/${enrollmentId}/subjects/${subjectId}/note`, {
+      method: "PUT", body: JSON.stringify({ text }),
+    }),
+};
+
+// ---- avisos (RF-24) ----
+export const announcements = {
+  feed: () => api<Announcement[]>("/announcements"),
+  listAll: () => api<Announcement[]>("/admin/announcements"),
+  create: (data: { title: string; body: string; audience?: Audience; pinned?: boolean }) =>
+    api<Announcement>("/admin/announcements", { method: "POST", body: JSON.stringify(data) }),
+  update: (id: string, patch: { title?: string; body?: string; audience?: Audience; pinned?: boolean }) =>
+    api<Announcement>(`/admin/announcements/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
+  remove: (id: string) => api<void>(`/admin/announcements/${id}`, { method: "DELETE" }),
 };
 
 // ---- cursos ----
@@ -119,6 +155,21 @@ export const admin = {
   stats: () => api<AdminStats>("/admin/stats"),
   config: () => api<AdminConfig>("/admin/config"),
   testMail: () => api<{ sent: boolean; to?: string; error?: string }>("/admin/mail/test", { method: "POST" }),
+  // observabilidade (RF-27)
+  metrics: () => api<Metrics>("/admin/metrics"),
+  audit: (q: { limit?: number; action?: string } = {}) => {
+    const p = new URLSearchParams();
+    if (q.limit) p.set("limit", String(q.limit));
+    if (q.action) p.set("action", q.action);
+    return api<{ entries: AuditEntry[] }>(`/admin/audit${p.toString() ? `?${p}` : ""}`);
+  },
+  // ferramentas de desenvolvimento (só com DEV_TOOLS=true)
+  seedStudents: (data: { count: number; courseSlug: string; progress?: number }) =>
+    api<{ created: number; emails: string[]; password: string }>("/admin/dev/students", {
+      method: "POST", body: JSON.stringify(data),
+    }),
+  purgeDevStudents: () => api<{ removed: number }>("/admin/dev/students", { method: "DELETE" }),
+  seedAnnouncements: () => api<{ created: number }>("/admin/dev/announcements", { method: "POST" }),
   // calendário acadêmico global (RF-20 v2)
   periods: () => api<{ entries: AcademicPeriodEntry[]; current: PeriodInfo }>("/admin/periods"),
   addPeriod: (data: { type: "TERM" | "BREAK"; term?: string | null; startsAt: string }) =>

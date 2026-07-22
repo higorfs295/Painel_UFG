@@ -15,6 +15,11 @@ import { accountRoutes } from "./modules/account/routes.js";
 import { OwnershipError } from "./lib/ownership.js";
 import { env, isProd } from "./env.js";
 import { adminRoutes } from "./modules/admin/routes.js";
+import { metricsPlugin } from "./plugins/metrics.js";
+import { observabilityRoutes } from "./modules/observability/routes.js";
+import { plannerRoutes } from "./modules/planner/routes.js";
+import { announcementRoutes } from "./modules/announcements/routes.js";
+import { devToolsRoutes } from "./modules/devtools/routes.js";
 
 export async function buildApp() {
   const app = Fastify({
@@ -36,6 +41,7 @@ export async function buildApp() {
   await app.register(securityPlugin);   // helmet + cors + rate limit (RNF-01..03)
   await app.register(prismaPlugin);
   await app.register(authPlugin);       // jwt + decorators requireAuth/requireAdmin
+  await app.register(metricsPlugin);    // observabilidade: contadores/latências em memória
 
   // Erro centralizado: validação, posse e conflitos viram status claros; nada de stack trace (RNF-04).
   app.setErrorHandler((err: FastifyError, req, reply) => {
@@ -62,6 +68,10 @@ export async function buildApp() {
   await app.register(extraRoutes,   { prefix: "/me" });
   await app.register(scheduleRoutes,{ prefix: "/me" });
   await app.register(accountRoutes, { prefix: "/me" });      // perfil, tema, backup (RF-15/16)
+  await app.register(plannerRoutes, { prefix: "/me" });      // agenda + anotações (RF-25/26)
+  await app.register(announcementRoutes);                    // avisos (RF-24): /announcements + /admin/announcements
   await app.register(adminRoutes,   { prefix: "/admin" });   // estatísticas e visão geral (RF-21)
+  await app.register(observabilityRoutes, { prefix: "/admin" }); // métricas + auditoria (RF-27)
+  await app.register(devToolsRoutes, { prefix: "/admin/dev" });  // gerador de massa (só DEV_TOOLS)
   return app;
 }

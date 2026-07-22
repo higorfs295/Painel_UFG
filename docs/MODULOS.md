@@ -75,6 +75,10 @@ Cada função registra os handlers da área. Contrato detalhado em [`API.md`](AP
 | `schedules` | 10/11/12 | CRUD de `scenarios`/`disciplines` (valida SIGAA) + `PUT .../paint`; exporta `SigaaError` |
 | `account` | 15/16/**20** | `GET /me` (+período), `PATCH /me/settings`, `POST /me/password`, `GET /me/export`, `POST /me/import` |
 | `admin` | **20/21** | `GET /admin/stats` (números agregados) · `GET/POST/DELETE /admin/periods` (calendário) · `GET /admin/config` + `POST /admin/mail/test` (instância/SMTP) |
+| `planner` | **25/26** | `GET/POST /me/enrollments/:id/tasks`, `PATCH/DELETE /me/tasks/:id` (agenda) · `GET .../notes`, `PUT/DELETE .../subjects/:sid/note` (anotações) |
+| `announcements` | **24** | `GET /announcements` (filtrado por audiência) · `GET/POST/PATCH/DELETE /admin/announcements` |
+| `observability` | **27** | `GET /admin/metrics` (p50/p95/p99, rotas, processo, ping do banco) · `GET /admin/audit` (trilha filtrável) |
+| `devtools` | — | `POST/DELETE /admin/dev/students`, `POST /admin/dev/announcements` — massa de dados; **só com `DEV_TOOLS=true` fora de produção** |
 
 ## Dados e testes
 

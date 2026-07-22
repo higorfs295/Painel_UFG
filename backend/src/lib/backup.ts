@@ -20,6 +20,10 @@ export const backupSchema = z.object({
     subjects: z.array(z.object({
       seq: z.number().int(),
       state: z.enum(["APPROVED", "SIMULATED", "ENROLLED"]),
+      // RF-22 — histórico: opcionais para manter compatibilidade com backups antigos
+      term: z.string().nullish(),
+      grade: z.number().min(0).max(10).nullish(),
+      absences: z.number().int().min(0).nullish(),
     })).default([]),
     extras: z.array(z.object({
       name: z.string(), code: z.string().nullable().optional(),
@@ -61,7 +65,9 @@ export async function exportUser(prisma: PrismaClient, userId: string): Promise<
       courseSlug: e.course.slug,
       startTerm: e.startTerm,
       currentTerm: e.currentTerm,
-      subjects: e.statuses.map(s => ({ seq: s.subject.seq, state: s.state })),
+      subjects: e.statuses.map(s => ({
+        seq: s.subject.seq, state: s.state, term: s.term, grade: s.grade, absences: s.absences,
+      })),
       extras: e.extras.map(x => ({
         name: x.name, code: x.code, hours: x.hours, category: x.category, status: x.status,
       })),
@@ -104,7 +110,12 @@ export async function importUser(prisma: PrismaClient, userId: string, raw: unkn
       await tx.subjectStatus.deleteMany({ where: { enrollmentId: enrollment.id } });
       for (const st of enr.subjects) {
         const sid = idBySeq.get(st.seq);
-        if (sid) await tx.subjectStatus.create({ data: { enrollmentId: enrollment.id, subjectId: sid, state: st.state } });
+        if (sid) await tx.subjectStatus.create({
+          data: {
+            enrollmentId: enrollment.id, subjectId: sid, state: st.state,
+            term: st.term ?? null, grade: st.grade ?? null, absences: st.absences ?? null,
+          },
+        });
       }
 
       // substitui extras
