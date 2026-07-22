@@ -60,7 +60,7 @@ export default function LoginPage() {
       <section className="auth-hero" aria-hidden="true" onMouseMove={heroGlow}>
         <span className="auth-glow" />
         <span className="auth-spark"><i>✦</i><i>✦</i><i>✦</i></span>
-        <div className="auth-brand"><span className="side-logo">{APP_NAME.split(/\s+/).map((w) => w[0]).join("").slice(0, 2)}</span>{APP_NAME}</div>
+        <div className="auth-brand"><span className="brandmark-sq">{APP_NAME.split(/\s+/).map((w) => w[0]).join("").slice(0, 2)}</span>{APP_NAME}</div>
         <h1 className="auth-headline">Cada aula, um passo rumo ao <em>horizonte</em>.</h1>
         <p className="auth-sub">{APP_TAGLINE}</p>
         <div className="auth-points">

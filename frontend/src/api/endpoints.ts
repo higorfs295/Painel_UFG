@@ -115,12 +115,31 @@ export type CourseDetail = {
   requirements: { key: string; label: string; hours: number }[];
   milestones: { key: string; hours: number; description: string }[];
 };
+// RF-28 — lixeira
+export type CourseImpact = { retentionDays: number; enrollments: number; subjects: number; statuses: number };
+export type TrashedCourse = {
+  id: string; slug: string; name: string; totalHours: number;
+  deletedAt: string; purgeAt: string; daysLeft: number; expired: boolean;
+};
 export const courses = {
   list: () => api<CourseSummary[]>("/courses"),
   detail: (slug: string) => api<CourseDetail>(`/courses/${slug}`),
   import: (matriz: unknown) => api<{ slug: string; subjects: number }>("/courses/import", {
     method: "POST", body: JSON.stringify(matriz),
   }),
+  // prévia do estrago, mostrada na 1ª confirmação
+  impact: (slug: string) => api<CourseImpact>(`/courses/${slug}/impact`),
+  // `confirm` = o slug redigitado; o servidor recusa qualquer outra coisa
+  trash: (slug: string, confirm: string) =>
+    api<{ slug: string; retentionDays: number }>(`/courses/${slug}`, {
+      method: "DELETE", body: JSON.stringify({ confirm }),
+    }),
+  trashList: () => api<{ retentionDays: number; items: TrashedCourse[] }>("/courses/trash"),
+  restore: (id: string) => api<{ slug: string }>(`/courses/trash/${id}/restore`, { method: "POST" }),
+  purge: (id: string, confirm: string) =>
+    api<{ purged: true; slug: string }>(`/courses/trash/${id}`, {
+      method: "DELETE", body: JSON.stringify({ confirm }),
+    }),
 };
 
 // ---- cronograma ----
@@ -136,6 +155,18 @@ export const schedules = {
     api<void>(`/me/scenarios/${sid}/disciplines/${did}`, { method: "DELETE" }),
   paint: (sid: string, cellKey: string, category: string) =>
     api<unknown>(`/me/scenarios/${sid}/paint`, { method: "PUT", body: JSON.stringify({ cellKey, category }) }),
+  // RF-29 — o que dá para puxar de "cursando"/"simulada" para dentro do cenário
+  candidates: (sid: string) => api<{ items: ScenarioCandidate[] }>(`/me/scenarios/${sid}/candidates`),
+  bulkAdd: (sid: string, items: { subjectId: string; sigaaCode?: string; sigla?: string; color?: string }[]) =>
+    api<{ added: number; skipped: string[] }>(`/me/scenarios/${sid}/disciplines/bulk`, {
+      method: "POST", body: JSON.stringify({ items }),
+    }),
+};
+
+export type ScenarioCandidate = {
+  subjectId: string; code: string; name: string; hours: number;
+  state: "ENROLLED" | "SIMULATED"; term: string | null;
+  sigla: string; color: string; alreadyInScenario: boolean;
 };
 
 // ---- admin (RF-01/21) ----

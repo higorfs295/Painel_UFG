@@ -15,8 +15,9 @@ Leia primeiro `ESPECIFICACAO.md`; para entender o domínio a fundo, `docs/DOMINI
 | Recomendações por destravamento transitivo | **Calendário acadêmico global** e agendável |
 | Extras (optativas, Núcleo Livre, AC) com 3 estados e reclassificação | **Avisos** por audiência |
 | **Agenda** de provas/entregas e anotações por disciplina | **Monitor**: métricas p50/p95/p99, memória, ping do banco |
-| Cronograma semanal com códigos SIGAA | **Auditoria** de ações sensíveis |
+| Cronograma semanal com códigos SIGAA, que **se preenche sozinho** a partir das disciplinas em curso | **Auditoria** de ações sensíveis |
 | **Conquistas** derivadas do progresso | Configurações, teste de SMTP e gerador de dados de teste |
+| Paleta de comandos (**Ctrl/⌘+K**), filtros e **exportação CSV** das tabelas | **Lixeira de cursos**: exclusão em duas etapas com 7 dias para desfazer |
 
 Segurança: sessão com refresh rotativo (detecção de reuso), autorização por posse, auditoria e
 **cifra de campo AES-256-GCM** para PII em repouso. Detalhes em [`docs/SEGURANCA.md`](docs/SEGURANCA.md).
@@ -90,7 +91,7 @@ npm run dev                # http://localhost:3333  (GET /health -> {"ok":true})
 ```bash
 cd backend
 npm test                   # 43 unitários: domínio puro, cache e cripto (não precisam de banco)
-npm run test:integration   # 42 de integração: rotas via app.inject (precisa do Postgres migrado)
+npm run test:integration   # 58 de integração: rotas via app.inject (precisa do Postgres migrado)
 npm run typecheck          # checagem de tipos (tsc --noEmit)
 ```
 
@@ -111,8 +112,9 @@ Cronograma, Recomendações, Histórico, Agenda, Ajustes e Ajuda.
 **Admin**: Visão do sistema, Usuários, Cursos, Períodos, Avisos, Monitor e Configurações.
 Fora da sessão: Login, **Cadastro** (auto-registro, RF-17) e Convite/redefinição.
 
-Consome a API via TanStack Query; sessão com refresh automático; chip de período/férias no topo;
-tema claro/escuro persistido; animações de entrada, cascata e esqueletos — todas desligadas sob
+Consome a API via TanStack Query; sessão com refresh automático; **navegação em trilho superior**
+com o conteúdo em tela cheia (design v7); chip de período/férias, paleta de comandos (**Ctrl/⌘+K**)
+e tema claro/escuro persistido; animações de entrada, cascata e esqueletos — todas desligadas sob
 `prefers-reduced-motion`.
 
 ## Batizando o sistema (nome próprio em 1 linha)
@@ -152,10 +154,10 @@ Módulos implementados (handlers antes em TODO):
 
 - **auth** (RF-02/03/04): convite→senha (argon2), login, refresh rotativo com detecção de reuso, logout, reset.
 - **users** (RF-01): CRUD admin, criação sem senha + link de convite, reemissão.
-- **courses** (RF-13): leitura da matriz e `POST /import` idempotente (mesmo formato do seed).
+- **courses** (RF-13/28): leitura da matriz, `POST /import` idempotente e **lixeira** (exclusão em duas etapas com confirmação do slug, restauração e expurgo automático em 7 dias).
 - **progress** (RF-05/06/07): somas por composição com teto em 100% + excedente, status oficial×simulado, marcos, recomendações por destravamento.
 - **extras** (RF-08/09): CRUD de optativas fora da matriz, NL, AC e registros.
-- **schedules** (RF-10/11/12): cenários, disciplinas com validação SIGAA no servidor, pintura de células.
+- **schedules** (RF-10/11/12/29): cenários, disciplinas com validação SIGAA no servidor, pintura de células e **preenchimento automático** a partir das disciplinas cursando/simuladas (o aluno informa só o código de horário).
 
 Lógica de domínio pura em `backend/src/domain/` (portada de `frontend/src/lib/`, testada em `backend/test/unit/`).
 Autorização por posse (RNF-05) em toda rota `/me`; erros centralizados sem vazar stack trace (RNF-04).

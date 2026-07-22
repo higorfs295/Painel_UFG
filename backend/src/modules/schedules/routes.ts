@@ -5,6 +5,18 @@ import { z } from "zod";
 import { assertEnrollmentOwner, assertScenarioOwner } from "../../lib/ownership.js";
 import { stripUndefined } from "../../lib/strip.js";
 import { parseSIGAA } from "../../domain/sigaa.js";
+import { bulkAddFromStatuses, scenarioCandidates } from "./service.js";
+
+// RF-29: o aluno só informa o código de horário; nome/CH/sigla/cor vêm da matriz
+const bulkSchema = z.object({
+  items: z.array(z.object({
+    subjectId: z.string().min(1),
+    sigaaCode: z.string().optional(),
+    sigla: z.string().optional(),
+    color: z.string().optional(),
+    docente: z.string().optional(),
+  })).min(1).max(20),
+});
 
 const disciplineSchema = z.object({
   name: z.string().min(1), sigla: z.string().min(1),
@@ -87,6 +99,24 @@ export async function scheduleRoutes(app: FastifyInstance) {
       data: { scenarioId: sid, ...body, docente: body.docente ?? null },
     });
     return reply.code(201).send({ ...created, slots });
+  });
+
+  // RF-29 — o que dá para puxar automaticamente: cursando/simuladas ainda fora do cenário,
+  // já com sigla, carga horária e cor sugeridas.
+  app.get("/scenarios/:sid/candidates", { preHandler: app.requireAuth }, async (req) => {
+    const { sid } = z.object({ sid: z.string() }).parse(req.params);
+    const scenario = await assertScenarioOwner(app.prisma, sid, req.user.sub);
+    return { items: await scenarioCandidates(app.prisma, sid, scenario.enrollmentId) };
+  });
+
+  // RF-29 — insere em lote: do cliente vem apenas subjectId + código de horário.
+  app.post("/scenarios/:sid/disciplines/bulk", { preHandler: app.requireAuth }, async (req, reply) => {
+    const { sid } = z.object({ sid: z.string() }).parse(req.params);
+    const { items } = bulkSchema.parse(req.body);
+    const scenario = await assertScenarioOwner(app.prisma, sid, req.user.sub);
+    const result = await bulkAddFromStatuses(
+      app.prisma, sid, scenario.enrollmentId, items, validateSigaa);
+    return reply.code(201).send(result);
   });
 
   app.patch("/scenarios/:sid/disciplines/:did", { preHandler: app.requireAuth }, async (req, reply) => {

@@ -5,6 +5,7 @@ import { me, courses } from "../api/endpoints";
 import { useApp } from "../store/app";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
+import ExportButton from "../components/ui/ExportButton";
 import { StatusChip } from "../components/ui/Chip";
 import type { GraphStatus, SubjectState } from "../api/types";
 
@@ -12,12 +13,22 @@ const STATUS_OPTS: { v: GraphStatus | "all"; label: string }[] = [
   { v: "all", label: "Todos" }, { v: "avail", label: "Disponíveis" }, { v: "co", label: "Co-requisito" },
   { v: "lock", label: "Bloqueadas" }, { v: "done", label: "Concluídas" },
 ];
+// segundo eixo de filtro (RF-14): núcleo comum, específico e as optativas de grupo
+const NUC_OPTS = [
+  { v: "all", label: "Todos" }, { v: "NC", label: "NC" }, { v: "NE", label: "NE" }, { v: "OPT", label: "Optativas" },
+] as const;
+type NucFilter = (typeof NUC_OPTS)[number]["v"];
+
+const STATUS_LABEL: Record<string, string> = {
+  done: "Concluída", avail: "Disponível", co: "Co-requisito", lock: "Bloqueada",
+};
 
 export default function SubjectsPage() {
   const enrollmentId = useApp((s) => s.enrollmentId)!;
   const qc = useQueryClient();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<GraphStatus | "all">("all");
+  const [nucleus, setNucleus] = useState<NucFilter>("all");
 
   const { data: prog, isLoading, isError, refetch } = useQuery({
     queryKey: ["progress", enrollmentId], queryFn: () => me.progress(enrollmentId), enabled: !!enrollmentId,
@@ -68,9 +79,11 @@ export default function SubjectsPage() {
     const needle = q.trim().toLowerCase();
     return prog.subjects.filter((s) =>
       (filter === "all" || s.status === filter) &&
+      // "OPT" é grupo de optativa (groupOpt > 0), não um núcleo do enum — daí o caso à parte
+      (nucleus === "all" || (nucleus === "OPT" ? s.groupOpt > 0 : s.nucleus === nucleus && s.groupOpt === 0)) &&
       (!needle || s.name.toLowerCase().includes(needle) || s.code.toLowerCase().includes(needle)),
     );
-  }, [prog, q, filter]);
+  }, [prog, q, filter, nucleus]);
 
   if (isError) return (
     <div className="muted-box" role="alert">
@@ -101,9 +114,28 @@ export default function SubjectsPage() {
               ))}
             </div>
           </div>
-          <div className="row" style={{ gap: 14 }}>
+          <div className="row wrap" style={{ gap: 14 }}>
             <span className="mut">Oficial: <b>{prog.totals.hours}h</b></span>
             {simulating && <span className="chip sim"><span className="swatch" />Projetado: {prog.projected.totals.hours}h</span>}
+            <ExportButton name="disciplinas" rows={rows} columns={[
+              { header: "#", value: (s) => s.seq },
+              { header: "Código", value: (s) => s.code },
+              { header: "Disciplina", value: (s) => s.name },
+              { header: "CH", value: (s) => s.hours },
+              { header: "Núcleo", value: (s) => (s.groupOpt > 0 ? "Optativa" : s.nucleus) },
+              { header: "Situação", value: (s) => STATUS_LABEL[s.status] ?? s.status },
+              { header: "Marcação", value: (s) => s.state ?? "" },
+            ]} />
+          </div>
+        </div>
+        <div className="row wrap mt" style={{ gap: 8 }}>
+          <span className="mut" style={{ fontSize: ".72rem", letterSpacing: ".14em", textTransform: "uppercase" }}>Núcleo</span>
+          <div className="seg" role="tablist" aria-label="Filtrar por núcleo">
+            {NUC_OPTS.map((o) => (
+              <button key={o.v} type="button" role="tab" aria-selected={nucleus === o.v}
+                className={"seg-btn" + (nucleus === o.v ? " on" : "")}
+                onClick={() => setNucleus(o.v)}>{o.label}</button>
+            ))}
           </div>
         </div>
       </Card>

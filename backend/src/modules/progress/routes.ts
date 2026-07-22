@@ -24,7 +24,8 @@ export async function progressRoutes(app: FastifyInstance) {
   // RF-17: auto-matrícula — quem se cadastrou sozinho escolhe o curso (idempotente).
   app.post("/enrollments", { preHandler: app.requireAuth }, async (req, reply) => {
     const { courseSlug } = enrollBody.parse(req.body);
-    const course = await app.prisma.course.findUnique({ where: { slug: courseSlug } });
+    // deletedAt: null — um curso na lixeira (RF-28) não aceita matrículas novas
+    const course = await app.prisma.course.findFirst({ where: { slug: courseSlug, deletedAt: null } });
     if (!course) throw badRequest("curso inexistente");
     const enr = await app.prisma.enrollment.upsert({
       where: { userId_courseId: { userId: req.user.sub, courseId: course.id } },

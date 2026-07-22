@@ -1,12 +1,15 @@
 // RF-22/23 — Histórico acadêmico: média global (MGA), ritmo/estimativa de formatura,
 // desempenho por período e o histórico escolar completo. Conquistas em cartões lúdicos.
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { me } from "../api/endpoints";
 import { useApp } from "../store/app";
 import Card from "../components/ui/Card";
 import CountNum from "../components/ui/CountNum";
 import Reveal from "../components/ui/Reveal";
+import ExportButton from "../components/ui/ExportButton";
 import { IconStar, IconClock, IconTarget } from "../components/ui/Icons";
+import { ptNum } from "../lib/csv";
 import type { TermSummary } from "../api/types";
 
 const fmtH = (n: number) => n.toLocaleString("pt-BR");
@@ -26,12 +29,18 @@ function TermBar({ t, max }: { t: TermSummary; max: number }) {
 
 export default function HistoryPage() {
   const enrollmentId = useApp((s) => s.enrollmentId)!;
+  const [termFilter, setTermFilter] = useState("");   // "" = todos os períodos
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["history", enrollmentId], queryFn: () => me.history(enrollmentId), enabled: !!enrollmentId,
   });
   const { data: ach } = useQuery({
     queryKey: ["achievements", enrollmentId], queryFn: () => me.achievements(enrollmentId), enabled: !!enrollmentId,
   });
+
+  // o filtro vale para a tabela E para a exportação — o CSV sai igual ao que está na tela
+  const records = useMemo(
+    () => (data?.records ?? []).filter((r) => !termFilter || r.term === termFilter),
+    [data, termFilter]);
 
   if (isError) return (
     <div className="muted-box" role="alert">
@@ -115,15 +124,37 @@ export default function HistoryPage() {
 
       <Reveal>
         <Card tight>
-          <h3 style={{ padding: "6px 8px 0" }}>Histórico escolar</h3>
-          {data.records.length === 0 ? (
-            <p className="mut" style={{ padding: "0 8px 10px" }}>Nada registrado ainda.</p>
+          <div className="row wrap spread" style={{ padding: "6px 8px 0" }}>
+            <h3 style={{ margin: 0 }}>Histórico escolar</h3>
+            <div className="row wrap" style={{ gap: 8 }}>
+              <label className="field" style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <span>Período</span>
+                <select value={termFilter} onChange={(e) => setTermFilter(e.target.value)} aria-label="Filtrar por período">
+                  <option value="">todos</option>
+                  {data.terms.map((t) => <option key={t.term} value={t.term}>{t.term}</option>)}
+                </select>
+              </label>
+              <ExportButton name="historico" rows={records} columns={[
+                { header: "Período", value: (r) => r.term ?? "" },
+                { header: "Código", value: (r) => r.code },
+                { header: "Disciplina", value: (r) => r.name },
+                { header: "CH", value: (r) => r.hours },
+                { header: "Nota", value: (r) => ptNum(r.grade) },
+                { header: "Faltas", value: (r) => r.absences ?? "" },
+                { header: "Situação", value: (r) => (r.state === "APPROVED" ? "Aprovada" : "Cursando") },
+              ]} />
+            </div>
+          </div>
+          {records.length === 0 ? (
+            <p className="mut" style={{ padding: "8px 8px 10px" }}>
+              {termFilter ? `Nada registrado em ${termFilter}.` : "Nada registrado ainda."}
+            </p>
           ) : (
             <div className="tablewrap">
               <table>
                 <thead><tr><th>Período</th><th>Código</th><th>Disciplina</th><th>CH</th><th>Nota</th><th>Faltas</th><th>Situação</th></tr></thead>
                 <tbody>
-                  {data.records.map((r) => (
+                  {records.map((r) => (
                     <tr key={r.seq}>
                       <td className="mut">{r.term ?? "—"}</td>
                       <td className="mut">{r.code}</td>

@@ -1,6 +1,6 @@
-// Casca autenticada v5 — trilho lateral em desktop, gaveta com hambúrguer no mobile.
-// Aluno sem matrícula cai na escolha de curso (RF-17); o ADMIN pula toda a lógica de
-// matrícula — ele administra o sistema, não cursa.
+// Casca autenticada v7 — trilho SUPERIOR + conteúdo em largura cheia (antes: barra lateral
+// em gradiente e um "app-card" flutuante). Aluno sem matrícula cai na escolha de curso (RF-17);
+// o ADMIN pula toda a lógica de matrícula — ele administra o sistema, não cursa.
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,8 +9,8 @@ import { setAccessToken } from "../../api/client";
 import { useAuth } from "../../store/auth";
 import { useApp } from "../../store/app";
 import { APP_NAME } from "../../branding";
-import Sidebar from "./Sidebar";
-import Topbar from "./Topbar";
+import TopNav from "./TopNav";
+import CommandPalette from "../CommandPalette";
 import Card from "../ui/Card";
 import Button from "../ui/Button";
 
@@ -47,6 +47,34 @@ function CoursePicker() {
   );
 }
 
+/** Curso selecionado + período letivo global (RF-20 v2), montados dentro do trilho. */
+function RailContext({ enrollments, selectedId, onSelect }: {
+  enrollments: { id: string; course: { name: string; slug: string } }[];
+  selectedId: string | null; onSelect: (id: string) => void;
+}) {
+  const user = useAuth((s) => s.user);
+  const { data: profile } = useQuery({ queryKey: ["me"], queryFn: me.profile, staleTime: 5 * 60_000 });
+  const period = profile?.period ?? user?.period;
+  const enr = enrollments.find((e) => e.id === selectedId);
+
+  return (
+    <>
+      {enrollments.length > 1 ? (
+        <select className="rail-course" value={selectedId ?? ""} onChange={(e) => onSelect(e.target.value)}
+          aria-label="Selecionar curso">
+          {enrollments.map((e) => <option key={e.id} value={e.id}>{e.course.name}</option>)}
+        </select>
+      ) : enr && <span className="badge hide-sm" title={enr.course.name}>{enr.course.slug}</span>}
+      {period && (
+        <span className={`chip ${period.onBreak ? "sim" : "avail"} hide-sm`}
+          title={period.onBreak ? `Próximo período: ${period.nextTerm}` : `Período corrente · depois: ${period.nextTerm}`}>
+          <span className="swatch" />{period.onBreak ? "Férias" : period.label}
+        </span>
+      )}
+    </>
+  );
+}
+
 export default function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -55,11 +83,6 @@ export default function AppLayout() {
   const isAdmin = user?.role === "ADMIN";
   const { enrollmentId, setEnrollment } = useApp();
   const [navOpen, setNavOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(() => localStorage.getItem("side-collapsed") === "1");
-
-  function toggleCollapse() {
-    setCollapsed((v) => { localStorage.setItem("side-collapsed", v ? "0" : "1"); return !v; });
-  }
 
   const { data: enrollments, isLoading } = useQuery({
     queryKey: ["enrollments"],
@@ -89,28 +112,28 @@ export default function AppLayout() {
       : <Outlet />;
 
   return (
-    <div className="page">
-      <div className="orbs" aria-hidden="true"><span className="orb a" /><span className="orb b" /><span className="orb c" /></div>
+    <div className="v7">
       <a href="#conteudo" className="skiplink">Pular para o conteúdo</a>
-      <div className={"shell" + (collapsed ? " collapsed" : "")}>
-        <Sidebar onLogout={logout} open={navOpen} onClose={() => setNavOpen(false)}
-          collapsed={collapsed} onToggleCollapse={toggleCollapse} />
-        {navOpen && <button className="scrim" aria-label="Fechar menu" onClick={() => setNavOpen(false)} />}
-        <div className="shell-main">
-          <Topbar enrollments={isAdmin ? [] : enrollments ?? []} selectedId={enrollmentId}
-            onSelect={setEnrollment} onMenu={() => setNavOpen((v) => !v)} menuOpen={navOpen} />
-          <main id="conteudo" className="content">
-            {/* a key da rota reinicia a animação de entrada a cada navegação */}
-            <div key={location.pathname} className="route-enter">
-              {isAdmin ? <Outlet /> : studentBody}
-            </div>
-            <footer className="foot" aria-hidden="true">
-              <span className="foot-word">{APP_NAME}</span>
-              <small>feito no cerrado · {new Date().getFullYear()}</small>
-            </footer>
-          </main>
+      <TopNav onLogout={logout} open={navOpen}
+        onToggle={() => setNavOpen((v) => !v)} onClose={() => setNavOpen(false)}>
+        {!isAdmin && enrollments && enrollments.length > 0 && (
+          <RailContext enrollments={enrollments} selectedId={enrollmentId} onSelect={setEnrollment} />
+        )}
+      </TopNav>
+
+      <main id="conteudo" className="canvas">
+        {/* a key da rota reinicia a animação de entrada a cada navegação */}
+        <div key={location.pathname} className="route-enter">
+          {isAdmin ? <Outlet /> : studentBody}
         </div>
-      </div>
+      </main>
+
+      <footer className="foot">
+        <span className="foot-word">{APP_NAME}</span>
+        <small>feito no cerrado · {new Date().getFullYear()}</small>
+      </footer>
+
+      <CommandPalette />
     </div>
   );
 }

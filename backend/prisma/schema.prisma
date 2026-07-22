@@ -107,10 +107,15 @@ model Course {
   slug         String  @unique
   name         String
   totalHours   Int
+  // Lixeira (RF-28): exclusão em duas etapas. `deletedAt` != null = na lixeira — some do catálogo
+  // e das matrículas novas, mas os dados dos alunos continuam intactos até o expurgo (7 dias),
+  // quando a remoção passa a ser definitiva e cascateia.
+  deletedAt    DateTime?
   requirements CompositionRequirement[]
   milestones   Milestone[]
   subjects     Subject[]
   enrollments  Enrollment[]
+  @@index([deletedAt])
 }
 
 model CompositionRequirement {                   // NC/NEO/OPT/NL/AC... flexível por curso (RF-13)

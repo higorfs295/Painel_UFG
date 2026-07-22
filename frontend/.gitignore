@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# artefato de build incremental do TypeScript
+*.tsbuildinfo

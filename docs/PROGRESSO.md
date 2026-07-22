@@ -201,7 +201,31 @@ o mesmo MITM pode afetar o `npm ci` — em rede sem interceptação os Dockerfil
   `/health/pressure`) e **OpenAPI 3.1 + Swagger UI em `/docs`** (fora de produção). Índices novos
   em `Announcement(audience,pinned,createdAt)` e `AuditLog(userId)`.
 - **Animações**: entrada de rota, cascata, esqueletos e pulso — desligadas por `prefers-reduced-motion`.
-- Estado dos testes: **43 unitários + 42 de integração + 6 E2E**, CI verde nos 3 jobs.
+- Estado dos testes ao final desta etapa: **43 unitários + 42 de integração + 6 E2E**, CI verde nos 3 jobs.
+
+## Lixeira, cronograma inteligente e redesign v7 (RF-28/29) — feito
+- **Lixeira de cursos (RF-28)**: apagar um curso levava, em cascata, matrículas e progresso de todo
+  mundo. Agora a exclusão tem duas etapas — `Course.deletedAt` (some do catálogo, não aceita
+  matrícula nova, dados intactos) e expurgo definitivo — cada uma exigindo que o **slug seja
+  redigitado e reenviado ao servidor**. Passados 7 dias (`RETENTION_DAYS`), o job diário do
+  `server.ts` faz o expurgo sozinho. Restauração num clique; tudo na auditoria.
+- **Cronograma inteligente (RF-29)**: montar a grade era redigitar nome, sigla, CH e cor de
+  disciplinas que já estavam cadastradas. `GET /me/scenarios/:sid/candidates` devolve as que estão
+  como **cursando/simulada** já com essas sugestões derivadas da matriz, e o `bulk` insere pedindo
+  só o **código de horário** do SIGAA. O `subjectId` vem do cliente e por isso é revalidado: fora da
+  matrícula, 400.
+- **Ferramentas nas páginas**: paleta de comandos **Ctrl/⌘+K** (busca por subsequência, consciente
+  do papel), **exportação CSV** do que está na tela (Histórico, Disciplinas, Agenda, Usuários — com
+  `sep=;` e BOM para abrir direto no Excel pt-BR), filtro por **núcleo** em Disciplinas, filtros de
+  **urgência/tipo** na Agenda, filtro por **papel/convite** em Usuários e período no Histórico.
+- **Design v7 — "impresso do cerrado"**: a barra lateral em gradiente e o app-card flutuante deram
+  lugar a um **trilho superior tipográfico** e a conteúdo em **tela cheia**; superfícies chapadas
+  separadas por réguas de 1px, cantos de 3–6px (eram 22–32), manchetes até 4.2rem e números de
+  estatística em Fraunces. A identidade (paleta cerrado/poente + Fraunces/Sora) ficou intacta.
+- **Bug real encontrado pelo E2E**: com mais de um cenário, um efeito reescrevia `activeId` a partir
+  de uma lista ainda desatualizada logo após criar — e o "Excluir" apagava o cenário errado. O
+  estado agora guarda só a escolha explícita, com fallback calculado na renderização.
+- Estado dos testes: **43 unitários + 58 de integração + 6 E2E**.
 
 ## Pendências / próximos passos sugeridos
 - **Frontend será substituído** — o backend e o contrato (`/docs`) estão prontos para servir a

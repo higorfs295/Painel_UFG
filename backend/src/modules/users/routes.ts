@@ -39,7 +39,9 @@ export async function userRoutes(app: FastifyInstance) {
 
     let courseId: string | undefined;
     if (body.courseSlug) {
-      const course = await app.prisma.course.findUnique({ where: { slug: body.courseSlug } });
+      const course = await app.prisma.course.findFirst({
+        where: { slug: body.courseSlug, deletedAt: null }, // curso na lixeira (RF-28) não matricula
+      });
       if (!course) return reply.code(400).send({ error: "curso inexistente" });
       courseId = course.id;
     }
@@ -107,7 +109,7 @@ export async function userRoutes(app: FastifyInstance) {
     const { courseSlug } = z.object({ courseSlug: z.string() }).parse(req.body);
     const [user, course] = await Promise.all([
       app.prisma.user.findUnique({ where: { id } }),
-      app.prisma.course.findUnique({ where: { slug: courseSlug } }),
+      app.prisma.course.findFirst({ where: { slug: courseSlug, deletedAt: null } }), // RF-28
     ]);
     if (!user) return reply.code(404).send({ error: "usuário não encontrado" });
     if (!course) return reply.code(400).send({ error: "curso inexistente" });

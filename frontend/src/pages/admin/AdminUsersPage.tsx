@@ -1,9 +1,10 @@
 // Admin · Usuários (RF-01/21): criar/convidar/remover contas, papéis e matrículas.
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { admin, courses } from "../../api/endpoints";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
+import ExportButton from "../../components/ui/ExportButton";
 
 export default function AdminUsersPage() {
   const qc = useQueryClient();
@@ -11,6 +12,7 @@ export default function AdminUsersPage() {
   const [lastLink, setLastLink] = useState<{ link: string; emailed: boolean } | null>(null);
   const [enrollPick, setEnrollPick] = useState<Record<string, string>>({}); // userId -> slug
   const [q, setQ] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | "ADMIN" | "USER" | "pending">("all");
 
   const users = useQuery({ queryKey: ["admin-users"], queryFn: admin.listUsers });
   const courseList = useQuery({ queryKey: ["courses"], queryFn: courses.list });
@@ -37,6 +39,15 @@ export default function AdminUsersPage() {
     mutationFn: (v: { id: string; enrollmentId: string }) => admin.unenrollUser(v.id, v.enrollmentId),
     onSuccess: invalidate,
   });
+
+  // busca + filtro de papel/situação, aplicados uma vez só (tabela e CSV usam a mesma lista)
+  const rows = useMemo(() => {
+    const n = q.trim().toLowerCase();
+    return (users.data ?? []).filter((u) =>
+      (!n || u.name.toLowerCase().includes(n) || u.email.toLowerCase().includes(n) || (u.matricula ?? "").toLowerCase().includes(n)) &&
+      (roleFilter === "all" ||
+        (roleFilter === "pending" ? !u.active : u.role === roleFilter)));
+  }, [users.data, q, roleFilter]);
 
   return (
     <div className="stack">
@@ -74,18 +85,35 @@ export default function AdminUsersPage() {
 
       <Card tight>
         <div className="row spread wrap" style={{ padding: "6px 8px 0", gap: 10 }}>
-          <h3 style={{ margin: 0 }}>Usuários {users.data && <span className="badge" style={{ marginLeft: 4 }}>{users.data.length}</span>}</h3>
-          <input placeholder="Buscar por nome, e-mail ou matrícula…" value={q} onChange={(e) => setQ(e.target.value)} style={{ minWidth: 260 }} />
+          <h3 style={{ margin: 0 }}>
+            Usuários {users.data && <span className="badge" style={{ marginLeft: 4 }}>{rows.length} de {users.data.length}</span>}
+          </h3>
+          <div className="row wrap" style={{ gap: 8 }}>
+            <input placeholder="Buscar por nome, e-mail ou matrícula…" value={q} onChange={(e) => setQ(e.target.value)} style={{ minWidth: 240 }} />
+            <div className="seg" role="tablist" aria-label="Filtrar usuários">
+              {([["all", "Todos"], ["USER", "Alunos"], ["ADMIN", "Admins"], ["pending", "Convite pendente"]] as const).map(([v, label]) => (
+                <button key={v} type="button" role="tab" aria-selected={roleFilter === v}
+                  className={"seg-btn" + (roleFilter === v ? " on" : "")}
+                  onClick={() => setRoleFilter(v)}>{label}</button>
+              ))}
+            </div>
+            <ExportButton name="usuarios" rows={rows} columns={[
+              { header: "Nome", value: (u) => u.name },
+              { header: "E-mail", value: (u) => u.email },
+              { header: "Matrícula", value: (u) => u.matricula ?? "" },
+              { header: "Turno", value: (u) => u.shift ?? "" },
+              { header: "Papel", value: (u) => u.role },
+              { header: "Situação", value: (u) => (u.active ? "ativo" : "convite pendente") },
+              { header: "Cursos", value: (u) => u.courses.map((c) => c.slug).join(" | ") },
+            ]} />
+          </div>
         </div>
         {users.isLoading ? <div className="spinner" role="status">Carregando…</div> : (
           <div className="tablewrap">
             <table>
               <thead><tr><th>Nome</th><th>E-mail</th><th>Matrícula</th><th>Papel</th><th>Situação</th><th>Cursos</th><th style={{ textAlign: "right" }}>Ações</th></tr></thead>
               <tbody>
-                {users.data?.filter((u) => {
-                  const n = q.trim().toLowerCase();
-                  return !n || u.name.toLowerCase().includes(n) || u.email.toLowerCase().includes(n) || (u.matricula ?? "").toLowerCase().includes(n);
-                }).map((u) => (
+                {rows.map((u) => (
                   <tr key={u.id}>
                     <td>{u.name}{u.shift && <span className="badge" style={{ marginLeft: 6 }}>{u.shift}</span>}</td>
                     <td className="mut">{u.email}</td>

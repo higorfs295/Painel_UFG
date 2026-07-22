@@ -27,7 +27,7 @@ test/{unit,integration}/  # Vitest
 | --- | --- | --- |
 | `env.ts` | Carrega e valida env com zod; falha cedo | `env`, `isProd`; campos: `DATABASE_URL`, `JWT_SECRET`(≥32), `REFRESH_EXPIRES_DAYS`, `INVITE_EXPIRES_HOURS`, `APP_URL`, `CORS_ORIGIN`, `RATE_LIMIT_*`, `REDIS_URL?` |
 | `app.ts` | Monta a aplicação | `buildApp()`: registra `securityPlugin`→`prismaPlugin`→`authPlugin`, `setErrorHandler` central (Zod/Ownership/Sigaa/Prisma), `/health`, e as rotas por prefixo |
-| `server.ts` | Processo | `listen(PORT)`, handlers `SIGINT/SIGTERM`→`app.close()`, `setInterval` diário de `pruneRefreshTokens` (`unref`) |
+| `server.ts` | Processo | `listen(PORT)`, handlers `SIGINT/SIGTERM`→`app.close()`, `setInterval` diário (`unref`) com `pruneRefreshTokens` + `purgeExpiredCourses` (lixeira, RF-28) |
 
 ## Plugins (`src/plugins/`)
 
@@ -90,6 +90,8 @@ consultas paralelas, e os builders (`buildProgress`/`buildHistory`/`buildAchieve
 | Módulo com serviço | Serviço | Papel |
 | --- | --- | --- |
 | `progress` | `loadEnrollmentContext()`, `buildProgress/History/Achievements/Recommendations` | contexto único da matrícula + montagem dos agregados |
+| `courses` | `listActiveCourses()`, `courseImpact()`, `trashCourse()`, `listTrash()`, `restoreCourse()`, `purgeCourse()`, `purgeExpiredCourses()`, `RETENTION_DAYS` | catálogo e **lixeira** (RF-28): confirmação do slug exigida no servidor, prazo de 7 dias, expurgo manual e automático |
+| `schedules` | `scenarioCandidates()`, `bulkAddFromStatuses()`, `suggestSigla()` | **cronograma inteligente** (RF-29): deriva sigla/CH/cor da matriz e só pede o código de horário; recusa `subjectId` fora da matrícula |
 | `devtools` | `seedFakeStudents()`, `purgeFakeStudents()` | massa fictícia plausível (uma transação por aluno) |
 
 ## Rotas (`src/modules/<área>/routes.ts`)
@@ -100,10 +102,10 @@ Cada função registra os handlers da área. Contrato detalhado em [`API.md`](AP
 | --- | --- | --- |
 | `auth` | 02/03/04/**17** | `POST /auth/{register, invite/accept, login, refresh, logout, password/forgot}` (rate limit por rota nas de segredo; register gated por `ALLOW_REGISTRATION`) |
 | `users` | 01/**21** | `GET/POST /users`, `PATCH /users/:id` (papel/nome), `POST /users/:id/invite`, `POST/DELETE /users/:id/enrollments[/:enrId]`, `DELETE /users/:id` (ADMIN; convites enviados por e-mail quando há SMTP) |
-| `courses` | 13 | `GET /courses`, `GET /courses/:slug`, `POST /courses/import` |
+| `courses` | 13/**28** | `GET /courses` (sem os da lixeira), `GET /courses/:slug`, `POST /courses/import` · **lixeira**: `GET /courses/:slug/impact`, `DELETE /courses/:slug`, `GET /courses/trash`, `POST /courses/trash/:id/restore`, `DELETE /courses/trash/:id` (ADMIN; dupla confirmação do slug) |
 | `progress` | 05/06/07/**17/19/20** | `GET/POST /me/enrollments`, `PATCH /me/enrollments/:id` (só `startTerm`, `.strict()`), `GET .../progress`, `PUT .../subjects/:id` (APPROVED/ENROLLED/SIMULATED), `GET .../recommendations` |
 | `extras` | 08/09 | `GET/POST /me/enrollments/:id/extras`, `PATCH/DELETE /me/extras/:id` |
-| `schedules` | 10/11/12 | CRUD de `scenarios`/`disciplines` (valida SIGAA) + `PUT .../paint`; exporta `SigaaError` |
+| `schedules` | 10/11/12/**29** | CRUD de `scenarios`/`disciplines` (valida SIGAA) + `PUT .../paint`; exporta `SigaaError` · **cronograma inteligente**: `GET .../candidates` e `POST .../disciplines/bulk` (aluno informa só o código de horário) |
 | `account` | 15/16/**20** | `GET /me` (+período), `PATCH /me/settings`, `POST /me/password`, `GET /me/export`, `POST /me/import` |
 | `admin` | **20/21** | `GET /admin/stats` (números agregados) · `GET/POST/DELETE /admin/periods` (calendário) · `GET /admin/config` + `POST /admin/mail/test` (instância/SMTP) |
 | `planner` | **25/26** | `GET/POST /me/enrollments/:id/tasks`, `PATCH/DELETE /me/tasks/:id` (agenda) · `GET .../notes`, `PUT/DELETE .../subjects/:sid/note` (anotações) |
@@ -113,7 +115,7 @@ Cada função registra os handlers da área. Contrato detalhado em [`API.md`](AP
 
 ## Dados e testes
 
-- `prisma/schema.prisma`: 15 entidades + enums; `User` tem `matricula`/`shift` opcionais;
+- `prisma/schema.prisma`: 19 entidades + enums; `Course.deletedAt` (lixeira, RF-28); `User` tem `matricula`/`shift` opcionais;
   `AcademicPeriod` guarda o calendário global. `@@unique`/`@@index` nas FKs consultadas
   (`RefreshToken.userId/expiresAt`, `Requisite.subjectId/requiresSubjectId`, `ExtraComponent.enrollmentId`,
   `Scenario.enrollmentId`, `ScenarioDiscipline.scenarioId`, `InviteToken.userId`, `AcademicPeriod.startsAt`).
@@ -135,7 +137,7 @@ src/
 ├─ api/                   # client HTTP + endpoints tipados + types
 ├─ store/                 # Zustand: auth, app
 ├─ components/{ui,layout} # primitivas e casca; ErrorBoundary
-├─ pages/                 # 8 páginas
+├─ pages/                 # 12 páginas (7 do aluno + 7 do admin, contando as compartilhadas)
 ├─ lib/                   # graph/sigaa/sums (espelho do domínio p/ a grade)
 └─ styles/                # theme.css (tokens) + app.css (componentes/animações/responsivo)
 ```
@@ -177,31 +179,45 @@ src/
 | `SettingsPage` | `/config` | nome, **dados acadêmicos** (matrícula/turno), **troca de senha**, tema; p/ aluno também **matrículas** (ingresso) e backup |
 | `admin/AdminHomePage` | `/admin` | **visão do sistema**: stat-cards com contadores animados (usuários, **novos 30d**, cursos, atividade), **matrículas por curso**, período vigente + atalhos |
 | `admin/AdminUsersPage` | `/admin/usuarios` | criar/convidar, **papel por select**, **matricular/desmatricular**, remover; mostra **matrícula/turno** |
-| `admin/AdminCoursesPage` | `/admin/cursos` | catálogo de matrizes + importação (RF-13) |
+| `admin/AdminCoursesPage` | `/admin/cursos` | catálogo de matrizes + importação (RF-13) + **lixeira** com prazo e restauração (RF-28) |
 | `admin/AdminPeriodsPage` | `/admin/periodos` | **calendário acadêmico global**: agenda viradas (TERM/BREAK) + linha do tempo (RF-20 v2) |
 | `admin/AdminConfigPage` | `/admin/config` | **configurações da instância**: estado do SMTP + **enviar e-mail de teste**, cadastro público, validade de convite, URL |
 
-Camada de layout **v6 — "app-card" flutuante**: o app inteiro vive num painel arredondado
-(`.page > .shell`) com **sidebar em gradiente de pôr-do-sol** (ilha `--side-grad`, texto claro nos
-dois temas) + área de conteúdo em superfície (`--surface`). `Sidebar` é **papel-consciente** (aluno
-vê a jornada; ADMIN vê a gestão), **colapsável** no desktop (localStorage `side-collapsed`) e no
-mobile (≤900px) vira **gaveta off-canvas** com hambúrguer na `Topbar` + scrim. O ADMIN **não cursa**
-— `AppLayout` pula matrícula/`CoursePicker` e as páginas de aluno redirecionam para `/admin`.
-`Topbar` exibe o **chip de período/férias** global (do calendário, via `GET /me`).
+Camada de layout **v7 — trilho superior e tela cheia**. A `Sidebar` em gradiente e o "app-card"
+flutuante do v6 saíram: agora há um `TopNav` fino e fixo no topo (`.rail`), com a navegação como
+uma **régua tipográfica horizontal** (versalete + indicador de sublinhado) e o conteúdo ocupando a
+largura da página (`.canvas`, até `--measure`). O `TopNav` é **papel-consciente** (aluno vê a
+jornada; ADMIN vê a gestão), reúne no canto direito o seletor de curso, o **chip de período/férias**
+global (do calendário, via `GET /me`), o atalho da paleta de comandos, o tema e a conta; abaixo de
+980px a régua vira **gaveta empilhada** sob o hambúrguer. O ADMIN **não cursa** — `AppLayout` pula
+matrícula/`CoursePicker` e as páginas de aluno redirecionam para `/admin`.
+
+## Ferramentas transversais
+
+- `components/CommandPalette.tsx`: paleta **Ctrl/⌘+K** com busca por subsequência, navegação por
+  setas e comandos conscientes do papel; `openPalette()` abre de qualquer lugar via evento.
+- `lib/csv.ts` + `components/ui/ExportButton.tsx`: exportação CSV com `sep=;` e BOM (abre direto no
+  Excel pt-BR). Exporta **as linhas visíveis** — filtro na tela = filtro no arquivo. Usado em
+  Histórico, Disciplinas, Agenda e Usuários.
+- `components/ui/DangerDialog.tsx`: confirmação em duas etapas (impacto → digitar a palavra-chave)
+  para ações destrutivas; hoje serve a lixeira de cursos.
+- `components/schedule/SmartFill.tsx`: painel "puxar do meu semestre" (RF-29).
 
 ## Estilos e acessibilidade
 
-- `styles/theme.css`: tokens da paleta **cerrado/pôr do sol/povos nativos** em dark e light; v6 acresce
-  raios maiores (`--radius` 22 / `--radius-lg` 32), superfície do conteúdo (`--surface`), sombra do
-  painel flutuante (`--shadow-card`) e o gradiente da sidebar-ilha (`--side-grad` + `--side-tx/…`).
+- `styles/theme.css`: tokens da paleta **cerrado/pôr do sol/povos nativos** em dark e light; o v7
+  reduz os raios a 3–6px (`--radius`/`--radius-lg`/`--radius-sm`) e acrescenta `--rail-h` e
+  `--measure`. `--side-grad`/`--side-tx` continuam, agora só no herói da autenticação.
 - `styles/app.css`: componentes, **animações** (com `prefers-reduced-motion`), **responsividade**
-  (breakpoints 1100/900/700/520/460px) e **acessibilidade** (`:focus-visible`, `.skiplink`, `.sr-only`, foco da grade).
-- **Design v6 (redesign drástico a partir de novos templates, mantendo a identidade cerrado):**
-  *app-card* flutuante e sidebar em gradiente (smart-home), **cartões de estatística coloridos** por
-  tintura (`.tint-*`, Sales Dashboard), **auth imersiva** — card dividido com herói em gradiente, brilho,
-  estrelas cintilantes e prova social (VR Landing). Herdado do v5: mosaico **bento**, numerais fantasma,
-  **marquee**, **callout** cônico, **orbes** flutuantes, contadores animados (`useCountUp`/`CountNum`),
-  **controle segmentado**, `Reveal`/IntersectionObserver e wordmark de rodapé.
+  (breakpoints 1100/980/700/520px) e **acessibilidade** (`:focus-visible`, `.skiplink`, `.sr-only`, foco da grade).
+- **Design v7 ("impresso do cerrado")** — ruptura deliberada com o v6: superfícies **chapadas
+  separadas por réguas de 1px** (o traço substitui a sombra), sem vidro fosco nem orbes no app,
+  **tipografia display dominante** (manchete até 4.2rem, números de estatística em Fraunces),
+  chips e botões retangulares, tabelas como composição tipográfica e rodapé com wordmark vazado.
+  A identidade — paleta cerrado/poente e a dupla Fraunces + Sora — permanece intacta; o que mudou
+  foi a diagramação. Herdados: mosaico **bento**, **marquee**, **callout**, contadores animados
+  (`useCountUp`/`CountNum`), **controle segmentado**, `Reveal`/IntersectionObserver e a **auth
+  imersiva** em tela dividida (única tela que mantém o gradiente e os orbes).
 
 ---
 

@@ -71,10 +71,16 @@ html[data-theme="light"] {
   --silk: cubic-bezier(0.16, 1, 0.3, 1);
   --silk-fast: cubic-bezier(0.25, 1, 0.4, 1);
 
-  /* v6 — raios maiores/mais fluidos (independentes de tema) */
-  --radius: 22px;      /* cartões */
-  --radius-lg: 32px;   /* o app-card flutuante */
-  --radius-sm: 14px;   /* inputs, chips grandes, ícones */
+  /* v7 — cantos praticamente retos. O v6 empilhava raios de 22–32px e vidro fosco; a
+     linguagem agora é editorial: papel, régua e traço fino. O contorno faz o trabalho
+     que antes era da sombra. */
+  --radius: 4px;       /* cartões */
+  --radius-lg: 6px;    /* blocos maiores */
+  --radius-sm: 3px;    /* inputs, chips, ícones */
+
+  /* medidas do trilho superior e da caixa de texto da página */
+  --rail-h: 62px;
+  --measure: 1360px;
 
   /* v6 — a sidebar é uma "ilha" com gradiente de pôr-do-sol do cerrado (igual nos dois temas);
      texto sempre claro para contraste sobre o gradiente. */

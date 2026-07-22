@@ -1,11 +1,12 @@
 // Cronograma (RF-10/11/12): cenários, disciplinas com código SIGAA (validado no servidor) e pintura da grade.
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { schedules } from "../api/endpoints";
 import { useApp } from "../store/app";
 import { parseSIGAA, SLOTS } from "../lib/sigaa";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
+import SmartFill from "../components/schedule/SmartFill";
 
 const DAYS = [
   { n: 2, label: "Seg" }, { n: 3, label: "Ter" }, { n: 4, label: "Qua" },
@@ -30,22 +31,21 @@ export default function SchedulePage() {
   const { data: scenarios } = useQuery({
     queryKey: ["scenarios", enrollmentId], queryFn: () => schedules.list(enrollmentId), enabled: !!enrollmentId,
   });
-  useEffect(() => {
-    if (scenarios && scenarios.length && !scenarios.find((s) => s.id === activeId)) setActiveId(scenarios[0]?.id ?? null);
-  }, [scenarios, activeId]);
+  // `activeId` guarda APENAS a escolha explícita; o fallback é calculado na hora.
+  // (Antes um efeito reescrevia activeId e, com a lista ainda desatualizada logo após criar
+  // um cenário, ele voltava para o primeiro da lista — e o "Excluir" apagava o cenário errado.)
+  const active = scenarios?.find((s) => s.id === activeId) ?? scenarios?.[0] ?? null;
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["scenarios", enrollmentId] });
   const createScenario = useMutation({ mutationFn: (name: string) => schedules.create(enrollmentId, name), onSuccess: (s) => { invalidate(); setActiveId(s.id); } });
   const delScenario = useMutation({ mutationFn: (id: string) => schedules.remove(id), onSuccess: () => { invalidate(); setActiveId(null); } });
   const addDisc = useMutation({
-    mutationFn: () => schedules.addDiscipline(activeId!, { ...disc, docente: disc.docente || undefined }),
+    mutationFn: () => schedules.addDiscipline(active!.id, { ...disc, docente: disc.docente || undefined }),
     onSuccess: () => { invalidate(); setDisc({ name: "", sigla: "", hours: 0, docente: "", sigaaCode: "", color: COLORS[0] }); setDiscErr(""); },
     onError: () => setDiscErr("Código SIGAA inválido (ex.: 24M12 = seg/qua, matutino, aulas 1–2). Verifique."),
   });
   const delDisc = useMutation({ mutationFn: (v: { sid: string; did: string }) => schedules.removeDiscipline(v.sid, v.did), onSuccess: invalidate });
-  const paint = useMutation({ mutationFn: (v: { cellKey: string; category: string }) => schedules.paint(activeId!, v.cellKey, v.category), onSuccess: invalidate });
-
-  const active = scenarios?.find((s) => s.id === activeId) ?? null;
+  const paint = useMutation({ mutationFn: (v: { cellKey: string; category: string }) => schedules.paint(active!.id, v.cellKey, v.category), onSuccess: invalidate });
 
   // ocupação da grade: cellKey -> { sigla, color }
   const occupancy = useMemo(() => {
@@ -108,7 +108,7 @@ export default function SchedulePage() {
         <div className="row wrap spread">
           <div className="row wrap" style={{ gap: 6 }}>
             {scenarios?.map((s) => (
-              <Button key={s.id} size="sm" variant={s.id === activeId ? "prim" : "default"} onClick={() => setActiveId(s.id)}>{s.name}</Button>
+              <Button key={s.id} size="sm" variant={s.id === active?.id ? "prim" : "default"} onClick={() => setActiveId(s.id)}>{s.name}</Button>
             ))}
             {(!scenarios || scenarios.length === 0) && <span className="mut">Nenhum cenário ainda.</span>}
           </div>
@@ -123,8 +123,12 @@ export default function SchedulePage() {
         <div className="muted-box">Crie um cenário para montar sua grade semanal.</div>
       ) : (
         <>
+          {/* RF-29: o caminho rápido vem primeiro; o formulário manual continua abaixo
+              para disciplinas fora da matriz (optativas de outro curso, por exemplo). */}
+          <SmartFill scenarioId={active.id} enrollmentId={enrollmentId} />
+
           <Card>
-            <h3>Adicionar disciplina</h3>
+            <h3>Adicionar manualmente</h3>
             <form className="row wrap" style={{ gap: 10, alignItems: "flex-end" }}
               onSubmit={(e) => { e.preventDefault(); if (disc.name && disc.sigla) addDisc.mutate(); }}>
               <label className="field" style={{ flex: "2 1 200px" }}>Nome<input value={disc.name} onChange={(e) => setDisc({ ...disc, name: e.target.value })} required /></label>

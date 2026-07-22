@@ -1,5 +1,6 @@
 import { buildApp } from "./app.js";
 import { pruneRefreshTokens } from "./lib/session.js";
+import { RETENTION_DAYS, purgeExpiredCourses } from "./modules/courses/service.js";
 
 const app = await buildApp();
 const port = Number(process.env.PORT ?? 3333);
@@ -17,8 +18,16 @@ const runPrune = () =>
   pruneRefreshTokens(app.prisma)
     .then((n) => n && app.log.info(`expurgo: ${n} refresh tokens removidos`))
     .catch((err) => app.log.warn({ err }, "falha no expurgo de tokens"));
-runPrune();
-const pruneTimer = setInterval(runPrune, 24 * 60 * 60 * 1000);
+// Lixeira de cursos (RF-28): quem passou de RETENTION_DAYS dias é apagado de vez.
+const runCoursePurge = () =>
+  purgeExpiredCourses(app.prisma)
+    .then((slugs) => slugs.length &&
+      app.log.warn(`lixeira: ${slugs.length} curso(s) expurgado(s) após ${RETENTION_DAYS} dias — ${slugs.join(", ")}`))
+    .catch((err) => app.log.warn({ err }, "falha no expurgo da lixeira de cursos"));
+
+const runDaily = () => { void runPrune(); void runCoursePurge(); };
+runDaily();
+const pruneTimer = setInterval(runDaily, 24 * 60 * 60 * 1000);
 pruneTimer.unref(); // não segura o event loop no shutdown
 
 // Encerramento gracioso: fecha o servidor (drena requests em voo) e desconecta o Prisma

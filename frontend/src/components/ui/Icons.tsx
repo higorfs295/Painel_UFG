@@ -86,3 +86,18 @@ export const IconPulse = (p: SVGProps<SVGSVGElement>) => (
 export const IconMegaphone = (p: SVGProps<SVGSVGElement>) => (
   <I {...p}><path d="M4 10.5v3a2 2 0 0 0 2 2h1.5L18 20V4L7.5 8.5H6a2 2 0 0 0-2 2Z" /><path d="M20.5 10v4M7.5 15.5V20" /></I>
 );
+export const IconTrash = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><path d="M4 6.5h16M9.5 6.5V4.5h5v2" /><path d="M6 6.5 7 20a1.5 1.5 0 0 0 1.5 1.4h7A1.5 1.5 0 0 0 17 20l1-13.5" /><path d="M10 10.5v7M14 10.5v7" /></I>
+);
+export const IconRestore = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1" /><path d="M3 4v5h5" /></I>
+);
+export const IconDownload = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><path d="M12 3.5v11" /><path d="M8 11l4 4 4-4" /><path d="M4 17.5v1.5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1.5" /></I>
+);
+export const IconCommand = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><path d="M7.5 4.5a2.5 2.5 0 1 0 2.5 2.5v10a2.5 2.5 0 1 0 2.5-2.5H7a2.5 2.5 0 1 0 2.5 2.5" /><path d="M14.5 9.5h2A2.5 2.5 0 1 0 14 7v10a2.5 2.5 0 1 0 2.5-2.5h-2" /></I>
+);
+export const IconFilter = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><path d="M3.5 5.5h17l-6.6 7.7V20l-3.8-2.2v-4.6z" /></I>
+);

@@ -49,7 +49,7 @@ export async function adminRoutes(app: FastifyInstance) {
       app.prisma.user.count(),
       app.prisma.user.count({ where: { role: "ADMIN" } }),
       app.prisma.user.count({ where: { passwordHash: null } }),
-      app.prisma.course.count(),
+      app.prisma.course.count({ where: { deletedAt: null } }), // cursos na lixeira não contam (RF-28)
       app.prisma.enrollment.count(),
       app.prisma.subjectStatus.count(),
       app.prisma.extraComponent.count(),

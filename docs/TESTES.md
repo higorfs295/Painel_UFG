@@ -8,7 +8,7 @@ geral é testar **comportamento** (o que o usuário/consumidor da API observa), 
 | Camada | Onde | O que cobre | Custo | Precisa de |
 | --- | --- | --- | --- | --- |
 | **Unitários** (43) | `backend/test/unit/` | domínio puro: grafo, somas, parser SIGAA, período, histórico/MGA, conquistas, crypto, cache | ~ms | nada |
-| **Integração** (42) | `backend/test/integration/` | rotas HTTP reais (zod→posse→serviço→domínio→Prisma), auth, concorrência, gestão acadêmica, **cifra de campo** | ~s | Postgres |
+| **Integração** (58) | `backend/test/integration/` | rotas HTTP reais (zod→posse→serviço→domínio→Prisma), auth, concorrência, gestão acadêmica, **cifra de campo**, **lixeira de cursos** e **cronograma inteligente** | ~s | Postgres |
 | **E2E** (6) | `frontend/e2e/` | fluxos completos no navegador (login, simulação, extras, grade por teclado, admin) | ~30s | stack inteira |
 
 Filosofia: a lógica acadêmica (a parte com mais nuance) fica em funções puras testadas em
@@ -88,12 +88,14 @@ Isolamento: cada teste cria SEUS usuários/cursos com identificadores únicos (`
 
 ### 3.3 E2E — Playwright, o usuário de verdade
 
-4 specs em `frontend/e2e/`, rodando em série contra a conta do seed:
+5 specs (6 testes) em `frontend/e2e/`, rodando em série contra a conta do seed:
 
 - `auth.spec` — erro uniforme de login; login válido carregando dados reais.
 - `subjects.spec` — simular reflete na projeção; limpar restaura.
 - `schedule.spec` — cria cenário (dialog nativo), **navega por teclado** (setas → foco), pinta
   com Enter (espera o `aria-label` refletir o round-trip!), limpa e exclui.
+- `extras.spec` — cria extra "em andamento", reclassifica a categoria e remove.
+- `admin.spec` — o admin entra na visão do sistema e agenda uma virada de período.
 
 Convenções: seletores por **papel/rótulo acessível** (`getByRole`, `getByLabel`) — se o teste não
 acha, um leitor de tela também não; asserções que aguardam o servidor usam o auto-retry do

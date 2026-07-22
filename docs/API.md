@@ -159,7 +159,7 @@ Configurações da instância (somente leitura — vêm do ambiente) e teste de 
 ## Cursos — `/courses`
 
 ### GET /courses `autenticado`
-`[ { "id","slug","name","totalHours" } ]`
+`[ { "id","slug","name","totalHours" } ]` — **não** inclui cursos na lixeira (RF-28).
 
 ### GET /courses/:slug `autenticado`
 Curso completo com `requirements`, `milestones` e `subjects` (cada um com `requires`).
@@ -184,6 +184,32 @@ curl -X POST http://localhost:3333/courses/import -H "Authorization: Bearer $TOK
   ] }
 ```
 Em `pre`/`co`: número = `seq` de outra disciplina; string = `milestoneKey` (requisito por horas).
+
+### Lixeira de cursos (RF-28) `ADMIN`
+
+Apagar um curso remove, em cascata, as matrículas e todo o progresso de quem cursa. Por isso a
+exclusão tem **duas etapas** e **dupla confirmação**: em ambas o cliente reenvia o `slug` exato no
+corpo (`confirm`), e o servidor recusa qualquer outro valor com `400` — a validação não é só da UI.
+
+| Rota | O que faz |
+| --- | --- |
+| `GET /courses/:slug/impact` | prévia: quantas matrículas, disciplinas e registros de progresso o expurgo levaria |
+| `DELETE /courses/:slug` | **etapa 1** — move para a lixeira (`deletedAt`); reversível |
+| `GET /courses/trash` | `{ retentionDays, items: [{ id, slug, name, deletedAt, purgeAt, daysLeft, expired }] }` |
+| `POST /courses/trash/:id/restore` | devolve ao catálogo |
+| `DELETE /courses/trash/:id` | **etapa 2** — expurgo definitivo (só para curso já na lixeira) |
+
+```bash
+# etapa 1 — para a lixeira (reversível por 7 dias)
+curl -X DELETE http://localhost:3333/courses/engcomp-ufg-2021 \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"confirm":"engcomp-ufg-2021"}'
+```
+`200 { "slug","name","deletedAt","retentionDays":7,"impact":{...} }`.
+
+Enquanto está na lixeira o curso **some do catálogo e não aceita matrículas novas**, mas nenhum
+dado é apagado. Passados `RETENTION_DAYS` (7), o job diário do `server.ts` faz o expurgo
+definitivo. Todas as transições ficam na auditoria (`course.trash`, `course.restore`, `course.purge`).
 
 ---
 
@@ -287,6 +313,28 @@ curl -X POST http://localhost:3333/me/scenarios/$SID/disciplines \
 ```
 `201 { ...disciplina, "slots":["2-M1","2-M2","4-M1","4-M2"] }` · `400 { "error":"código SIGAA inválido","tokens":["9M1"] }`.
 Formato SIGAA: `24M12` = dias 2 e 4 (seg/qua), turno M (matutino), aulas 1 e 2.
+
+### GET /me/scenarios/:sid/candidates (RF-29)
+Disciplinas do aluno marcadas como **CURSANDO** ou **SIMULADA**, com sigla, carga horária e cor
+já sugeridas pelo servidor a partir da matriz. As que já estão no cenário vêm marcadas em vez de
+escondidas.
+```json
+{ "items": [ { "subjectId":"...","code":"IME0080","name":"Cálculo 2A","hours":96,
+               "state":"ENROLLED","term":null,"sigla":"C2A","color":"#6FB3E8",
+               "alreadyInScenario":false } ] }
+```
+
+### POST /me/scenarios/:sid/disciplines/bulk (RF-29)
+Monta a grade a partir dessas disciplinas: do cliente vem apenas o `subjectId` e o **código de
+horário**. Nome, sigla, CH e cor saem da matriz.
+```bash
+curl -X POST http://localhost:3333/me/scenarios/$SID/disciplines/bulk \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"items":[{"subjectId":"ckx…","sigaaCode":"24M12"},{"subjectId":"cky…"}]}'
+```
+`201 { "added":2, "skipped":[], "disciplines":[…] }`. Um `subjectId` que não pertença à matrícula
+do aluno (ou não esteja como cursando/simulada) é recusado com `400` — o id vem do cliente e não
+pode virar atalho para inserir qualquer coisa. Código inválido devolve `400` **sem gravar nada**.
 
 ### DELETE /me/scenarios/:sid/disciplines/:did
 Remove. `204`.

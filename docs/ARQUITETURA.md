@@ -299,7 +299,8 @@ flowchart TD
   main["main.tsx<br/>QueryClient + Router"] --> App
   App["App.tsx<br/>boot (refresh) + guardas + lazy routes"] --> Layout["AppLayout<br/>enrollments + &lt;main&gt;"]
   App --> Auth["LoginPage · InvitePage"]
-  Layout --> Pages["Overview · Subjects · Extras · Schedule · Settings · Admin"]
+  Layout --> Nav["TopNav (trilho superior)<br/>+ CommandPalette (Ctrl/⌘+K)"]
+  Layout --> Pages["Overview · Subjects · Extras · Schedule · History · Tasks · Settings · Admin"]
   Pages --> Q["api/endpoints (TanStack Query)"]
   Pages --> UI["components/ui · layout"]
   Q --> Client["api/client<br/>JWT em memória + refresh em 401"]
@@ -311,6 +312,8 @@ flowchart TD
 - **Estado de UI**: Zustand (`auth` = usuário/status; `app` = enrollment selecionado).
 - **Code-splitting**: cada página autenticada é um chunk (`React.lazy`).
 - **Tema**: `html[data-theme]` alternado e persistido por usuário (RF-15).
+- **Navegação (v7)**: trilho superior (`TopNav`) em vez da barra lateral; conteúdo em tela cheia.
+  A paleta de comandos é montada uma vez no layout e escuta `Ctrl/⌘+K` globalmente.
 
 ## 9. Decisões de projeto (resumo)
 
@@ -322,6 +325,8 @@ flowchart TD
 | Cache do grafo por curso | Matriz é imutável entre importações; evita recarregar ~10² linhas por request. |
 | Cookie `httpOnly` + JWT em memória | Access token não fica em `localStorage` (mitiga XSS); refresh não é acessível por JS. |
 | Backup portável por `seq` | Sobrevive a re-seed/reimportação da matriz (ids mudam, `seq` não). |
+| Exclusão de curso em duas etapas (RF-28) | O `DELETE` cascateia sobre o progresso de todos os alunos; a lixeira dá 7 dias de arrependimento e a confirmação do slug é validada **no servidor**, não só na UI. |
+| Sugestões da grade calculadas no servidor (RF-29) | Sigla, CH e cor saem da matriz — o cliente não inventa dados; e o `subjectId` recebido é revalidado contra a matrícula. |
 
 ## 10. Deploy (Compose + Caddy)
 

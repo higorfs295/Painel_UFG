@@ -6,6 +6,7 @@ import { planner } from "../api/endpoints";
 import { useApp } from "../store/app";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
+import ExportButton from "../components/ui/ExportButton";
 import type { StudyTask, TaskKind } from "../api/types";
 
 const KINDS: { v: TaskKind; label: string; chip: string }[] = [
@@ -39,6 +40,8 @@ export default function TasksPage() {
   const enrollmentId = useApp((s) => s.enrollmentId)!;
   const qc = useQueryClient();
   const [form, setForm] = useState({ title: "", kind: "PROVA" as TaskKind, dueAt: "", subjectCode: "" });
+  const [only, setOnly] = useState<Bucket | "todas">("todas");   // filtro rápido por urgência
+  const [kindFilter, setKindFilter] = useState<TaskKind | "all">("all");
 
   const { data: list, isLoading } = useQuery({
     queryKey: ["tasks", enrollmentId], queryFn: () => planner.tasks(enrollmentId), enabled: !!enrollmentId,
@@ -58,14 +61,22 @@ export default function TasksPage() {
   });
   const remove = useMutation({ mutationFn: (id: string) => planner.removeTask(id), onSuccess: invalidate });
 
+  // filtros aplicados antes do agrupamento — o que sai na tela é o que sai no CSV
+  const visible = useMemo(
+    () => (list ?? []).filter((t) =>
+      (kindFilter === "all" || t.kind === kindFilter) &&
+      (only === "todas" || bucketOf(t) === only)),
+    [list, kindFilter, only]);
+
   const grouped = useMemo(() => {
     const map: Record<Bucket, StudyTask[]> = { atrasadas: [], semana: [], depois: [], feitas: [] };
-    for (const t of list ?? []) map[bucketOf(t)].push(t);
+    for (const t of visible) map[bucketOf(t)].push(t);
     return map;
-  }, [list]);
+  }, [visible]);
 
   const pending = (list ?? []).filter((t) => !t.done).length;
-  const late = grouped.atrasadas.length;
+  // a contagem de atrasadas ignora os filtros: é um alerta, não um resultado de busca
+  const late = (list ?? []).filter((t) => bucketOf(t) === "atrasadas").length;
 
   return (
     <div className="stack">
@@ -78,6 +89,37 @@ export default function TasksPage() {
           ? <>Você tem <b>{pending}</b> pendência(s){late > 0 && <> — <b className="err">{late} atrasada(s)</b></>}.</>
           : "Nada pendente por aqui."}
       </p>
+
+      <Card tight>
+        <div className="row wrap spread">
+          <div className="seg" role="tablist" aria-label="Filtrar por urgência">
+            {([["todas", "Todas"], ...BUCKETS.map((b) => [b.key, b.label] as const)] as const).map(([v, label]) => (
+              <button key={v} type="button" role="tab" aria-selected={only === v}
+                className={"seg-btn" + (only === v ? " on" : "")}
+                onClick={() => setOnly(v as Bucket | "todas")}>
+                {label}{v === "atrasadas" && late > 0 ? ` (${late})` : ""}
+              </button>
+            ))}
+          </div>
+          <div className="row wrap" style={{ gap: 8 }}>
+            <label className="field" style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <span>Tipo</span>
+              <select value={kindFilter} onChange={(e) => setKindFilter(e.target.value as TaskKind | "all")}
+                aria-label="Filtrar por tipo">
+                <option value="all">todos</option>
+                {KINDS.map((k) => <option key={k.v} value={k.v}>{k.label}</option>)}
+              </select>
+            </label>
+            <ExportButton name="agenda" rows={visible} columns={[
+              { header: "Título", value: (t) => t.title },
+              { header: "Tipo", value: (t) => kindMeta(t.kind).label },
+              { header: "Prazo", value: (t) => (t.dueAt ? fmtDate.format(new Date(t.dueAt)) : "") },
+              { header: "Disciplina", value: (t) => t.subjectCode ?? "" },
+              { header: "Situação", value: (t) => (t.done ? "Concluída" : bucketOf(t) === "atrasadas" ? "Atrasada" : "Pendente") },
+            ]} />
+          </div>
+        </div>
+      </Card>
 
       <Card>
         <h3>Adicionar</h3>
@@ -104,6 +146,8 @@ export default function TasksPage() {
       {isLoading ? <div className="spinner" role="status">Carregando agenda…</div> :
         (list ?? []).length === 0 ? (
           <div className="muted-box">Nada na agenda ainda — adicione sua próxima prova ou entrega.</div>
+        ) : visible.length === 0 ? (
+          <div className="muted-box">Nenhum item com esse filtro.</div>
         ) : BUCKETS.map(({ key, label, hint }) => grouped[key].length > 0 && (
           <Card key={key} tight>
             <h3 style={{ padding: "6px 8px 0" }}>
