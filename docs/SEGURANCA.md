@@ -155,6 +155,21 @@ de volta: o número de matrícula.
 - **A chave nunca vaza pela API**: `/admin/config` expõe apenas o booleano
   `security.fieldEncryption`.
 
+### 7.1.1 A forma pública do usuário retira, não apenas seleciona
+
+`toPublicUser` **remove** os campos privados (hoje, `passwordHash`) antes de devolver o objeto,
+em vez de confiar que o chamador tenha pedido as colunas certas.
+
+A distinção não é teórica: `publicUserSelect` existia desde o início, mas o login e o cadastro
+buscavam o usuário com `findUnique` **sem `select`** — recebiam a linha inteira — e o mapper só
+trocava a matrícula. O resultado é que `POST /auth/login` e `POST /auth/register` devolviam o
+hash argon2 da senha dentro do JSON de resposta.
+
+A lição que ficou no código: uma convenção ("lembre de usar o select certo") vale menos que uma
+garantia ("o mapper retira"). O teste `nenhuma borda expõe o hash da senha`
+(`test/integration/seguranca.test.ts`) cobre cadastro, login, `/me` e a listagem do admin de uma
+vez, para que a regressão não volte por uma borda nova.
+
 > ⚠️ **Perder a chave torna as matrículas já cifradas irrecuperáveis.** Guarde-a no cofre de
 > segredos do provedor, junto do `JWT_SECRET`, e faça backup dela separado do backup do banco.
 

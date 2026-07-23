@@ -122,6 +122,10 @@ export function Sidebar({ onLogout }: { onLogout: () => void }) {
                     className={cn(
                       "group relative flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm font-medium",
                       "transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white/60",
+                      // indicador lateral: o fundo sozinho é sutil demais sobre o gradiente
+                      "before:absolute before:top-1/2 before:left-0 before:h-5 before:w-0.5 before:-translate-y-1/2",
+                      "before:rounded-r before:bg-white before:transition-transform",
+                      active ? "before:scale-y-100" : "before:scale-y-0",
                       shrunk && "lg:justify-center lg:px-1.5",
                       active
                         ? "bg-white/15 text-sidebar-foreground shadow-sm"

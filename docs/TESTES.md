@@ -8,7 +8,7 @@ geral é testar **comportamento** (o que o usuário/consumidor da API observa), 
 | Camada | Onde | O que cobre | Custo | Precisa de |
 | --- | --- | --- | --- | --- |
 | **Unitários** (43) | `backend/test/unit/` | domínio puro: grafo, somas, parser SIGAA, período, histórico/MGA, conquistas, crypto, cache | ~ms | nada |
-| **Integração** (58) | `backend/test/integration/` | rotas HTTP reais (zod→posse→serviço→domínio→Prisma), auth, concorrência, gestão acadêmica, **cifra de campo**, **lixeira de cursos** e **cronograma inteligente** | ~s | Postgres |
+| **Integração** (59) | `backend/test/integration/` | rotas HTTP reais (zod→posse→serviço→domínio→Prisma), auth, concorrência, gestão acadêmica, **cifra de campo**, **lixeira de cursos** e **cronograma inteligente** | ~s | Postgres |
 | **E2E** (6) | `web/e2e/` | fluxos completos no navegador (login, simulação, extras, grade por teclado, admin) | ~30s | stack inteira |
 
 Filosofia: a lógica acadêmica (a parte com mais nuance) fica em funções puras testadas em
@@ -88,7 +88,7 @@ Isolamento: cada teste cria SEUS usuários/cursos com identificadores únicos (`
 
 ### 3.3 E2E — Playwright, o usuário de verdade
 
-11 testes em `web/e2e/`, rodando em série contra a conta do seed:
+13 testes em `web/e2e/`, rodando em série contra a conta do seed:
 
 - `smoke.spec` — a **página pública**; o aluno percorrendo as 9 telas do painel e o admin as
   7 de gestão, cada passagem exigindo o título certo, **zero erro de console** e nenhum
@@ -101,6 +101,9 @@ Isolamento: cada teste cria SEUS usuários/cursos com identificadores únicos (`
 Convenções: seletores por **papel/rótulo acessível** (`getByRole`, `getByLabel`) — se o teste
 não acha, um leitor de tela também não; asserções que aguardam o servidor usam o auto-retry
 do `expect` com timeout explícito; os testes **se auto-limpam**.
+
+- `visual.spec` — acabamento que quebra em silêncio: o **contraste** do texto secundário
+  medido nos dois temas (exige AA, 4.5:1) e o **indicador do item ativo** da barra lateral.
 
 > **Navegue pela interface, não por `page.goto` em cada rota.** Cada carga completa refaz o
 > bootstrap da sessão, e refreshes sobrepostos disparam a detecção de reuso do token — que

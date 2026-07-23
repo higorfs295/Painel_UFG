@@ -95,14 +95,15 @@ export default function AdminHomePage() {
       <Section title="Atalhos">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ATALHOS.map(({ href, icon: Icon, title, text }) => (
-            <Link key={href} href={href}
-              className="bg-card hover:border-ring/50 group flex flex-col gap-1.5 rounded-xl border p-5 shadow-sm transition-[border-color,box-shadow] hover:shadow-md">
-              <span className="text-primary"><Icon /></span>
-              <strong className="font-display text-foreground text-lg font-semibold tracking-tight">{title}</strong>
-              <span className="text-muted-foreground text-sm">{text}</span>
-              <span className="text-primary mt-2 text-xs font-semibold tracking-[0.12em] uppercase transition-transform group-hover:translate-x-1">
-                abrir →
-              </span>
+            <Link key={href} href={href} className="group">
+              <Card interactive className="flex h-full flex-col gap-1.5 p-5 sm:p-5">
+                <span className="text-primary"><Icon /></span>
+                <strong className="font-display text-foreground text-lg font-semibold tracking-tight">{title}</strong>
+                <span className="text-muted-foreground text-sm">{text}</span>
+                <span className="text-primary mt-2 text-xs font-semibold tracking-[0.12em] uppercase transition-transform group-hover:translate-x-1">
+                  abrir →
+                </span>
+              </Card>
             </Link>
           ))}
         </div>

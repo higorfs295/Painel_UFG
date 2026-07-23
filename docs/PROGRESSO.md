@@ -273,6 +273,26 @@ o mesmo MITM pode afetar o `npm ci` — em rede sem interceptação os Dockerfil
   que acionam a detecção de reuso de token.
 - Testes: **43 unitários + 58 de integração + 11 E2E**.
 
+## Correções e faxina pós-migração — feito
+- **Vazamento do `passwordHash` corrigido.** `POST /auth/login` e `POST /auth/register` devolviam
+  o hash argon2 no JSON: buscavam o usuário com `findUnique` sem `select`, e `toPublicUser` só
+  trocava a matrícula. O mapper agora **retira** os campos privados, e o teste
+  `nenhuma borda expõe o hash da senha` cobre cadastro, login, `/me` e a listagem do admin.
+- **Cliente Prisma defasado** derrubava `GET /courses` com 500 (`Unknown argument 'deletedAt'`):
+  o cliente vive em `node_modules` e não acompanha um `git pull`. `npm run dev` passou a rodar
+  `prisma generate` antes de subir. (Não foi colocado em `test:integration`: lá o gancho colidiria
+  com o servidor de desenvolvimento, que segura o `query_engine.dll` no Windows.)
+- **Faxina no repositório**: saiu o diretório `${APPDATA}/npm` (6 arquivos versionados por engano,
+  de uma variável de shell não expandida), o `tsconfig.json` da raiz (template do `tsc --init`,
+  sem uso) e o `package-lock.json` da raiz — que fazia o Next escolher a raiz errada do projeto.
+  O `package.json` da raiz virou um conjunto de atalhos (`setup`, `dev:api`, `dev:web`, `test`).
+  Órfãos do frontend removidos: `TableWrap`, `IconFilter`, `themeOf`.
+- **Acabamento visual**: o texto secundário não passava em AA (3.3–3.9:1) — os dois temas foram
+  recalibrados para ≥4.5:1; cartões pararam de erguer sombra no hover (retorno tátil em coisa que
+  não é clicável); o item ativo da barra lateral ganhou indicador lateral; e "Esqueci minha senha"
+  virou link, em vez de um botão do mesmo peso do "Entrar".
+- Testes: **43 unitários + 59 de integração + 13 E2E**.
+
 ## Pendências / próximos passos sugeridos
 - **Frontend será substituído** — o backend e o contrato (`/docs`) estão prontos para servir a
   nova interface sem alteração.

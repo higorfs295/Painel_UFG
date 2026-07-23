@@ -68,10 +68,15 @@ export default function EntrarPage() {
             onChange={(e) => setPassword(e.target.value)} className={inputCls} placeholder="••••••••" />
         </Field>
 
+        {/* ação secundária como link: um botão do mesmo tamanho competia com o "Entrar" */}
+        <button type="button" onClick={forgot}
+          className="text-muted-foreground hover:text-primary -mt-2 cursor-pointer self-end text-xs underline-offset-4 hover:underline">
+          Esqueci minha senha
+        </button>
+
         {err && <p className="text-lock text-sm" role="alert">{err}</p>}
 
         <Button type="submit" variant="primary" disabled={busy}>{busy ? "Entrando…" : "Entrar"}</Button>
-        <Button variant="ghost" size="sm" onClick={forgot}>Esqueci minha senha</Button>
       </form>
 
       <p className="text-muted-foreground mt-8 text-sm">

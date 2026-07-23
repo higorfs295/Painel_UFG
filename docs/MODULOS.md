@@ -27,6 +27,7 @@ test/{unit,integration}/  # Vitest
 | --- | --- | --- |
 | `env.ts` | Carrega e valida env com zod; falha cedo | `env`, `isProd`; campos: `DATABASE_URL`, `JWT_SECRET`(≥32), `REFRESH_EXPIRES_DAYS`, `INVITE_EXPIRES_HOURS`, `APP_URL`, `CORS_ORIGIN`, `RATE_LIMIT_*`, `REDIS_URL?` |
 | `app.ts` | Monta a aplicação | `buildApp()`: registra `securityPlugin`→`prismaPlugin`→`authPlugin`, `setErrorHandler` central (Zod/Ownership/Sigaa/Prisma), `/health`, e as rotas por prefixo |
+| `package.json` | Scripts | `predev` roda `prisma generate` antes do `dev`: o cliente vive em `node_modules` e não acompanha um `git pull`, e um cliente defasado quebra as rotas do campo novo com 500 |
 | `server.ts` | Processo | `listen(PORT)`, handlers `SIGINT/SIGTERM`→`app.close()`, `setInterval` diário (`unref`) com `pruneRefreshTokens` + `purgeExpiredCourses` (lixeira, RF-28) |
 
 ## Plugins (`src/plugins/`)
@@ -53,7 +54,7 @@ test/{unit,integration}/  # Vitest
 | `strip.ts` | `stripUndefined()` | remove chaves `undefined` de patches parciais do zod antes do Prisma (`exactOptionalPropertyTypes`) |
 | `cache.ts` | `TtlCache` | cache TTL genérico **por processo** com teto de entradas, despejo do mais antigo e `stats` (hits/misses/evictions); `wrap()` nunca memoriza `null` |
 | `fieldCrypto.ts` | `encryptField()`, `decryptField()`, `fieldCryptoEnabled` | **camada extra de criptografia**: AES-256-GCM para PII em repouso (matrícula), formato versionado `v1:iv:tag:dados`; sem `FIELD_ENCRYPTION_KEY` opera transparente; valor adulterado → `null` |
-| `userView.ts` | `publicUserSelect`, `toPublicUser()` | forma pública canônica do usuário (nunca `passwordHash`) e decifra a matrícula — um único lugar em vez de três |
+| `userView.ts` | `publicUserSelect`, `toPublicUser()` | forma pública canônica do usuário e decifra a matrícula. O mapper **retira** os campos privados (`passwordHash`) em vez de confiar no select do chamador — foi assim que o hash vazava por `/auth/login` e `/auth/register`, que buscavam a linha inteira |
 | `errors.ts` | `AppError`, `notFound()`, `badRequest()` | erro de negócio com status HTTP: o serviço sinaliza sem depender de `reply` |
 | `schemas.ts` | `idParam`, `paramOf()`, `termString`, `limitQuery()` | primitivos zod compartilhados entre módulos |
 | `audit.ts` | `audit()` | RF-27: trilha de auditoria **best-effort** (nunca lança, nunca derruba o fluxo) |

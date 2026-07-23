@@ -44,6 +44,18 @@ Segurança: sessão com refresh rotativo (detecção de reuso), autorização po
 - `web/` — Next.js (App Router) + TypeScript + Tailwind CSS v4
 - `docker-compose.yml` — Postgres local (e, futuramente, API + web)
 
+## Atalhos da raiz
+
+O `package.json` da raiz **não** é um workspace — cada app tem o seu lockfile. São só atalhos:
+
+```bash
+npm run setup      # instala backend/ e web/
+npm run dev:api    # API em :3333
+npm run dev:web    # frontend em :5173
+npm test           # unitários + integração do backend
+npm run e2e        # Playwright (precisa dos dois no ar)
+```
+
 ## Pré-requisitos
 
 - **Node.js 20+ LTS** (recomendado 22). Instale: `winget install OpenJS.NodeJS.LTS`
@@ -79,6 +91,13 @@ npm run dev                # http://localhost:3333  (GET /health -> {"ok":true})
 #    documentação OpenAPI: http://localhost:3333/docs (desliga sozinha em produção)
 ```
 
+> **Se a API subir mas as rotas de curso derem 500** com `Unknown argument 'deletedAt'` (ou outro
+> campo recém-adicionado), o **Prisma Client está desatualizado** em relação ao schema — ele é
+> gerado dentro de `node_modules` e não acompanha um `git pull`. O `npm run dev` já roda
+> `prisma generate` antes de subir; se a mensagem for `EPERM ... query_engine-windows.dll.node`,
+> é porque **outra instância da API está rodando** e segurando o arquivo: pare a outra e suba de novo.
+
+
 > **Opcional, recomendado:** cifre o nº de matrícula (PII) em repouso — gere a chave e cole no
 > `.env` como `FIELD_ENCRYPTION_KEY`. Sem ela o sistema funciona igual, só que em claro.
 > ```bash
@@ -91,11 +110,11 @@ npm run dev                # http://localhost:3333  (GET /health -> {"ok":true})
 ```bash
 cd backend
 npm test                   # 43 unitários: domínio puro, cache e cripto (não precisam de banco)
-npm run test:integration   # 58 de integração: rotas via app.inject (precisa do Postgres migrado)
+npm run test:integration   # 59 de integração: rotas via app.inject (precisa do Postgres migrado)
 npm run typecheck          # checagem de tipos (tsc --noEmit)
 ```
 
-Em `web/`, `npx playwright test` roda os 11 E2E — precisa da API e do app no ar.
+Em `web/`, `npx playwright test` roda os 13 E2E — precisa da API e do app no ar.
 Detalhes em [`docs/TESTES.md`](docs/TESTES.md).
 
 ## Frontend (Next.js + Tailwind CSS v4)

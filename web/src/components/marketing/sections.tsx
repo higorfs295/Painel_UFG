@@ -127,7 +127,7 @@ export function Features() {
               <motion.article key={f.title}
                 initial="hidden" whileInView="visible" viewport={viewport} variants={fadeUp}
                 transition={{ duration: 0.5, delay: i * 0.06 }}
-                className="bg-card rounded-xl border p-6 shadow-sm transition-shadow hover:shadow-md">
+                className="bg-card rounded-xl border p-6 shadow-sm">
                 <span className="bg-primary/10 text-primary grid size-10 place-items-center rounded-lg">
                   <Icon />
                 </span>

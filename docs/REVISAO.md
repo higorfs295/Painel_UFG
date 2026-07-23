@@ -1,5 +1,10 @@
 # Revisão técnica detalhada — Painel Acadêmico
 
+> **Instantâneo histórico.** Esta auditoria foi feita quando o frontend era um SPA em Vite
+> (`frontend/`), hoje substituído pelo app Next.js em `web/` — as referências a `frontend/src/…`
+> apontam para o código daquela época. Os achados de **backend** continuam válidos e as correções
+> marcadas ✅ seguem no código. Para o estado atual do frontend, ver [`DESIGN.md`](DESIGN.md).
+
 Auditoria do projeto sob cinco lentes: **escalabilidade, concorrência, persistência, desempenho e
 modernidade** (+ segurança, transversal). Cada achado traz `arquivo:linha`, impacto e recomendação.
 Os itens marcados **✅ Corrigido** foram aplicados nesta revisão (com teste quando cabível); os

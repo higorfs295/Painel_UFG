@@ -11,13 +11,24 @@ export const publicUserSelect = {
 } as const;
 
 /**
- * Converte a linha do banco na forma pública, decifrando a matrícula.
- * Genérico de propósito: preserva exatamente as colunas que o chamador selecionou
- * (com ou sem `createdAt`, com `enrollments` embutidas etc.), trocando só `matricula`.
+ * Campos que NUNCA saem da API, mesmo que o chamador tenha carregado a linha inteira.
+ *
+ * Isto não é redundância com `publicUserSelect`: quem busca com `findUnique` sem `select`
+ * (o login e o cadastro faziam isso) recebe a linha completa, e um mapper que só troca a
+ * matrícula deixaria o hash da senha passar direto para o cliente. Retirar aqui transforma
+ * a convenção em garantia.
+ */
+const CAMPOS_PRIVADOS = ["passwordHash"] as const;
+
+/**
+ * Converte a linha do banco na forma pública: remove os campos privados e decifra a
+ * matrícula. Genérico de propósito — preserva exatamente as demais colunas que o chamador
+ * selecionou (com ou sem `createdAt`, com `enrollments` embutidas etc.).
  */
 export function toPublicUser<T extends { matricula: string | null }>(
   user: T,
-): Omit<T, "matricula"> & { matricula: string | null } {
+): Omit<T, "matricula" | (typeof CAMPOS_PRIVADOS)[number]> & { matricula: string | null } {
   const { matricula, ...rest } = user;
-  return { ...rest, matricula: decryptField(matricula) };
+  for (const campo of CAMPOS_PRIVADOS) delete (rest as Record<string, unknown>)[campo];
+  return { ...(rest as Omit<T, "matricula" | (typeof CAMPOS_PRIVADOS)[number]>), matricula: decryptField(matricula) };
 }

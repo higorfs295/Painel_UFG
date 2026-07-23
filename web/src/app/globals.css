@@ -23,7 +23,7 @@
   --popover: #ffffff;
   --muted: #f1e9da;
   --muted-foreground: #6b5946;
-  --subtle-foreground: #9a836c;
+  --subtle-foreground: #82694f; /* AA sobre cartão (5.14:1) e sobre o fundo (4.77:1) */
   --border: #e4d9c6;
   --input: #d6c8b1;
 
@@ -53,7 +53,7 @@
   --popover: #241d15;
   --muted: #241d15;
   --muted-foreground: #b9a088;
-  --subtle-foreground: #8a7059;
+  --subtle-foreground: #9b8067; /* AA sobre cartão (4.81:1) e sobre o fundo (5.12:1) */
   --border: #322619;
   --input: #3d2e20;
 

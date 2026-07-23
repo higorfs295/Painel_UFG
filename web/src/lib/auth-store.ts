@@ -6,7 +6,7 @@
 // "loading" (tentando renovar a sessão pelo cookie), "in" e "out". Sem isso, um F5
 // numa rota protegida piscaria a tela de login antes de o refresh terminar.
 import { create } from "zustand";
-import type { Theme, User } from "./api/types";
+import type { User } from "./api/types";
 
 type AuthState = {
   user: User | null;
@@ -34,6 +34,3 @@ export const useApp = create<AppState>((set) => ({
   enrollmentId: null,
   setEnrollment: (enrollmentId) => set({ enrollmentId }),
 }));
-
-/** O tema do usuário vem da API; o next-themes é quem escreve a classe no <html>. */
-export const themeOf = (u: User | null): Theme => u?.theme ?? "dark";

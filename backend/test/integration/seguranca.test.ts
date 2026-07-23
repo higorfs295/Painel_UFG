@@ -3,7 +3,7 @@
 // não depende do ambiente: quando a chave está ativa, exige o prefixo "v1:" no banco.
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import type { FastifyInstance } from "fastify";
-import { makeApp, createUser, login, authHeader } from "./helpers.js";
+import { makeApp, createUser, login, authHeader, uniqueEmail } from "./helpers.js";
 import { fieldCryptoEnabled } from "../../src/lib/fieldCrypto.js";
 
 let app: FastifyInstance;
@@ -76,5 +76,37 @@ describe("configuração exposta ao admin", () => {
     const body = res.json();
     expect(body.security.fieldEncryption).toBe(fieldCryptoEnabled);
     expect(JSON.stringify(body)).not.toContain(process.env.FIELD_ENCRYPTION_KEY ?? "###sem-chave###");
+  });
+});
+
+// Regressão de um vazamento real: o login e o cadastro buscavam a linha do usuário sem
+// `select`, e o mapper público só trocava a matrícula — o hash argon2 da senha ia junto na
+// resposta. A guarda cobre TODAS as bordas que devolvem usuário, não só a que quebrou.
+describe("nenhuma borda expõe o hash da senha", () => {
+  const semHash = (body: unknown, onde: string) =>
+    expect(JSON.stringify(body), `${onde} vazou passwordHash`).not.toContain("passwordHash");
+
+  it("cadastro, login, /me e a listagem do admin devolvem só a forma pública", async () => {
+    const email = uniqueEmail("hash");
+    const senha = "senha-super-forte";
+
+    const registro = await app.inject({
+      method: "POST", url: "/auth/register", payload: { name: "Sem Hash", email, password: senha },
+    });
+    // o cadastro público pode estar desligado na instância; nesse caso criamos direto
+    if (registro.statusCode === 201) semHash(registro.json(), "POST /auth/register");
+    else await createUser(app, { email, password: senha });
+
+    const entrada = await app.inject({ method: "POST", url: "/auth/login", payload: { email, password: senha } });
+    expect(entrada.statusCode).toBe(200);
+    semHash(entrada.json(), "POST /auth/login");
+    expect(entrada.json().user.passwordHash).toBeUndefined();
+
+    const token = entrada.json().accessToken as string;
+    semHash((await app.inject({ method: "GET", url: "/me", headers: authHeader(token) })).json(), "GET /me");
+
+    const admin = await createUser(app, { role: "ADMIN", password: "senha-admin-123" });
+    const { accessToken } = await login(app, admin.email, "senha-admin-123");
+    semHash((await app.inject({ method: "GET", url: "/users", headers: authHeader(accessToken) })).json(), "GET /users");
   });
 });

@@ -101,6 +101,3 @@ export const IconCommand = (p: SVGProps<SVGSVGElement>) => (
 export const IconMoon = (p: SVGProps<SVGSVGElement>) => (
   <I {...p}><path d="M20.5 14.8A8.6 8.6 0 0 1 9.2 3.5a8.8 8.8 0 1 0 11.3 11.3Z" /></I>
 );
-export const IconFilter = (p: SVGProps<SVGSVGElement>) => (
-  <I {...p}><path d="M3.5 5.5h17l-6.6 7.7V20l-3.8-2.2v-4.6z" /></I>
-);

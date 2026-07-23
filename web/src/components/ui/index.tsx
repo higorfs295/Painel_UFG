@@ -6,11 +6,17 @@ import { cloneElement, isValidElement, useId, type HTMLAttributes, type ReactNod
 import { cn } from "@/lib/utils";
 import type { GraphStatus, SubjectState } from "@/lib/api/types";
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+/**
+ * Superfície base. **Sem hover por padrão**: erguer a sombra de um cartão que não é
+ * clicável promete uma interação que não existe. Quem é clicável (os atalhos do admin,
+ * por exemplo) pede `interactive`.
+ */
+export function Card({ className, interactive, ...props }: HTMLAttributes<HTMLDivElement> & { interactive?: boolean }) {
   return (
     <div
       className={cn(
-        "bg-card text-card-foreground rounded-xl border p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6",
+        "bg-card text-card-foreground rounded-xl border p-5 shadow-sm sm:p-6",
+        interactive && "hover:border-ring/50 cursor-pointer transition-[border-color,box-shadow] hover:shadow-md",
         className,
       )}
       {...props}
@@ -160,7 +166,3 @@ export const inputCls =
   "border-input bg-background text-foreground rounded-lg border px-3 py-2 text-sm font-normal normal-case tracking-normal " +
   "shadow-sm transition-[border-color,box-shadow] outline-none focus:border-ring focus:ring-2 focus:ring-ring/25 " +
   "placeholder:text-subtle-foreground";
-
-export function TableWrap({ children }: { children: ReactNode }) {
-  return <div className="overflow-x-auto">{children}</div>;
-}
