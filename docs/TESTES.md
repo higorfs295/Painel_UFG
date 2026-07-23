@@ -88,7 +88,7 @@ Isolamento: cada teste cria SEUS usuários/cursos com identificadores únicos (`
 
 ### 3.3 E2E — Playwright, o usuário de verdade
 
-5 specs (6 testes) em `frontend/e2e/`, rodando em série contra a conta do seed:
+6 specs (8 testes) em `frontend/e2e/`, rodando em série contra a conta do seed:
 
 - `auth.spec` — erro uniforme de login; login válido carregando dados reais.
 - `subjects.spec` — simular reflete na projeção; limpar restaura.
@@ -96,6 +96,9 @@ Isolamento: cada teste cria SEUS usuários/cursos com identificadores únicos (`
   com Enter (espera o `aria-label` refletir o round-trip!), limpa e exclui.
 - `extras.spec` — cria extra "em andamento", reclassifica a categoria e remove.
 - `admin.spec` — o admin entra na visão do sistema e agenda uma virada de período.
+- `layout.spec` — guardas do layout: a lateral sai da tela no mobile e o hambúrguer abre a gaveta;
+  a troca de tema alcança o **fundo da página**, não só os cartões. Ambos só falham num navegador
+  de verdade — foi um bug de tema real (`@theme` sem `inline`) que motivou o segundo.
 
 Convenções: seletores por **papel/rótulo acessível** (`getByRole`, `getByLabel`) — se o teste não
 acha, um leitor de tela também não; asserções que aguardam o servidor usam o auto-retry do

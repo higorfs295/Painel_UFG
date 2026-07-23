@@ -487,8 +487,9 @@ html[data-theme="light"] {
   }
 
   /* ---- tabelas ---- */
+  /* só rolagem: margem negativa "sangrando" para fora do cartão dava overflow no mobile */
   .tablewrap {
-    @apply -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0;
+    @apply overflow-x-auto;
   }
   table {
     @apply w-full border-collapse;
