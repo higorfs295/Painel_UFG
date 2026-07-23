@@ -41,11 +41,11 @@ Segurança: sessão com refresh rotativo (detecção de reuso), autorização po
 | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | Diagramas (componentes, autenticação, modelo de dados, progresso, deploy), camadas e decisões de projeto. |
 | [`docs/API.md`](docs/API.md) | Referência de endpoints com exemplos de `curl` e JSON. |
 | [`docs/MODULOS.md`](docs/MODULOS.md) | Referência arquivo a arquivo / função a função (backend e frontend). |
+| [`docs/PUBLICAR.md`](docs/PUBLICAR.md) | **Roteiro para colocar no ar**: limpeza do histórico, Neon + Render + Vercel, fumaça e SMTP — na ordem em que as dependências exigem. |
 | [`docs/DEPLOY.md`](docs/DEPLOY.md) | Do dev local ao ar por R$ 0 (Render + Vercel + Neon), Docker Compose, e-mail SMTP e solução de problemas. |
 | [`docs/SEGURANCA.md`](docs/SEGURANCA.md) | Modelo de ameaças, ciclo de vida dos tokens, decisões de autenticação/autorização e checklist de produção. |
 | [`docs/TESTES.md`](docs/TESTES.md) | A pirâmide de testes: como rodar, como escrever, o que cada camada cobre. |
-| [`docs/CONTRIBUINDO.md`](docs/CONTRIBUINDO.md) | **Guia do contribuidor**: mapa do código, convenções, fluxo de PR e um tour de uma feature ponta a ponta. |
-| [`docs/CONTRIBUINDO.md`](docs/CONTRIBUINDO.md) | Guia de contribuição: setup em 10 min, convenções, fluxo de PR, primeiras issues. |
+| [`docs/CONTRIBUINDO.md`](docs/CONTRIBUINDO.md) | **Guia do contribuidor**: setup em 10 min, mapa do código, convenções, fluxo de PR e um tour de uma feature ponta a ponta. |
 | [`docs/PROGRESSO.md`](docs/PROGRESSO.md) | Estado por fase e como rodar. |
 | [`docs/REVISAO.md`](docs/REVISAO.md) | Revisão técnica (escala/concorrência/persistência/desempenho) + backlog. |
 
@@ -53,7 +53,7 @@ Segurança: sessão com refresh rotativo (detecção de reuso), autorização po
 
 - `backend/` — API Node.js + TypeScript (Fastify) + Prisma + PostgreSQL
 - `web/` — Next.js (App Router) + TypeScript + Tailwind CSS v4
-- `docker-compose.yml` — Postgres local (e, futuramente, API + web)
+- `docker-compose.yml` — stack completa: Postgres + API + web + Caddy (TLS e proxy)
 
 ## Atalhos da raiz
 
