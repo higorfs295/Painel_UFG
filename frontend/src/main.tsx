@@ -4,8 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { APP_NAME } from "./branding";
-import "./styles/theme.css";
-import "./styles/app.css";
+import "./styles/index.css"; // Tailwind v4: tema, base e camada de componentes
 
 document.title = APP_NAME; // batismo central: ver src/branding.ts
 

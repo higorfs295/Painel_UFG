@@ -227,6 +227,26 @@ o mesmo MITM pode afetar o `npm ci` — em rede sem interceptação os Dockerfil
   estado agora guarda só a escolha explícita, com fallback calculado na renderização.
 - Estado dos testes: **43 unitários + 58 de integração + 6 E2E**.
 
+## Design v8 — Tailwind CSS v4 e a volta do trilho lateral — feito
+- **A v7 foi rejeitada**: o trilho superior com conteúdo em tela cheia ficou pior que a v6. A
+  estrutura voltou a ser a da v6 (sidebar em gradiente + app bar fina), mas reimplementada.
+- **Tailwind CSS v4** entrou via `@tailwindcss/vite` — sem `tailwind.config.js`, sem `postcss.config`:
+  o tema vive no próprio CSS. `theme.css` e `app.css` (≈1.000 linhas de CSS à mão) deram lugar a um
+  único `styles/index.css`.
+- **Tokens semânticos** no idioma shadcn/ui (`background/foreground/card/muted/border/primary/ring`),
+  com as cores do cerrado por trás. Duas camadas: variáveis cruas por tema + `@theme inline`.
+- **Gotcha que custou tempo**: sem o `inline` no `@theme`, o Tailwind resolve a cor no build e todo
+  utilitário com opacidade (`bg-muted/60`, `border-lock/40`) congela no valor do tema escuro — o
+  tema claro fica pela metade. Vale registrar porque o sintoma (só *algumas* cores não trocam) não
+  aponta para a causa.
+- **Outra armadilha, essa de diagnóstico**: o painel de navegação embutido devolvia estilo computado
+  em cache para `html`/`body`, sugerindo um bug de tema que não existia. Confirmado num navegador
+  real (Playwright) que o fundo troca corretamente nos dois temas.
+- As páginas não foram reescritas: as classes semânticas (`.card`, `.chip`, `.bento`…) continuam,
+  agora montadas com `@apply` em `@layer components` — o padrão que o próprio Tailwind recomenda
+  para repetição. Casca, modais e paleta usam utilitário direto no JSX.
+- CSS final: **74 KB** (~11 KB gzip) contra ~1.000 linhas de CSS manual antes.
+
 ## Pendências / próximos passos sugeridos
 - **Frontend será substituído** — o backend e o contrato (`/docs`) estão prontos para servir a
   nova interface sem alteração.

@@ -299,7 +299,7 @@ flowchart TD
   main["main.tsx<br/>QueryClient + Router"] --> App
   App["App.tsx<br/>boot (refresh) + guardas + lazy routes"] --> Layout["AppLayout<br/>enrollments + &lt;main&gt;"]
   App --> Auth["LoginPage · InvitePage"]
-  Layout --> Nav["TopNav (trilho superior)<br/>+ CommandPalette (Ctrl/⌘+K)"]
+  Layout --> Nav["Sidebar + Topbar<br/>+ CommandPalette (Ctrl/⌘+K)"]
   Layout --> Pages["Overview · Subjects · Extras · Schedule · History · Tasks · Settings · Admin"]
   Pages --> Q["api/endpoints (TanStack Query)"]
   Pages --> UI["components/ui · layout"]
@@ -312,8 +312,10 @@ flowchart TD
 - **Estado de UI**: Zustand (`auth` = usuário/status; `app` = enrollment selecionado).
 - **Code-splitting**: cada página autenticada é um chunk (`React.lazy`).
 - **Tema**: `html[data-theme]` alternado e persistido por usuário (RF-15).
-- **Navegação (v7)**: trilho superior (`TopNav`) em vez da barra lateral; conteúdo em tela cheia.
-  A paleta de comandos é montada uma vez no layout e escuta `Ctrl/⌘+K` globalmente.
+- **Navegação (v8)**: trilho lateral colapsável (gaveta abaixo de 1024px) + app bar fina. A
+  paleta de comandos é montada uma vez no layout e escuta `Ctrl/⌘+K` globalmente.
+- **Estilo**: Tailwind CSS v4 via `@tailwindcss/vite`, com tokens semânticos em `@theme inline`
+  e as classes de componente em `@layer components` (ver `MODULOS.md`).
 
 ## 9. Decisões de projeto (resumo)
 

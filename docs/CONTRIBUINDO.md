@@ -60,7 +60,7 @@ frontend/src/
 ├─ pages/       ⟵ uma página por rota; consomem a API via TanStack Query
 ├─ components/  ⟵ ui/ (primitivas) · layout/ (casca) · ErrorBoundary
 ├─ lib/         ⟵ ESPELHOS de graph/sigaa/sums p/ feedback imediato (servidor decide)
-└─ styles/      ⟵ theme.css (tokens da paleta cerrado) · app.css (componentes/animações)
+└─ styles/      ⟵ index.css — Tailwind v4: @theme (tokens do cerrado) + @layer components
 ```
 
 Referência função a função: `docs/MODULOS.md`. Regras do domínio explicadas: `docs/DOMINIO.md`.

@@ -112,8 +112,9 @@ Cronograma, Recomendações, Histórico, Agenda, Ajustes e Ajuda.
 **Admin**: Visão do sistema, Usuários, Cursos, Períodos, Avisos, Monitor e Configurações.
 Fora da sessão: Login, **Cadastro** (auto-registro, RF-17) e Convite/redefinição.
 
-Consome a API via TanStack Query; sessão com refresh automático; **navegação em trilho superior**
-com o conteúdo em tela cheia (design v7); chip de período/férias, paleta de comandos (**Ctrl/⌘+K**)
+Consome a API via TanStack Query; sessão com refresh automático; estilização em **Tailwind CSS v4**
+com tokens semânticos (design v8); trilho lateral colapsável que vira gaveta no mobile;
+chip de período/férias, paleta de comandos (**Ctrl/⌘+K**)
 e tema claro/escuro persistido; animações de entrada, cascata e esqueletos — todas desligadas sob
 `prefers-reduced-motion`.
 

@@ -98,6 +98,9 @@ export const IconDownload = (p: SVGProps<SVGSVGElement>) => (
 export const IconCommand = (p: SVGProps<SVGSVGElement>) => (
   <I {...p}><path d="M7.5 4.5a2.5 2.5 0 1 0 2.5 2.5v10a2.5 2.5 0 1 0 2.5-2.5H7a2.5 2.5 0 1 0 2.5 2.5" /><path d="M14.5 9.5h2A2.5 2.5 0 1 0 14 7v10a2.5 2.5 0 1 0 2.5-2.5h-2" /></I>
 );
+export const IconMoon = (p: SVGProps<SVGSVGElement>) => (
+  <I {...p}><path d="M20.5 14.8A8.6 8.6 0 0 1 9.2 3.5a8.8 8.8 0 1 0 11.3 11.3Z" /></I>
+);
 export const IconFilter = (p: SVGProps<SVGSVGElement>) => (
   <I {...p}><path d="M3.5 5.5h17l-6.6 7.7V20l-3.8-2.2v-4.6z" /></I>
 );

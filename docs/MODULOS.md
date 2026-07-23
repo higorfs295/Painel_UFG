@@ -139,7 +139,7 @@ src/
 ├─ components/{ui,layout} # primitivas e casca; ErrorBoundary
 ├─ pages/                 # 12 páginas (7 do aluno + 7 do admin, contando as compartilhadas)
 ├─ lib/                   # graph/sigaa/sums (espelho do domínio p/ a grade)
-└─ styles/                # theme.css (tokens) + app.css (componentes/animações/responsivo)
+└─ styles/                # index.css — Tailwind v4: @theme (tokens) + base + @layer components
 ```
 
 ## Núcleo e dados
@@ -183,13 +183,14 @@ src/
 | `admin/AdminPeriodsPage` | `/admin/periodos` | **calendário acadêmico global**: agenda viradas (TERM/BREAK) + linha do tempo (RF-20 v2) |
 | `admin/AdminConfigPage` | `/admin/config` | **configurações da instância**: estado do SMTP + **enviar e-mail de teste**, cadastro público, validade de convite, URL |
 
-Camada de layout **v7 — trilho superior e tela cheia**. A `Sidebar` em gradiente e o "app-card"
-flutuante do v6 saíram: agora há um `TopNav` fino e fixo no topo (`.rail`), com a navegação como
-uma **régua tipográfica horizontal** (versalete + indicador de sublinhado) e o conteúdo ocupando a
-largura da página (`.canvas`, até `--measure`). O `TopNav` é **papel-consciente** (aluno vê a
-jornada; ADMIN vê a gestão), reúne no canto direito o seletor de curso, o **chip de período/férias**
-global (do calendário, via `GET /me`), o atalho da paleta de comandos, o tema e a conta; abaixo de
-980px a régua vira **gaveta empilhada** sob o hambúrguer. O ADMIN **não cursa** — `AppLayout` pula
+Camada de layout **v8 — Tailwind, com o trilho lateral de volta**. A v7 tinha trocado a
+barra lateral por uma régua superior e ficou pior; a estrutura voltou a ser a da v6 —
+`Sidebar` em gradiente de pôr-do-sol + `Topbar` fina — mas escrita com utilitários Tailwind.
+A `Sidebar` é **papel-consciente** (aluno vê a jornada; ADMIN vê a gestão), **colapsável** no
+desktop (localStorage `side-collapsed`, 256px → 76px) e vira **gaveta off-canvas com scrim**
+abaixo de 1024px. A `Topbar` é a "app bar" do idioma shadcn: translúcida com blur, grudada no
+topo, com o curso selecionado, o **chip de período/férias** global (do calendário, via
+`GET /me`), o atalho da paleta de comandos e o tema. O ADMIN **não cursa** — `AppLayout` pula
 matrícula/`CoursePicker` e as páginas de aluno redirecionam para `/admin`.
 
 ## Ferramentas transversais
@@ -203,21 +204,34 @@ matrícula/`CoursePicker` e as páginas de aluno redirecionam para `/admin`.
   para ações destrutivas; hoje serve a lixeira de cursos.
 - `components/schedule/SmartFill.tsx`: painel "puxar do meu semestre" (RF-29).
 
-## Estilos e acessibilidade
+## Estilos e acessibilidade — Tailwind CSS v4
 
-- `styles/theme.css`: tokens da paleta **cerrado/pôr do sol/povos nativos** em dark e light; o v7
-  reduz os raios a 3–6px (`--radius`/`--radius-lg`/`--radius-sm`) e acrescenta `--rail-h` e
-  `--measure`. `--side-grad`/`--side-tx` continuam, agora só no herói da autenticação.
-- `styles/app.css`: componentes, **animações** (com `prefers-reduced-motion`), **responsividade**
-  (breakpoints 1100/980/700/520px) e **acessibilidade** (`:focus-visible`, `.skiplink`, `.sr-only`, foco da grade).
-- **Design v7 ("impresso do cerrado")** — ruptura deliberada com o v6: superfícies **chapadas
-  separadas por réguas de 1px** (o traço substitui a sombra), sem vidro fosco nem orbes no app,
-  **tipografia display dominante** (manchete até 4.2rem, números de estatística em Fraunces),
-  chips e botões retangulares, tabelas como composição tipográfica e rodapé com wordmark vazado.
-  A identidade — paleta cerrado/poente e a dupla Fraunces + Sora — permanece intacta; o que mudou
-  foi a diagramação. Herdados: mosaico **bento**, **marquee**, **callout**, contadores animados
-  (`useCountUp`/`CountNum`), **controle segmentado**, `Reveal`/IntersectionObserver e a **auth
-  imersiva** em tela dividida (única tela que mantém o gradiente e os orbes).
+`styles/index.css` é o único arquivo de estilo, em três blocos:
+
+1. **Tokens.** Variáveis cruas por tema (`:root` = escuro, `html[data-theme="light"]` sobrescreve)
+   mapeadas em `@theme inline` para tokens semânticos — `--color-background/foreground/card/
+   muted/border/primary/ring` — que viram os utilitários `bg-card`, `text-muted-foreground`,
+   `border-border`. É a mesma abstração do shadcn/ui, e é o que permite trocar o tema sem
+   recompilar. **O `inline` não é decorativo**: sem ele o Tailwind resolve a cor no build e
+   utilitários com opacidade (`bg-muted/60`, `border-lock/40`) congelam no valor do tema escuro.
+2. **Base.** Reset tipográfico do produto: Sora na interface, Fraunces nos títulos e números,
+   foco por `ring` em todo controle, `.skiplink`, barras de rolagem discretas.
+3. **`@layer components`.** As classes semânticas que as páginas usam (`.card`, `.row`, `.chip`,
+   `.bento`, `.seg`…) construídas com `@apply`. Padrão recomendado do Tailwind para repetição:
+   o JSX segue legível e há um lugar só para ajustar cada peça. Componentes novos (casca,
+   modais) usam utilitário direto no JSX.
+
+Não há `tailwind.config.js` nem `postcss.config`: na v4 o plugin `@tailwindcss/vite` lê a
+configuração do próprio CSS.
+
+- **Design v8**: superfícies com `border + shadow-sm` e raio de 0.75rem, paleta de tokens
+  semânticos, foco por anel, escala tipográfica contida. A identidade — cerrado/pôr do sol +
+  Fraunces & Sora — permanece; o gradiente do trilho lateral e a **auth imersiva** em tela
+  dividida são a assinatura visual que vem desde a v6. Herdados: mosaico **bento**, **marquee**,
+  **callout**, contadores animados (`useCountUp`/`CountNum`), **controle segmentado**,
+  `Reveal`/IntersectionObserver, esqueletos de carregamento e `prefers-reduced-motion`.
+- **Responsividade** pelos breakpoints do Tailwind (sm 640 / lg 1024) e **acessibilidade**
+  (`:focus-visible`, `.skiplink`, `.sr-only`, foco navegável na grade de horário).
 
 ---
 
