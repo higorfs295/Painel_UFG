@@ -75,6 +75,9 @@ jobs:
       JWT_SECRET: ci-secret-please-change-me-0123456789abcdef
       E2E_USER_EMAIL: painel@aluno.com
       E2E_USER_PASSWORD: ci-e2e-password-123
+      # a suíte faz ~15 logins em série de um único IP; o teto de produção (10/min) a
+      # derrubaria pela metade. Só aqui — o padrão continua valendo em produção.
+      AUTH_RATE_LIMIT_MAX: "200"
       CI: "true"
     steps:
       - uses: actions/checkout@v4

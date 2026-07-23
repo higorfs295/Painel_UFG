@@ -6,7 +6,7 @@ import argon2 from "argon2";
 import { consumeInvite, issueInvite } from "../../lib/invite.js";
 import { issueRefreshToken, rotateRefreshToken, revokeRefreshToken } from "../../lib/session.js";
 import { sendInviteEmail } from "../../lib/mailer.js";
-import { allowRegistration } from "../../env.js";
+import { allowRegistration, env } from "../../env.js";
 import { REFRESH_COOKIE, refreshCookieOptions, type AccessClaims } from "../../plugins/auth.js";
 import { toPublicUser } from "../../lib/userView.js";
 import { audit } from "../../lib/audit.js";
@@ -16,7 +16,8 @@ export async function authRoutes(app: FastifyInstance) {
     app.jwt.sign({ sub: u.id, role: u.role } satisfies AccessClaims);
 
   // RNF-03: limite agressivo nas rotas que aceitam segredo (mitiga força bruta).
-  const strict = { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } };
+  // O teto é por IP — ver a ressalva sobre NAT compartilhado em docs/SEGURANCA.md §3.
+  const strict = { config: { rateLimit: { max: env.AUTH_RATE_LIMIT_MAX, timeWindow: "1 minute" } } };
 
   // RF-02: usuário define a própria senha via token de convite (uso único).
   app.post("/invite/accept", strict, async (req, reply) => {

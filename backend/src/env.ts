@@ -13,6 +13,10 @@ const schema = z.object({
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
   RATE_LIMIT_MAX: z.coerce.number().default(120),
   RATE_LIMIT_WINDOW: z.string().default("1 minute"),
+  // Teto das rotas de segredo (login, convite, redefinição) — bem mais baixo que o geral.
+  // Configurável porque a suíte E2E, rodando de um único IP, estoura 10/min sozinha; em
+  // produção o padrão vale e não deve ser afrouxado.
+  AUTH_RATE_LIMIT_MAX: z.coerce.number().default(10),
   REDIS_URL: z.string().url().optional(), // se definido, store distribuído do rate limit (réplicas)
 
   // Cadastro público (RF-17). "false" desliga o POST /auth/register (instâncias fechadas).

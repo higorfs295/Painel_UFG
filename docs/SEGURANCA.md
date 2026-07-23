@@ -84,6 +84,20 @@ casos o servidor **nunca** persiste o token puro.
 `POST /auth/password/forgot` responde `{ok:true}` **sempre** — exista ou não a conta — para não
 servir de oráculo de e-mails cadastrados.
 
+### 3.1 O teto das rotas com segredo é por IP
+
+`AUTH_RATE_LIMIT_MAX` (padrão **10/min**) vale para login, aceite de convite e reset. O contador
+é **por endereço IP**, não por conta — o que é o desenho certo contra força bruta distribuída,
+mas tem uma consequência a considerar antes de publicar:
+
+- **NAT compartilhado.** Um laboratório da universidade, um campus atrás de um único IP de saída
+  ou uma rede móvel podem estourar 10 logins/minuto **coletivamente**, e aí alunos legítimos
+  levam 429 sem terem feito nada de errado. Se a instância for exposta assim, avalie subir o
+  teto e complementar com limite **por conta** (que é o que de fato barra força bruta dirigida).
+- A própria suíte E2E esbarra nisso: ela faz ~15 logins em série do mesmo endereço, e por isso o
+  job de E2E sobe `AUTH_RATE_LIMIT_MAX`. **Não afrouxe o valor em produção** — o padrão existe
+  para valer lá.
+
 ## 4. Senhas
 
 - **argon2id** com defaults da lib (memória 64MB, 3 iterações) — resistente a GPU.
