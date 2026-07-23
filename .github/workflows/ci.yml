@@ -40,19 +40,20 @@ jobs:
       - run: npm test
       - run: npm run test:integration
 
-  frontend:
+  web:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend
+        working-directory: web
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: web/package-lock.json
       - run: npm ci
+      - run: npm run typecheck
       - run: npm run build
 
   e2e:
@@ -83,7 +84,7 @@ jobs:
           cache: npm
           cache-dependency-path: |
             backend/package-lock.json
-            frontend/package-lock.json
+            web/package-lock.json
       - name: Backend deps + migrate + seed
         working-directory: backend
         run: |
@@ -98,20 +99,31 @@ jobs:
           nohup npx tsx src/server.ts > api.log 2>&1 &
           for i in $(seq 1 40); do curl -sf http://localhost:3333/health && break; sleep 1; done
           curl -sf http://localhost:3333/health
-      - name: Frontend deps + navegador
-        working-directory: frontend
+      - name: Web deps + navegador
+        working-directory: web
         run: |
           npm ci
           npx playwright install --with-deps chromium
+      - name: Build e sobe o Next em background
+        working-directory: web
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3333
+        run: |
+          npm run build
+          nohup npm run start > web.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://localhost:5173/ >/dev/null && break; sleep 1; done
+          curl -sf http://localhost:5173/ >/dev/null
       - name: Testes E2E
-        working-directory: frontend
+        working-directory: web
         run: npm run e2e
-      - name: Log da API em caso de falha
+      - name: Logs em caso de falha
         if: failure()
-        run: tail -50 backend/api.log || true
+        run: |
+          tail -50 backend/api.log || true
+          tail -50 web/web.log || true
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: playwright-report
-          path: frontend/playwright-report/
+          path: web/playwright-report/
           retention-days: 7

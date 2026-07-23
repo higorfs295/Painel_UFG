@@ -41,7 +41,7 @@ Segurança: sessão com refresh rotativo (detecção de reuso), autorização po
 ## Estrutura
 
 - `backend/` — API Node.js + TypeScript (Fastify) + Prisma + PostgreSQL
-- `frontend/` — React + Vite + TypeScript (componentes portados do protótipo)
+- `web/` — Next.js (App Router) + TypeScript + Tailwind CSS v4
 - `docker-compose.yml` — Postgres local (e, futuramente, API + web)
 
 ## Pré-requisitos
@@ -95,33 +95,32 @@ npm run test:integration   # 58 de integração: rotas via app.inject (precisa d
 npm run typecheck          # checagem de tipos (tsc --noEmit)
 ```
 
-No `frontend/`, `node node_modules/@playwright/test/cli.js test` roda os 6 E2E (no Windows/git-bash
-o `npx.cmd` engole prefixos de env). Detalhes em [`docs/TESTES.md`](docs/TESTES.md).
+Em `web/`, `npx playwright test` roda os 11 E2E — precisa da API e do app no ar.
+Detalhes em [`docs/TESTES.md`](docs/TESTES.md).
 
-## Frontend (React + Vite + TanStack Query)
+## Frontend (Next.js + Tailwind CSS v4)
 
 ```bash
-cd frontend
+cd web
 npm install
 npm run dev                # http://localhost:5173
 # login: painel@admin.com (admin) ou painel@aluno.com (aluno) com a senha do SEED
 ```
 
-Páginas — **aluno**: Visão geral, Disciplinas (três estados + nota/faltas/período), Extras,
-Cronograma, Recomendações, Histórico, Agenda, Ajustes e Ajuda.
-**Admin**: Visão do sistema, Usuários, Cursos, Períodos, Avisos, Monitor e Configurações.
-Fora da sessão: Login, **Cadastro** (auto-registro, RF-17) e Convite/redefinição.
+App Router com **landing pública** (Server Component), autenticação em tela dividida e o
+painel em rotas protegidas: **aluno** — Visão geral, Disciplinas, Extras, Cronograma,
+Recomendações, Histórico, Agenda; **admin** — Visão do sistema, Usuários, Cursos, Períodos,
+Avisos, Monitor, Configurações; e Ajustes/Ajuda compartilhadas.
 
-Consome a API via TanStack Query; sessão com refresh automático; estilização em **Tailwind CSS v4**
-com tokens semânticos (design v8); trilho lateral colapsável que vira gaveta no mobile;
-chip de período/férias, paleta de comandos (**Ctrl/⌘+K**)
-e tema claro/escuro persistido; animações de entrada, cascata e esqueletos — todas desligadas sob
-`prefers-reduced-motion`.
+Gráficos em SVG puro (sem biblioteca de chart), tema claro/escuro por `next-themes` com
+tokens semânticos, paleta de comandos (**Ctrl/⌘+K**), exportação CSV das tabelas e
+notificações com `react-hot-toast`. O frontend foi construído a partir de seis templates
+Next.js — o que veio de cada um está em [`docs/DESIGN.md`](docs/DESIGN.md).
 
 ## Batizando o sistema (nome próprio em 1 linha)
 
 Quer chamar a sua instância de outro nome? Edite **uma única constante** em
-[`frontend/src/branding.ts`](frontend/src/branding.ts):
+[`web/src/lib/branding.ts`](web/src/lib/branding.ts):
 
 ```ts
 export const APP_NAME = "Painel Acadêmico";   // ← troque aqui
@@ -134,7 +133,7 @@ e tela de erro. (Há também `APP_TAGLINE`, o subtítulo das telas de entrada.)
 
 Quer colocar no ar? `docs/DEPLOY.md` traz o passo a passo do trio **Render (API) + Vercel
 (frontend) + Neon (Postgres com pooler, free permanente)** — inclusive o `render.yaml` (blueprint)
-e o `frontend/vercel.json` já prontos neste repositório.
+e o `web/vercel.json` já prontos neste repositório.
 
 ## Stack completa com Docker (opcional)
 
@@ -160,7 +159,8 @@ Módulos implementados (handlers antes em TODO):
 - **extras** (RF-08/09): CRUD de optativas fora da matriz, NL, AC e registros.
 - **schedules** (RF-10/11/12/29): cenários, disciplinas com validação SIGAA no servidor, pintura de células e **preenchimento automático** a partir das disciplinas cursando/simuladas (o aluno informa só o código de horário).
 
-Lógica de domínio pura em `backend/src/domain/` (portada de `frontend/src/lib/`, testada em `backend/test/unit/`).
+Lógica de domínio pura em `backend/src/domain/` (espelhada em `web/src/lib/`, testada em `backend/test/unit/`).
 Autorização por posse (RNF-05) em toda rota `/me`; erros centralizados sem vazar stack trace (RNF-04).
 
-O artefato HTML permanece como referência visual/comportamental de cada componente.
+O artefato HTML permanece como referência visual/comportamental de cada componente; o
+frontend atual vive em `web/` (Next.js) — ver [`docs/DESIGN.md`](docs/DESIGN.md).

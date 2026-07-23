@@ -1,0 +1,195 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   Painel Acadêmico — folha de estilo do frontend Next.js (Tailwind CSS v4)
+
+   Os tokens seguem a convenção do `nextjs-admin-dashboard` (tudo em @theme, sem
+   tailwind.config.js) e a nomenclatura semântica que o `visactor-next-template`
+   usa via shadcn — background/foreground/card/muted/border/primary/ring — só que
+   preenchida com a paleta do projeto: cerrado, pôr do sol e povos indígenas.
+
+   O tema é trocado pelo `next-themes`, que escreve `class="dark"` no <html>
+   (mesmo mecanismo do solid-nextjs e do admin dashboard).
+   ══════════════════════════════════════════════════════════════════════════════ */
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Tokens: claro é o padrão; .dark sobrescreve ─────────────────────────── */
+:root {
+  /* cerrado ao meio-dia: barro claro, areia e papel */
+  --background: #faf6ee;
+  --foreground: #241b13;
+  --card: #ffffff;
+  --card-foreground: #241b13;
+  --popover: #ffffff;
+  --muted: #f1e9da;
+  --muted-foreground: #6b5946;
+  --subtle-foreground: #9a836c;
+  --border: #e4d9c6;
+  --input: #d6c8b1;
+
+  --primary: #b85427;
+  --primary-foreground: #fff7ee;
+  --ring: #c07c18;
+
+  --sun: #c07c18;
+  --ember: #b23a2e;
+  --dusk: #6c4a94;
+  --savanna: #6f8135;
+  --jenipapo: #2e7286;
+
+  --done: #5f7a2c;
+  --avail: #b0741a;
+  --co: #2e7286;
+  --lock: #b23a2e;
+  --sim: #7a4fa6;
+}
+
+.dark {
+  /* entardecer no cerrado: superfícies terrosas e quentes */
+  --background: #14100a;
+  --foreground: #f5eadb;
+  --card: #1c1710;
+  --card-foreground: #f5eadb;
+  --popover: #241d15;
+  --muted: #241d15;
+  --muted-foreground: #b9a088;
+  --subtle-foreground: #8a7059;
+  --border: #322619;
+  --input: #3d2e20;
+
+  --primary: #db6b33;
+  --primary-foreground: #fff6ea;
+  --ring: #f0a83c;
+
+  --sun: #f0a83c;
+  --ember: #d25440;
+  --dusk: #8c63b0;
+  --savanna: #9db05a;
+  --jenipapo: #5f9db2;
+
+  --done: #9db05a;
+  --avail: #f0a83c;
+  --co: #5f9db2;
+  --lock: #d8604c;
+  --sim: #a87bd0;
+}
+
+:root {
+  /* o trilho lateral é uma ilha com o gradiente do poente — igual nos dois temas */
+  --sidebar-gradient: linear-gradient(168deg, #3b2a4e 0%, #6c3a50 34%, #a8492a 70%, #dd8a34 100%);
+  --sidebar-foreground: #fbefe0;
+}
+
+/* `inline` é obrigatório: sem ele o Tailwind resolve a cor no build e os utilitários
+   com opacidade (bg-muted/60) congelam no valor de um dos temas. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-ring: var(--ring);
+
+  --color-sun: var(--sun);
+  --color-ember: var(--ember);
+  --color-dusk: var(--dusk);
+  --color-savanna: var(--savanna);
+  --color-jenipapo: var(--jenipapo);
+
+  --color-done: var(--done);
+  --color-avail: var(--avail);
+  --color-co: var(--co);
+  --color-lock: var(--lock);
+  --color-sim: var(--sim);
+
+  --color-sidebar-foreground: var(--sidebar-foreground);
+
+  --font-sans: var(--font-sora), ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+
+  --ease-silk: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    @apply bg-background;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  h1 {
+    @apply font-display text-3xl/tight font-semibold tracking-tight sm:text-4xl/tight;
+  }
+  h2 {
+    @apply font-display text-xl font-semibold tracking-tight;
+  }
+  code {
+    @apply bg-muted text-foreground rounded px-1.5 py-0.5 font-mono text-[0.85em];
+  }
+  :focus-visible {
+    @apply ring-ring outline-none ring-2 ring-offset-2;
+    --tw-ring-offset-color: var(--color-background);
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--color-primary) 32%, transparent);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-input) transparent;
+  }
+}
+
+@layer components {
+  /* rótulo de seção — o "ChartTitle" do visactor virou uma classe reaproveitável */
+  .section-label {
+    @apply text-muted-foreground text-xs font-semibold tracking-[0.14em] uppercase;
+  }
+  .eyebrow {
+    @apply text-primary text-xs font-semibold tracking-[0.18em] uppercase;
+  }
+  /* esqueleto de carregamento dos limites de Suspense (padrão do next-partial-prerendering) */
+  .skeleton {
+    @apply bg-muted rounded-lg;
+    background-image: linear-gradient(
+      90deg,
+      transparent 25%,
+      color-mix(in srgb, var(--color-foreground) 6%, transparent) 50%,
+      transparent 75%
+    );
+    background-size: 240% 100%;
+    animation: skeleton-sweep 1.4s linear infinite;
+  }
+}
+
+@keyframes skeleton-sweep {
+  from { background-position: 120% 0; }
+  to { background-position: -40% 0; }
+}
+@keyframes silk-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

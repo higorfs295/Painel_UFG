@@ -116,7 +116,7 @@ crie um monitor gratuito no **UptimeRobot**/**cron-job.org** apontando para
    (a Vercel detecta Vite sozinha).
 2. Em *Environment Variables*, defina **`VITE_API_URL`** = URL da API no Render
    (ex.: `https://painel-api.onrender.com`) — para Production e Preview.
-3. Deploy. O `frontend/vercel.json` já cuida do fallback de SPA (toda rota → `index.html`)
+3. Deploy. O `web/vercel.json` declara o framework Next e os cabeçalhos de segurança
    e de headers de segurança básicos.
 
 > `VITE_API_URL` é **embutida no build** (não é lida em runtime): mudou a URL da API → redeploy

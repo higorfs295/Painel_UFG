@@ -247,6 +247,32 @@ o mesmo MITM pode afetar o `npm ci` — em rede sem interceptação os Dockerfil
   para repetição. Casca, modais e paleta usam utilitário direto no JSX.
 - CSS final: **74 KB** (~11 KB gzip) contra ~1.000 linhas de CSS manual antes.
 
+## Frontend novo em Next.js (v9) — feito
+- **`frontend/` (Vite) saiu; `web/` (Next.js 15, App Router) entrou**, construído a partir de
+  seis templates: nextjs-admin-dashboard, visactor-next-template, next-partial-prerendering,
+  solid-nextjs, rollbar-vercel e sanity-template-nextjs-clean. O que veio de cada um — e o
+  que foi deixado de fora de propósito — está em [`DESIGN.md`](DESIGN.md).
+- **17 rotas**: landing pública, autenticação em tela dividida (entrar/cadastro/convite),
+  9 telas do aluno, 7 de administração e as compartilhadas.
+- **Gráficos em SVG puro** (donut, barras, área, empilhada). Os templates traziam ApexCharts
+  e VisActor; ambas tocam `window` no import e exigiriam `dynamic(ssr:false)`, com centenas
+  de KB no bundle. A *composição* dos blocos veio do visactor; a biblioteca, não.
+- **Landing pública** com framer-motion (`whileInView`), acordeão de FAQ e CTA — o app deixou
+  de abrir direto no login.
+- **`react-hot-toast`** substituiu as mensagens de estado espalhadas pelas páginas.
+- **Monitoramento de erros opcional** (padrão do rollbar-vercel) ligado ao `error.tsx`; sem
+  token configurado é no-op e nenhum dado de aluno sai do navegador.
+- **Duas correções reais de acessibilidade** que o E2E expôs: o `aria-label` da navegação
+  estava no `<aside>` em vez do `<nav>`, e o `Field` associava rótulo e controle por
+  aninhamento — o que fazia o nome acessível de cada `<select>` virar o texto da opção
+  selecionada ("Concluído") em vez do rótulo ("Situação").
+- **Uma requisição a menos no boot**: sem pista de sessão anterior, o app nem tenta renovar
+  (o `POST /auth/refresh` que só devolvia 401 para visitante anônimo).
+- Gotchas registrados: `next build` e `next dev` compartilham `.next/` (buildar com o dev no
+  ar mata os chunks do dev); e `page.goto` em cada rota do E2E dispara refreshes sobrepostos
+  que acionam a detecção de reuso de token.
+- Testes: **43 unitários + 58 de integração + 11 E2E**.
+
 ## Pendências / próximos passos sugeridos
 - **Frontend será substituído** — o backend e o contrato (`/docs`) estão prontos para servir a
   nova interface sem alteração.

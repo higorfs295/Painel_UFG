@@ -128,112 +128,63 @@ Cada função registra os handlers da área. Contrato detalhado em [`API.md`](AP
 
 ---
 
-# Frontend (`frontend/`)
+# Frontend (`web/`) — Next.js
+
+Aplicação **Next.js 15 (App Router)** + TypeScript + **Tailwind CSS v4**, construída a partir
+de seis templates de referência (ver `docs/DESIGN.md`). Substitui o SPA em Vite das versões
+anteriores.
 
 ```
 src/
-├─ main.tsx               # QueryClientProvider + BrowserRouter
-├─ App.tsx                # boot (refresh), guardas de rota, lazy pages, ErrorBoundary
-├─ api/                   # client HTTP + endpoints tipados + types
-├─ store/                 # Zustand: auth, app
-├─ components/{ui,layout} # primitivas e casca; ErrorBoundary
-├─ pages/                 # 12 páginas (7 do aluno + 7 do admin, contando as compartilhadas)
-├─ lib/                   # graph/sigaa/sums (espelho do domínio p/ a grade)
-└─ styles/                # index.css — Tailwind v4: @theme (tokens) + base + @layer components
+├─ app/                    rotas do App Router
+│  ├─ page.tsx             landing pública (Server Component)
+│  ├─ (auth)/              entrar · cadastro · convite/[token]  — tela dividida
+│  ├─ painel/              9 páginas do aluno
+│  ├─ admin/               7 páginas de gestão
+│  ├─ config/ · ajuda/     compartilhadas pelos dois papéis
+│  ├─ error.tsx            fronteira de erro (reporta ao monitoramento)
+│  └─ globals.css          @theme (tokens) + base + @layer components
+├─ components/{layout,ui,charts,marketing,schedule}
+├─ hooks/use-progress.ts   queries do aluno, com as queryKey centralizadas
+└─ lib/{api,auth-store,monitoring,csv,sigaa,utils}
+e2e/                       Playwright (smoke + fluxos)
 ```
 
-## Núcleo e dados
+## Núcleo
 
 | Arquivo | Papel | Pontos-chave |
 | --- | --- | --- |
-| `main.tsx` | Entrada | `QueryClient` (retry 1, sem refetch no foco), `BrowserRouter` |
-| `App.tsx` | Rotas + boot | `auth.bootstrap()` no mount; `RequireAuth`/`RequireAdmin`; `React.lazy` das páginas; `ErrorBoundary` + `Suspense` |
-| `api/client.ts` | Fetch base | `api<T>()`: injeta Bearer + credentials; em 401 chama `/auth/refresh` **uma vez** (dedup via promise compartilhada) e repete; `setAccessToken` |
-| `api/endpoints.ts` | Chamadas por domínio | objetos `auth`, `me`, `extras`, `courses`, `schedules`, `admin` |
-| `api/types.ts` | Tipos das respostas | `User`, `Enrollment`, `Progress`, `Recommendation`, `Extra`, `Scenario`, `AdminUser`, … |
-| `store/auth.ts` | Sessão (UI) | `useAuth` (user/status/setSession/clear/patchUser); `applyTheme()` |
-| `store/app.ts` | Navegação | `useApp` (enrollment selecionado) |
+| `app/layout.tsx` | casca HTML | `next/font` auto-hospeda Fraunces+Sora; `<Providers>`; `suppressHydrationWarning` por causa do next-themes |
+| `components/providers.tsx` | provedores do cliente | ThemeProvider (next-themes) + QueryClient + bootstrap de sessão + Toaster |
+| `lib/api/client.ts` | HTTP | access token em memória, refresh único compartilhado em 401, `ApiError` com status |
+| `lib/api/session-hint.ts` | marca local | evita um POST `/auth/refresh` inútil (e um 401 no console) para quem nunca teve sessão |
+| `lib/auth-store.ts` | Zustand | `status: loading \| in \| out` (sem isso um F5 pisca a tela de login) e a matrícula selecionada |
+| `components/layout/app-shell.tsx` | casca autenticada | guarda de rota por papel, escolha de curso (RF-17), sidebar + header + paleta |
+| `components/layout/nav-data.ts` | mapa de navegação | dado, não JSX — a sidebar e a paleta de comandos leem a MESMA fonte |
+| `hooks/use-progress.ts` | dados do aluno | `keys` centralizadas; `useSetSubject` invalida progresso, recomendações, histórico e conquistas de uma vez |
 
 ## Componentes
 
-| Arquivo | Papel |
+| Grupo | O que tem |
 | --- | --- |
-| `components/ui/{Button,Card,Chip}.tsx` | primitivas; `Chip` exporta `StatusChip` (mapeia status→cor) |
-| `components/layout/AppLayout.tsx` | casca autenticada: carrega enrollments, skip link, `<main>`, logout |
-| `components/layout/{AppHeader,NavTabs,ThemeToggle}.tsx` | header com marca/abas/seletor de curso/tema; abas com `NavLink`; toggle persiste tema via `PATCH /me/settings` |
-| `components/ErrorBoundary.tsx` | captura erros de render e mostra fallback amigável |
+| `ui/` | `Button` (variantes/tamanhos), `Card`, `Section`, `PageHead`, `Chip`/`StatusChip`, `Badge`, `Bar`, `Segmented`, `Field`, `DataTable`, `ExportButton`, `DangerDialog`, ícones |
+| `charts/` | `DonutProgress`, `BarList`, `AreaSpark`, `StackedBar` + `ChartTitle`/`MetricCard` — **SVG puro** |
+| `layout/` | `Sidebar` (colapsável; gaveta abaixo de 1024px), `Header`, `ThemeToggle`, `CommandPalette` (Ctrl/⌘+K) |
+| `marketing/` | seções da landing com framer-motion (`whileInView`) |
+| `schedule/` | `SmartFill` — "puxar do meu semestre" (RF-29) |
 
-## Páginas (`src/pages/`)
+`DataTable` recebe as colunas como dado (`header`/`cell`/`value`): a mesma definição
+renderiza a tabela e alimenta o CSV, então filtro na tela é filtro no arquivo.
 
-| Página | Rota | Faz |
-| --- | --- | --- |
-| `LoginPage` | `/login` | login + "esqueci a senha" + link para cadastro |
-| `RegisterPage` | `/cadastro` | RF-17: auto-registro (autentica na resposta; trata instância fechada/409) |
-| `InvitePage` | `/convite/:token`, `/reset/:token` | define a própria senha |
-| `OverviewPage` | `/` | mosaico **bento** v5: hero de integralização, donut, composições, callout do próximo marco, stickers, recomendações (só aluno) |
-| `SubjectsPage` | `/disciplinas` | tabela com status, filtros e os três estados (Aprovada/**Cursando**/Simular) (só aluno) |
-| `ExtrasPage` | `/extras` | CRUD de extras; **3 estados** (planejado/em andamento/concluído) e **categoria reclassificável** por linha (NL→NC/NE/optativa) (só aluno) |
-| `SchedulePage` | `/cronograma` | cenários, disciplinas (SIGAA), grade **navegável por teclado** (roving tabindex) + pintura (só aluno) |
-| `RecommendationsPage` | `/recomendacoes` | ranking completo do que mais **destrava** (top-3 em destaque + tabela) com marcar-cursando (só aluno) |
-| `HelpPage` | `/ajuda` | **Ajuda & sobre** — FAQ das regras (integralização, estados, SIGAA, período); todos os papéis |
-| `SettingsPage` | `/config` | nome, **dados acadêmicos** (matrícula/turno), **troca de senha**, tema; p/ aluno também **matrículas** (ingresso) e backup |
-| `admin/AdminHomePage` | `/admin` | **visão do sistema**: stat-cards com contadores animados (usuários, **novos 30d**, cursos, atividade), **matrículas por curso**, período vigente + atalhos |
-| `admin/AdminUsersPage` | `/admin/usuarios` | criar/convidar, **papel por select**, **matricular/desmatricular**, remover; mostra **matrícula/turno** |
-| `admin/AdminCoursesPage` | `/admin/cursos` | catálogo de matrizes + importação (RF-13) + **lixeira** com prazo e restauração (RF-28) |
-| `admin/AdminPeriodsPage` | `/admin/periodos` | **calendário acadêmico global**: agenda viradas (TERM/BREAK) + linha do tempo (RF-20 v2) |
-| `admin/AdminConfigPage` | `/admin/config` | **configurações da instância**: estado do SMTP + **enviar e-mail de teste**, cadastro público, validade de convite, URL |
+## Estilos
 
-Camada de layout **v8 — Tailwind, com o trilho lateral de volta**. A v7 tinha trocado a
-barra lateral por uma régua superior e ficou pior; a estrutura voltou a ser a da v6 —
-`Sidebar` em gradiente de pôr-do-sol + `Topbar` fina — mas escrita com utilitários Tailwind.
-A `Sidebar` é **papel-consciente** (aluno vê a jornada; ADMIN vê a gestão), **colapsável** no
-desktop (localStorage `side-collapsed`, 256px → 76px) e vira **gaveta off-canvas com scrim**
-abaixo de 1024px. A `Topbar` é a "app bar" do idioma shadcn: translúcida com blur, grudada no
-topo, com o curso selecionado, o **chip de período/férias** global (do calendário, via
-`GET /me`), o atalho da paleta de comandos e o tema. O ADMIN **não cursa** — `AppLayout` pula
-matrícula/`CoursePicker` e as páginas de aluno redirecionam para `/admin`.
+`app/globals.css`, em três blocos: variáveis por tema (`:root` claro, `.dark` escuro) →
+`@theme inline` mapeando para tokens semânticos (`--color-background/foreground/card/
+muted/border/primary/ring`) → `@layer components` com o punhado de classes utilitárias do
+produto (`.section-label`, `.eyebrow`, `.skeleton`). Sem `tailwind.config.js`.
 
-## Ferramentas transversais
-
-- `components/CommandPalette.tsx`: paleta **Ctrl/⌘+K** com busca por subsequência, navegação por
-  setas e comandos conscientes do papel; `openPalette()` abre de qualquer lugar via evento.
-- `lib/csv.ts` + `components/ui/ExportButton.tsx`: exportação CSV com `sep=;` e BOM (abre direto no
-  Excel pt-BR). Exporta **as linhas visíveis** — filtro na tela = filtro no arquivo. Usado em
-  Histórico, Disciplinas, Agenda e Usuários.
-- `components/ui/DangerDialog.tsx`: confirmação em duas etapas (impacto → digitar a palavra-chave)
-  para ações destrutivas; hoje serve a lixeira de cursos.
-- `components/schedule/SmartFill.tsx`: painel "puxar do meu semestre" (RF-29).
-
-## Estilos e acessibilidade — Tailwind CSS v4
-
-`styles/index.css` é o único arquivo de estilo, em três blocos:
-
-1. **Tokens.** Variáveis cruas por tema (`:root` = escuro, `html[data-theme="light"]` sobrescreve)
-   mapeadas em `@theme inline` para tokens semânticos — `--color-background/foreground/card/
-   muted/border/primary/ring` — que viram os utilitários `bg-card`, `text-muted-foreground`,
-   `border-border`. É a mesma abstração do shadcn/ui, e é o que permite trocar o tema sem
-   recompilar. **O `inline` não é decorativo**: sem ele o Tailwind resolve a cor no build e
-   utilitários com opacidade (`bg-muted/60`, `border-lock/40`) congelam no valor do tema escuro.
-2. **Base.** Reset tipográfico do produto: Sora na interface, Fraunces nos títulos e números,
-   foco por `ring` em todo controle, `.skiplink`, barras de rolagem discretas.
-3. **`@layer components`.** As classes semânticas que as páginas usam (`.card`, `.row`, `.chip`,
-   `.bento`, `.seg`…) construídas com `@apply`. Padrão recomendado do Tailwind para repetição:
-   o JSX segue legível e há um lugar só para ajustar cada peça. Componentes novos (casca,
-   modais) usam utilitário direto no JSX.
-
-Não há `tailwind.config.js` nem `postcss.config`: na v4 o plugin `@tailwindcss/vite` lê a
-configuração do próprio CSS.
-
-- **Design v8**: superfícies com `border + shadow-sm` e raio de 0.75rem, paleta de tokens
-  semânticos, foco por anel, escala tipográfica contida. A identidade — cerrado/pôr do sol +
-  Fraunces & Sora — permanece; o gradiente do trilho lateral e a **auth imersiva** em tela
-  dividida são a assinatura visual que vem desde a v6. Herdados: mosaico **bento**, **marquee**,
-  **callout**, contadores animados (`useCountUp`/`CountNum`), **controle segmentado**,
-  `Reveal`/IntersectionObserver, esqueletos de carregamento e `prefers-reduced-motion`.
-- **Responsividade** pelos breakpoints do Tailwind (sm 640 / lg 1024) e **acessibilidade**
-  (`:focus-visible`, `.skiplink`, `.sr-only`, foco navegável na grade de horário).
-
----
+**O `inline` do `@theme` não é decorativo**: sem ele o Tailwind resolve a cor no build e todo
+utilitário com opacidade (`bg-muted/60`, `border-lock/40`) congela no valor de um dos temas.
 
 # Anatomia de uma requisição (rastreamento completo)
 

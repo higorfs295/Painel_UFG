@@ -38,10 +38,11 @@ services:
 
   web:
     build:
-      context: ./frontend
+      context: ./web
       args:
-        VITE_API_URL: "" # mesma origem: o Caddy roteia as rotas de API
-    expose: ["80"]
+        # mesma origem: o Caddy roteia /auth, /me, /courses para a API
+        NEXT_PUBLIC_API_URL: ""
+    expose: ["5173"]
 
   caddy:
     image: caddy:2

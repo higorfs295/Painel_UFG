@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+build
+.env*.local
+*.tsbuildinfo
+next-env.d.ts
+test-results
+playwright-report
+
+# `next build` e `next dev` compartilham .next: pare o dev antes de buildar.

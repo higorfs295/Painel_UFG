@@ -312,7 +312,7 @@ Regras do importador (`importCourse.ts`):
 2. Requisitos por `seq` (confira duas vezes — é o erro mais comum) ou `milestoneKey`.
 3. `nucleus`/`groupOpt` conforme a tabela do PPC do curso.
 4. Composições com as chaves que o curso usa (o sistema não exige NC/NEO/…, mas o par
-   frontend/domínio mapeia essas cinco por padrão — chaves novas aparecem nas barras do mesmo jeito).
+   o domínio mapeia essas cinco por padrão — chaves novas aparecem nas barras do mesmo jeito).
 5. Valide localmente: `POST /courses/import` responde a contagem de disciplinas; abra a aba
    Disciplinas e confira uns 3 requisitos por amostragem contra o PDF oficial.
 
@@ -379,7 +379,7 @@ trocar de servidor ou clonar o próprio perfil num ambiente de teste.
 | Importação idempotente | `domain/importCourse.ts` | exercido por todos os testes de integração |
 | Backup portátil | `lib/backup.ts` | `integration/account.test.ts` (roundtrip) |
 
-> O frontend espelha `graph/sigaa` em `frontend/src/lib/` **apenas** para feedback imediato
+> O frontend espelha `graph/sigaa` em `web/src/lib/` **apenas** para feedback imediato
 > na grade; o servidor sempre recalcula. Se mudar um, mude o outro (ou extraia um pacote comum —
 > backlog).
 

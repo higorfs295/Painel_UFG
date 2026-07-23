@@ -9,7 +9,7 @@ geral é testar **comportamento** (o que o usuário/consumidor da API observa), 
 | --- | --- | --- | --- | --- |
 | **Unitários** (43) | `backend/test/unit/` | domínio puro: grafo, somas, parser SIGAA, período, histórico/MGA, conquistas, crypto, cache | ~ms | nada |
 | **Integração** (58) | `backend/test/integration/` | rotas HTTP reais (zod→posse→serviço→domínio→Prisma), auth, concorrência, gestão acadêmica, **cifra de campo**, **lixeira de cursos** e **cronograma inteligente** | ~s | Postgres |
-| **E2E** (6) | `frontend/e2e/` | fluxos completos no navegador (login, simulação, extras, grade por teclado, admin) | ~30s | stack inteira |
+| **E2E** (6) | `web/e2e/` | fluxos completos no navegador (login, simulação, extras, grade por teclado, admin) | ~30s | stack inteira |
 
 Filosofia: a lógica acadêmica (a parte com mais nuance) fica em funções puras testadas em
 milissegundos; a integração garante que a orquestração HTTP (validação, posse, transação) está
@@ -88,21 +88,24 @@ Isolamento: cada teste cria SEUS usuários/cursos com identificadores únicos (`
 
 ### 3.3 E2E — Playwright, o usuário de verdade
 
-6 specs (8 testes) em `frontend/e2e/`, rodando em série contra a conta do seed:
+11 testes em `web/e2e/`, rodando em série contra a conta do seed:
 
-- `auth.spec` — erro uniforme de login; login válido carregando dados reais.
-- `subjects.spec` — simular reflete na projeção; limpar restaura.
-- `schedule.spec` — cria cenário (dialog nativo), **navega por teclado** (setas → foco), pinta
-  com Enter (espera o `aria-label` refletir o round-trip!), limpa e exclui.
-- `extras.spec` — cria extra "em andamento", reclassifica a categoria e remove.
-- `admin.spec` — o admin entra na visão do sistema e agenda uma virada de período.
-- `layout.spec` — guardas do layout: a lateral sai da tela no mobile e o hambúrguer abre a gaveta;
-  a troca de tema alcança o **fundo da página**, não só os cartões. Ambos só falham num navegador
-  de verdade — foi um bug de tema real (`@theme` sem `inline`) que motivou o segundo.
+- `smoke.spec` — a **página pública**; o aluno percorrendo as 9 telas do painel e o admin as
+  7 de gestão, cada passagem exigindo o título certo, **zero erro de console** e nenhum
+  vazamento de largura; as duas guardas de rota (papel errado e sem sessão).
+- `fluxos.spec` — o que escreve no servidor: simular/limpar disciplina; extra "em andamento"
+  com reclassificação de categoria; cenário de cronograma com navegação por teclado e
+  pintura; agendamento de virada de período; paleta de comandos (Ctrl+K); e a lixeira de
+  cursos recusando confirmação errada (RF-28).
 
-Convenções: seletores por **papel/rótulo acessível** (`getByRole`, `getByLabel`) — se o teste não
-acha, um leitor de tela também não; asserções que aguardam o servidor usam o auto-retry do
-`expect` com timeout explícito; testes **se auto-limpam** (criou cenário → excluiu no fim).
+Convenções: seletores por **papel/rótulo acessível** (`getByRole`, `getByLabel`) — se o teste
+não acha, um leitor de tela também não; asserções que aguardam o servidor usam o auto-retry
+do `expect` com timeout explícito; os testes **se auto-limpam**.
+
+> **Navegue pela interface, não por `page.goto` em cada rota.** Cada carga completa refaz o
+> bootstrap da sessão, e refreshes sobrepostos disparam a detecção de reuso do token — que
+> existe justamente para revogar sessões suspeitas. Clicar na barra lateral é o caminho real
+> do usuário e não esbarra nisso.
 
 História ilustrativa: foi um E2E que revelou que TODOS os DELETEs da UI estavam quebrados
 (o cliente mandava `Content-Type: application/json` sem corpo e o Fastify respondia 400) — a

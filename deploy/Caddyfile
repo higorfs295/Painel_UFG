@@ -29,7 +29,7 @@ localhost {
 
   # Todo o resto é o SPA (BrowserRouter).
   handle {
-    reverse_proxy web:80
+    reverse_proxy web:5173
   }
 
   encode gzip

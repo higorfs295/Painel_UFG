@@ -1,7 +1,7 @@
 # Guia de contribuição
 
 Bem-vindo(a)! Este guia leva você do clone ao primeiro PR aceito. O projeto é um monorepo com
-`backend/` (Fastify + Prisma) e `frontend/` (React + Vite); a filosofia central é **domínio puro
+`backend/` (Fastify + Prisma) e `web/` (React + Vite); a filosofia central é **domínio puro
 no servidor** — as regras acadêmicas vivem em funções sem efeitos, testáveis em milissegundos.
 
 ## 1. Subindo o ambiente em 10 minutos
@@ -54,7 +54,7 @@ backend/src/
 ├─ plugins/     ⟵ infraestrutura Fastify (security, prisma, auth/JWT)
 └─ seed/        ⟵ matriz + perfil baseline (JSON) e o seed idempotente
 
-frontend/src/
+web/src/
 ├─ api/         ⟵ client (fetch + refresh automático) · endpoints tipados · types
 ├─ store/       ⟵ Zustand: auth (sessão) e app (matrícula selecionada)
 ├─ pages/       ⟵ uma página por rota; consomem a API via TanStack Query
@@ -79,7 +79,7 @@ Referência função a função: `docs/MODULOS.md`. Regras do domínio explicada
    groups, find após criação) — com comentário do porquê.
 5. **Imports com extensão `.js`** no backend (NodeNext) — mesmo apontando para `.ts`.
 6. **Espelhos sincronizados.** Mudou `domain/{graph,sigaa,sums}.ts`? Replique em
-   `frontend/src/lib/` (há um aviso no topo de cada arquivo).
+   `web/src/lib/` (há um aviso no topo de cada arquivo).
 7. **Migrações**: `npx prisma migrate dev --name descricao_curta`. Nunca edite migração já
    commitada; some uma nova. Enum: adicionar valor é seguro; remover/renomear exige plano.
 8. **Mensagens de commit** no padrão `tipo(escopo): resumo` (`feat`, `fix`, `docs`, `test`,

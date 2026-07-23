@@ -321,7 +321,7 @@ flowchart TD
 
 | Decisão | Porquê |
 | --- | --- |
-| Domínio puro separado das rotas | Servidor como fonte de verdade; testes rápidos sem banco; espelha `frontend/src/lib`. |
+| Domínio puro separado das rotas | Servidor como fonte de verdade; testes rápidos sem banco; espelha `web/src/lib`. |
 | Refresh rotativo + detecção de reuso | Sessão longa segura; vazamento de cookie é detectado e revoga a família. |
 | Composições/marcos como linhas | Multi-curso (RF-13) sem alterar schema por curso. |
 | Cache do grafo por curso | Matriz é imutável entre importações; evita recarregar ~10² linhas por request. |
@@ -341,7 +341,7 @@ flowchart TB
 
   subgraph Host["Host Docker — rede interna do Compose"]
     Caddy["caddy:2<br/>TLS automático · headers de segurança<br/>volumes: Caddyfile (ro), caddydata, caddyconfig"]
-    Web["web (nginx:1.27-alpine)<br/>build: frontend/Dockerfile (Vite → estáticos)<br/>fallback SPA · expose :80"]
+    Web["web (node:22-alpine)<br/>build: web/Dockerfile (Next standalone)<br/>expose :5173"]
     Api["api (node:22-bookworm-slim)<br/>build: backend/Dockerfile (multi-stage, não-root)<br/>entrypoint: migrate deploy → node dist/server.js<br/>expose :3333"]
     Db[("db (postgres:16)<br/>healthcheck pg_isready<br/>volume dbdata")]
   end
