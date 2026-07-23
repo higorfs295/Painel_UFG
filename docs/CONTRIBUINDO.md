@@ -1,7 +1,7 @@
 # Guia de contribuição
 
 Bem-vindo(a)! Este guia leva você do clone ao primeiro PR aceito. O projeto é um monorepo com
-`backend/` (Fastify + Prisma) e `web/` (React + Vite); a filosofia central é **domínio puro
+`backend/` (Fastify + Prisma) e `web/` (Next.js App Router); a filosofia central é **domínio puro
 no servidor** — as regras acadêmicas vivem em funções sem efeitos, testáveis em milissegundos.
 
 ## 1. Subindo o ambiente em 10 minutos
@@ -24,17 +24,17 @@ SEED_ADMIN_PASSWORD='defina-uma-senha' npm run seed
 npm run dev                      # http://localhost:3333/health -> {"ok":true}
 
 # 3) frontend (outro terminal)
-cd frontend && npm install && npm run dev    # http://localhost:5173
+cd web && npm install && npm run dev         # http://localhost:5173
 ```
 
-Login com o usuário do seed (e-mail em `backend/src/seed/perfil-higor.json`, senha =
+Login com o usuário do seed (e-mails em `backend/src/seed/students.json`, senha =
 `SEED_ADMIN_PASSWORD`) — ou crie sua conta em `/cadastro`.
 
 ### Gotchas conhecidos de ambiente
 
 | Sintoma | Causa | Solução |
 | --- | --- | --- |
-| `npm install` trava/`UNABLE_TO_VERIFY_LEAF_SIGNATURE` | antivírus interceptando TLS (Avast…) | `NODE_EXTRA_CA_CERTS` apontando para o CA do antivírus (ver docs/DEPLOY.md §7.7) |
+| `npm install` trava/`UNABLE_TO_VERIFY_LEAF_SIGNATURE` | antivírus interceptando TLS (Avast…) | `NODE_EXTRA_CA_CERTS` apontando para o CA do antivírus (ver docs/DEPLOY.md §8.7) |
 | `Environment variable not found: DIRECT_URL` | schema usa `directUrl` | no dev, `DIRECT_URL` = `DATABASE_URL` (está no `.env.example`) |
 | Playwright ignora `VAR=x` no git-bash | wrapper `npx.cmd` descarta prefixos | `node node_modules/@playwright/test/cli.js test` |
 | Arquivos "modificados" sem você tocar | CRLF/LF no Windows | o `.gitattributes` normaliza; não desligue o autocrlf |
@@ -56,10 +56,11 @@ backend/src/
 
 web/src/
 ├─ api/         ⟵ client (fetch + refresh automático) · endpoints tipados · types
-├─ store/       ⟵ Zustand: auth (sessão) e app (matrícula selecionada)
-├─ pages/       ⟵ uma página por rota; consomem a API via TanStack Query
+├─ app/         ⟵ App Router: uma pasta por rota (page.tsx / layout.tsx)
+├─ hooks/       ⟵ hooks de dados sobre TanStack Query
 ├─ components/  ⟵ ui/ (primitivas) · layout/ (casca) · ErrorBoundary
-├─ lib/         ⟵ ESPELHOS de graph/sigaa/sums p/ feedback imediato (servidor decide)
+├─ lib/         ⟵ api/ (client + endpoints tipados) · auth-store (Zustand) · branding
+│                 sigaa.ts é ESPELHO do domínio (feedback imediato; servidor decide)
 └─ styles/      ⟵ index.css — Tailwind v4: @theme (tokens do cerrado) + @layer components
 ```
 
@@ -78,8 +79,9 @@ Referência função a função: `docs/MODULOS.md`. Regras do domínio explicada
    explícita (`if (!x) continue`) para índices; `!` só quando a garantia é estrutural (regex
    groups, find após criação) — com comentário do porquê.
 5. **Imports com extensão `.js`** no backend (NodeNext) — mesmo apontando para `.ts`.
-6. **Espelhos sincronizados.** Mudou `domain/{graph,sigaa,sums}.ts`? Replique em
-   `web/src/lib/` (há um aviso no topo de cada arquivo).
+6. **Espelhos sincronizados.** Mudou `domain/sigaa.ts`? Replique em `web/src/lib/sigaa.ts`
+   (há um aviso no topo do arquivo). `graph.ts` e `sums.ts` **não** são espelhados hoje:
+   a UI consome o resultado já calculado pela API.
 7. **Migrações**: `npx prisma migrate dev --name descricao_curta`. Nunca edite migração já
    commitada; some uma nova. Enum: adicionar valor é seguro; remover/renomear exige plano.
 8. **Mensagens de commit** no padrão `tipo(escopo): resumo` (`feat`, `fix`, `docs`, `test`,
@@ -97,7 +99,7 @@ npm test                  # unit: domínio puro (ms, sem banco) — rode a cada 
 npm run test:integration  # rotas reais via app.inject contra Postgres (precisa do db up)
 npm run typecheck
 
-cd ../frontend
+cd ../web
 npx tsc --noEmit && npm run build
 E2E_USER_PASSWORD='<senha do seed>' npm run e2e   # Playwright (backend+db precisam estar up)
 ```
@@ -125,11 +127,17 @@ Regras de ouro:
 
 ### Checklist antes de abrir o PR
 
+Rode `npm run preflight` — ele cobre os quatro primeiros itens de uma vez (tipos, unitários,
+varredura de segredos e coerência do alias de namespace). Com `--full`, inclui a integração.
+
 - [ ] `npm run typecheck` limpo nos dois lados
 - [ ] testes das camadas afetadas passando (e novos testes para o novo comportamento)
 - [ ] docs atualizados (API/MODULOS/DOMINIO/ESPECIFICACAO conforme o caso)
 - [ ] UI: verificada em dark **e** light, desktop **e** ~375px, teclado navegando
 - [ ] nenhum segredo/valor local commitado (`.env` fica fora; use `.env.example` para documentar)
+- [ ] mexeu em rota ou prefixo? o alias `/api` (`API_ALIAS_PREFIX`) precisa continuar batendo
+      entre `backend/src/env.ts`, `web/src/lib/api/client.ts` e `deploy/Caddyfile` —
+      `test/integration/namespace.test.ts` cobre isso
 
 ## 6. Tour guiado: como uma feature atravessa o sistema
 

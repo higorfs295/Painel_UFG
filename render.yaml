@@ -33,3 +33,34 @@ services:
         value: none          # frontend (Vercel) e API (Render) são origens diferentes
       - key: TRUST_PROXY
         value: "true"
+      # Namespace duplo. Aqui frontend (Vercel) e API (Render) são origens DIFERENTES,
+      # então não há colisão de caminhos e o alias é dispensável — mas manter "/api"
+      # custa pouco e deixa a API acessível pelos dois caminhos. "" desliga.
+      - key: API_ALIAS_PREFIX
+        value: "/api"
+      # Cifra de campo (AES-256-GCM) para PII em repouso — a matrícula. Gere com:
+      #   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+      # Sem ela o sistema funciona, mas a matrícula fica em claro no banco.
+      - key: FIELD_ENCRYPTION_KEY
+        sync: false
+      # Cadastro público. "false" fecha a instância (só convite do admin).
+      - key: ALLOW_REGISTRATION
+        value: "true"
+      # OpenAPI em /docs já desliga sozinha em produção; explícito para não depender só disso.
+      - key: DOCS_ENABLED
+        value: "false"
+      - key: DEV_TOOLS
+        value: "false"
+      # E-mail (RF-18). O plano FREE do Render bloqueia saída nas portas 25/465/587
+      # (desde 26/09/2025) — use a 2525 do provedor. Sem SMTP_HOST o sistema cai no
+      # modo manual: o link de convite/reset é devolvido ao admin na tela.
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "2525"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false

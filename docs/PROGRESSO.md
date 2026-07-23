@@ -87,7 +87,7 @@ navegador), seguindo o `ROADMAP.md`.
 
 ## Fase 0 — Sanidade do ambiente ✅
 - Boot da API (`/health` → `{"ok":true}`), migration `20260707220537_init` aplicada, seed populando
-  curso EngComp (120 disciplinas) + conta `fhigor295@gmail.com` (23 aprovadas, 9 extras).
+  curso EngComp (120 disciplinas) + a conta-aluno do seed (23 aprovadas, 9 extras).
 - Vitest configurado; erro uniforme (`setErrorHandler`) sem vazar stack (RNF-04); typecheck limpo.
 - Correções: `schema.prisma` reformatado (sintaxe válida), `.env` via `--env-file`, versões fixadas + lockfile.
 
@@ -116,7 +116,7 @@ Stack: React 18 + Vite 6 + TypeScript + TanStack Query + React Router 6 + Zustan
 
 ## Fase 6 — Operação e robustez ✅
 - **6.1 Dockerfiles + compose:** `backend/Dockerfile` (multi-stage, migrate deploy no entrypoint, usuário
-  não-root), `frontend/Dockerfile` (build Vite → nginx com fallback SPA), `docker-compose.yml` com
+  não-root), `web/Dockerfile` (build Next em modo standalone), `docker-compose.yml` com
   `db + api + web + caddy` e healthcheck do Postgres.
 - **6.2 Proxy TLS:** `deploy/Caddyfile` — TLS automático (interno no local, Let's Encrypt em produção),
   topologia **mesma origem** (roteia `/auth`,`/me`,`/users`,`/courses`,`/health` para a API; resto para o SPA),
@@ -144,7 +144,7 @@ npm test && npm run test:integration
 
 # frontend
 cd ../frontend && npm install
-npm run dev            # http://localhost:5173  (login: fhigor295@gmail.com / a senha do seed)
+npm run dev            # http://localhost:5173  (login: a conta-aluno do seed / a senha do seed)
 ```
 
 ### Stack completa (Docker Compose — requer o plugin v2)
@@ -292,6 +292,35 @@ o mesmo MITM pode afetar o `npm ci` — em rede sem interceptação os Dockerfil
   não é clicável); o item ativo da barra lateral ganhou indicador lateral; e "Esqueci minha senha"
   virou link, em vez de um botão do mesmo peso do "Entrar".
 - Testes: **43 unitários + 59 de integração + 13 E2E**.
+
+## Preparo para open source e publicação — feito
+- **Licença MIT**, `SECURITY.md`, templates de issue/PR e um `CONTRIBUINDO.md` revisado: o
+  repositório passa a ter as portas de entrada que um projeto aberto precisa.
+- **PII fora do HEAD**: `perfil-higor.json` (nome, e-mail institucional e histórico acadêmico
+  reais) deu lugar a `perfil-exemplo.json` — um veterano fictício com a mesma FORMA, que é o
+  que exercita a regra do teto e o histórico. A limpeza do histórico do git fica com o
+  `git filter-repo`.
+- **Alias `/api` para a API** (`API_ALIAS_PREFIX`). Necessário porque, quando frontend e API
+  dividem a mesma origem (docker-compose atrás do Caddy), o Next tem uma PÁGINA em
+  `/admin/config` e a API tem um ENDPOINT `GET /admin/config` — mesmo método, mesmo caminho,
+  impossível desambiguar. Implementado por **reescrita de URL**, não montando as rotas duas
+  vezes: a montagem dupla dava a cada caminho o seu próprio balde de rate limit e **dobrava o
+  teto de tentativas de login** (medido: 10 na raiz + 10 no alias). O cookie de refresh grava
+  o `path` do caminho de entrada, senão a sessão morreria no primeiro refresh.
+- **`docker compose up --build` volta a funcionar.** Três defeitos em série: `web/public/` não
+  existia e o `COPY` do Dockerfile falhava; o build do backend não copiava os JSONs do seed
+  para `dist/`, então semear no container dava ENOENT; e o comando de seed documentado
+  apontava para `src/`, que não existe na imagem. A porta do Postgres virou `${DB_PORT}` —
+  quem já tem um Postgres na 5432 não conseguia subir a stack.
+- **SMTP**: `requireTLS` (STARTTLS deixa de degradar para texto claro em silêncio) e timeouts
+  de 8s/15s — o padrão do nodemailer é 2 minutos, e uma porta bloqueada pendurava o
+  `POST /users` esse tempo todo.
+- **Scripts de apoio**: `npm run preflight` (tipos, unitários, segredos, PII, coerência do
+  alias, arquivos de projeto aberto) e `npm run smoke <api> <web>` (fumaça contra uma
+  instância publicada, só leitura).
+- Testes: **43 unitários + 66 de integração + 13 E2E**. A verificação do alias foi feita
+  também com a stack Docker real: login pelo alias, cookie em `/api/auth`, sessão sobrevivendo
+  ao F5 e `/admin/config` devolvendo HTML do Next enquanto `/api/admin/config` devolve JSON.
 
 ## Pendências / próximos passos sugeridos
 - **Frontend será substituído** — o backend e o contrato (`/docs`) estão prontos para servir a

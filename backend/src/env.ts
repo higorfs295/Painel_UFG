@@ -29,6 +29,15 @@ const schema = z.object({
   // Atrás de proxy/CDN (Render, Caddy, nginx): mantém req.ip real p/ rate limit e logs.
   TRUST_PROXY: z.enum(["true", "false"]).default("true"),
 
+  // Namespace duplo: além da raiz, a API responde também sob este prefixo (ex.: /api/auth).
+  // Necessário quando frontend e API dividem a MESMA origem (docker-compose atrás do Caddy):
+  // as páginas do Next em /admin/* colidem com os endpoints em /admin/*. Em deploy
+  // cross-origin (Vercel + Render) o alias é dispensável — use "" para desligar.
+  API_ALIAS_PREFIX: z.string().default("/api")
+    .refine((v) => v === "" || /^\/[a-z0-9-]+$/.test(v), {
+      message: 'API_ALIAS_PREFIX deve ser vazio ou um segmento como "/api"',
+    }),
+
   // E-mail (RF-18) — opcional: sem SMTP_HOST o sistema só registra o link no log e o devolve
   // ao admin (fluxo manual). Com SMTP configurado, convites/resets são enviados de verdade.
   SMTP_HOST: z.string().optional(),
@@ -55,5 +64,8 @@ export const isProd = env.NODE_ENV === "production";
 export const corsOrigins = env.CORS_ORIGIN.split(",").map(s => s.trim()).filter(Boolean);
 export const allowRegistration = env.ALLOW_REGISTRATION === "true";
 export const mailerConfigured = Boolean(env.SMTP_HOST);
+
+// Prefixo do namespace alias ("" = desligado). Ver app.ts.
+export const API_ALIAS_PREFIX = env.API_ALIAS_PREFIX;
 export const devToolsEnabled = env.DEV_TOOLS === "true" && !isProd;
 export const docsEnabled = env.DOCS_ENABLED === "true" && !isProd;

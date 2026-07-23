@@ -29,7 +29,7 @@ backend/
 │   │   └── schedules/      cenários, disciplinas de horário e pintura
 │   └── seed/
 │       ├── matriz-engcomp-2021.json   matriz oficial (120 disciplinas)
-│       ├── perfil-higor.json          baseline auditada do extrato
+│       ├── perfil-exemplo.json        baseline fictícia de um veterano
 │       └── seed.ts                    popula curso e conta de referência
 └── package.json
 ``

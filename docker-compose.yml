@@ -1,4 +1,4 @@
-# Stack completa: Postgres + API (Fastify) + Web (nginx) + Caddy (TLS + proxy).
+# Stack completa: Postgres + API (Fastify) + Web (Next.js standalone) + Caddy (TLS + proxy).
 # Requer o plugin Docker Compose v2 (`docker compose ...`). Variáveis em .env (veja .env.example).
 #
 # Subir só o banco (fluxo de dev, backend/front rodando no host):
@@ -6,7 +6,8 @@
 # Subir a stack inteira:
 #   JWT_SECRET=... docker compose up --build
 # Semear (uma vez, após a stack no ar):
-#   docker compose run --rm -e SEED_ADMIN_PASSWORD=... api npx tsx src/seed/seed.ts
+#   docker compose run --rm -e SEED_ADMIN_PASSWORD=... api node dist/seed/seed.js
+#   (a imagem é buildada: só existe dist/, não src/)
 services:
   db:
     image: postgres:16
@@ -14,7 +15,10 @@ services:
       POSTGRES_USER: painel
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-painel}
       POSTGRES_DB: painel
-    ports: ["5432:5432"] # exposto para o fluxo de dev; em produção remova
+    # Publicado só por conveniência (conectar um cliente SQL); a API fala com o banco pela
+    # rede interna do compose. Quem já tem um Postgres na 5432 — situação comum — sobe com
+    # `DB_PORT=55432 docker compose up`, senão o Docker recusa a porta. Em produção, remova.
+    ports: ["${DB_PORT:-5432}:5432"]
     volumes: [dbdata:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U painel -d painel"]
@@ -40,7 +44,9 @@ services:
     build:
       context: ./web
       args:
-        # mesma origem: o Caddy roteia /auth, /me, /courses para a API
+        # Vazio = MESMA origem. O cliente resolve isso para "/api" (ver web/src/lib/api/client.ts)
+        # e o Caddy roteia /api/* para a API. É o alias que evita a colisão entre as páginas
+        # /admin/* do Next e os endpoints /admin/* da API.
         NEXT_PUBLIC_API_URL: ""
     expose: ["5173"]
 

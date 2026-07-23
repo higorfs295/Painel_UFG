@@ -5,7 +5,7 @@
   "scripts": {
     "predev": "prisma generate",
     "dev": "tsx watch --env-file=.env src/server.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node scripts/copiar-assets.mjs",
     "start": "node --env-file=.env dist/server.js",
     "seed": "tsx --env-file=.env src/seed/seed.ts",
     "validar": "tsx scripts/validar-matriz.ts",

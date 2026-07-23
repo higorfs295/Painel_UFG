@@ -12,7 +12,20 @@ let accessToken: string | null = null;
 export const setAccessToken = (t: string | null) => { accessToken = t; };
 export const getAccessToken = () => accessToken;
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
+// Base da API — escolha CONDICIONAL, casada com o alias de namespace do backend (backend/src/app.ts):
+//
+//  • NEXT_PUBLIC_API_URL com URL absoluta (Vercel + Render, ou dev com a API em :3333)
+//    → origens diferentes, sem colisão possível: fala direto com a raiz da API.
+//
+//  • NEXT_PUBLIC_API_URL vazia (docker-compose atrás do Caddy) → MESMA origem. Aqui as
+//    páginas do Next e os endpoints disputam o mesmo espaço de caminhos: existe uma página
+//    em /admin/config e um endpoint GET /admin/config. Usar o alias /api elimina o empate,
+//    e o Caddy roteia /api/* para a API sem precisar adivinhar pelo header.
+//
+// Mudou aqui? O alias do backend é API_ALIAS_PREFIX e os dois precisam bater.
+const RAW_API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
+export const SAME_ORIGIN = RAW_API_URL.trim() === "";
+export const API_URL = SAME_ORIGIN ? "/api" : RAW_API_URL.trim().replace(/\/+$/, "");
 
 export class ApiError extends Error {
   constructor(public status: number, message: string, public body?: unknown) {

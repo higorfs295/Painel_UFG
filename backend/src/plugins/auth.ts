@@ -3,7 +3,7 @@ import fp from "fastify-plugin";
 import jwt from "@fastify/jwt";
 import cookie from "@fastify/cookie";
 import type { preHandlerHookHandler } from "fastify";
-import { env, isProd } from "../env.js";
+import { env, isProd, API_ALIAS_PREFIX } from "../env.js";
 
 // claims que colocamos no access token
 export type AccessClaims = { sub: string; role: "ADMIN" | "USER" };
@@ -48,13 +48,29 @@ export const authPlugin = fp(async (app) => {
 //  - "lax" (padrão): mesma origem (Caddy) ou dev local;
 //  - "none": deploy cross-site (ex.: frontend na Vercel + API no Render) — navegadores
 //    exigem Secure junto, então secure é forçado nesse modo.
-export function refreshCookieOptions() {
+//
+// O `path` NÃO é fixo: com o alias de namespace (ver app.ts) a mesma rota atende em
+// `/auth/...` e em `/api/auth/...`. Um cookie gravado com path=/auth simplesmente não é
+// enviado pelo navegador para /api/auth/refresh — a sessão morreria no primeiro refresh.
+//
+// `req.url` aqui já vem REESCRITO (sem o alias); o caminho original fica em
+// `req.raw.originalUrl`, guardado pelo `rewriteUrl`. É de lá que sai a decisão.
+type ReqComUrl = { url: string; raw?: unknown };
+
+export function refreshCookiePath(req: ReqComUrl): string {
+  const alias = API_ALIAS_PREFIX;
+  if (!alias) return "/auth";
+  const entrada = (req.raw as { originalUrl?: string } | undefined)?.originalUrl ?? req.url;
+  return entrada.startsWith(`${alias}/auth`) ? `${alias}/auth` : "/auth";
+}
+
+export function refreshCookieOptions(req: ReqComUrl) {
   const sameSite = env.COOKIE_SAMESITE;
   return {
     httpOnly: true,
     secure: sameSite === "none" ? true : isProd,
     sameSite,
-    path: "/auth",
+    path: refreshCookiePath(req),
     maxAge: env.REFRESH_EXPIRES_DAYS * 24 * 60 * 60, // segundos
   };
 }

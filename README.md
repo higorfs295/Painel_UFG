@@ -1,8 +1,18 @@
-# Painel Acadêmico — base do projeto (monólito modular)
+# Painel Acadêmico
 
-Evolução do protótipo em artefato para uma aplicação real multiusuário, com autenticação,
-papéis (admin/usuário), cadastro público, múltiplos cursos e os módulos de progresso (com estados
-aprovada/cursando/simulada), optativas, atividades, período letivo e cronograma.
+[![CI](https://github.com/higorfs295/Painel_UFG/actions/workflows/ci.yml/badge.svg)](https://github.com/higorfs295/Painel_UFG/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+Aplicação web multiusuário para acompanhar a **integralização curricular** de cursos de
+engenharia: quanto falta para se formar, o que cada disciplina destrava e como montar a grade
+do próximo semestre. Nasceu como protótipo HTML de um aluno de Engenharia de Computação da UFG
+e virou um monólito modular com autenticação, papéis (admin/usuário), cadastro público,
+múltiplos cursos, optativas, atividades, período letivo e cronograma.
+
+> **Não é um sistema oficial da UFG.** É um projeto independente; os números devem ser
+> conferidos no SIGAA — em especial a contabilização de Núcleo Livre excedente, que é uma
+> incerteza declarada (`ESPECIFICACAO.md` §15).
+
 Leia primeiro `ESPECIFICACAO.md`; para entender o domínio a fundo, `docs/DOMINIO.md`.
 
 **O que o sistema faz hoje**
@@ -34,6 +44,7 @@ Segurança: sessão com refresh rotativo (detecção de reuso), autorização po
 | [`docs/DEPLOY.md`](docs/DEPLOY.md) | Do dev local ao ar por R$ 0 (Render + Vercel + Neon), Docker Compose, e-mail SMTP e solução de problemas. |
 | [`docs/SEGURANCA.md`](docs/SEGURANCA.md) | Modelo de ameaças, ciclo de vida dos tokens, decisões de autenticação/autorização e checklist de produção. |
 | [`docs/TESTES.md`](docs/TESTES.md) | A pirâmide de testes: como rodar, como escrever, o que cada camada cobre. |
+| [`docs/CONTRIBUINDO.md`](docs/CONTRIBUINDO.md) | **Guia do contribuidor**: mapa do código, convenções, fluxo de PR e um tour de uma feature ponta a ponta. |
 | [`docs/CONTRIBUINDO.md`](docs/CONTRIBUINDO.md) | Guia de contribuição: setup em 10 min, convenções, fluxo de PR, primeiras issues. |
 | [`docs/PROGRESSO.md`](docs/PROGRESSO.md) | Estado por fase e como rodar. |
 | [`docs/REVISAO.md`](docs/REVISAO.md) | Revisão técnica (escala/concorrência/persistência/desempenho) + backlog. |
@@ -82,7 +93,7 @@ npm run migrate            # prisma migrate dev --name init (na 1ª vez pede o n
 
 # 4) Popular o banco (curso EngComp + contas-modelo) — senha via env, nunca versionada.
 # Cria: painel@admin.com (ADMIN, sem matrícula) e as contas-aluno de src/seed/students.json
-# (painel@aluno.com de demonstração + higor_ferreira@discente.ufg.br com a baseline).
+# (painel@aluno.com de demonstração + veterano@aluno.local com a baseline de exemplo).
 # Adicione objetos em students.json para semear mais alunos. SEED_STUDENT_PASSWORD é opcional.
 SEED_ADMIN_PASSWORD='defina-uma-senha-forte' npm run seed
 
@@ -110,7 +121,7 @@ npm run dev                # http://localhost:3333  (GET /health -> {"ok":true})
 ```bash
 cd backend
 npm test                   # 43 unitários: domínio puro, cache e cripto (não precisam de banco)
-npm run test:integration   # 59 de integração: rotas via app.inject (precisa do Postgres migrado)
+npm run test:integration   # 66 de integração: rotas via app.inject (precisa do Postgres migrado)
 npm run typecheck          # checagem de tipos (tsc --noEmit)
 ```
 
@@ -183,3 +194,46 @@ Autorização por posse (RNF-05) em toda rota `/me`; erros centralizados sem vaz
 
 O artefato HTML permanece como referência visual/comportamental de cada componente; o
 frontend atual vive em `web/` (Next.js) — ver [`docs/DESIGN.md`](docs/DESIGN.md).
+
+## Como contribuir
+
+Contribuições são bem-vindas — inclusive as que não envolvem código. Leia
+[`docs/CONTRIBUINDO.md`](docs/CONTRIBUINDO.md) antes de abrir um PR. O resumo:
+
+1. **Domínio puro primeiro.** Regra nova de negócio? Função em `backend/src/domain/` com teste
+   unitário *antes* de plugar na rota. Se precisa de banco para testar a regra, ela está no
+   lugar errado.
+2. **Posse em toda rota `/me`** via `assert*Owner`, com teste do caso 403.
+3. **zod em toda entrada** — body, params e query.
+4. **TypeScript estrito de verdade**: `exactOptionalPropertyTypes` e `noUncheckedIndexedAccess`
+   ligados; imports com extensão `.js` no backend (NodeNext).
+5. **Commits** no padrão `tipo(escopo): resumo`, com o corpo explicando o **porquê**.
+6. **CI verde é pré-condição de review** — typecheck, unit, integração, build e E2E.
+
+```bash
+npm run typecheck     # backend + web
+npm test              # unitários + integração (precisa do Postgres up)
+npm run e2e           # Playwright (API + web no ar)
+```
+
+### Boas primeiras contribuições
+
+- **Transcrever uma matriz curricular nova** seguindo `docs/DOMINIO.md` §8 e
+  `matrizes/README.md`. `npm --prefix backend run validar` diz na hora se o JSON está íntegro.
+  **Zero código.** Elétrica (2023) e Mecânica (2018) estão lá como referência.
+- **Realce de conflito de horário** na grade: o domínio `conflicts()` existe, falta a UI.
+- **Tela de "acordando o servidor"** para o cold start do plano free do Render.
+- **i18n** — a interface é pt-BR fixo hoje.
+- **Testes de componente no frontend** — a cobertura pesada está no backend e no E2E.
+
+Dúvidas? Abra uma issue com o rótulo `question`.
+
+**Vulnerabilidades: não abra issue pública.** Veja [`SECURITY.md`](SECURITY.md).
+
+## Licença
+
+[MIT](LICENSE).
+
+As **matrizes curriculares** em `matrizes/` são transcrições de documentos públicos (Resoluções
+CEPEC da UFG). O trabalho de transcrição segue a licença do projeto; o conteúdo original é da
+instituição.

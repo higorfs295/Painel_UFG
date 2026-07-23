@@ -17,17 +17,32 @@ localhost {
     X-Content-Type-Options "nosniff"
     X-Frame-Options "SAMEORIGIN"
     Referrer-Policy "strict-origin-when-cross-origin"
-    Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+    # O App Router injeta scripts INLINE (self.__next_f.push com os dados de hidratação).
+    # Com apenas default-src 'self' o navegador bloqueia esses scripts e a página não hidrata.
+    # 'unsafe-inline' em script-src é o preço de não usar nonce; a alternativa correta é gerar
+    # um nonce por requisição em middleware.ts e propagá-lo — mais trabalho, ganho real.
+    # As fontes são self-hosted pelo next/font, então font-src 'self' basta.
+    Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'"
     -Server
   }
 
-  # Rotas da API vão para o backend; o cookie de refresh (path /auth) casa por ser mesma origem.
-  @api path /auth/* /me /me/* /users /users/* /courses /courses/* /health
+  # A API vive inteira sob /api (alias de namespace — ver backend/src/app.ts). Um único
+  # matcher em vez de uma lista de caminhos: rota nova no backend não exige mexer aqui.
+  #
+  # A lista antiga (/auth/*, /me/*, /users/*, /courses/*, /health) tinha dois furos: não
+  # cobria /admin/* nem /announcements — e /admin/config existe como PÁGINA no Next e como
+  # ENDPOINT na API, empate que nenhum matcher por caminho resolve. O alias desfaz o empate.
+  @api path /api/*
   handle @api {
     reverse_proxy api:3333
   }
 
-  # Todo o resto é o SPA (BrowserRouter).
+  # Sonda de saúde direta, sem alias — útil para orquestrador/monitor externo.
+  handle /health {
+    reverse_proxy api:3333
+  }
+
+  # Todo o resto é o app Next (que também serve as próprias rotas /admin/*, agora sem conflito).
   handle {
     reverse_proxy web:5173
   }

@@ -7,7 +7,7 @@ import { consumeInvite, issueInvite } from "../../lib/invite.js";
 import { issueRefreshToken, rotateRefreshToken, revokeRefreshToken } from "../../lib/session.js";
 import { sendInviteEmail } from "../../lib/mailer.js";
 import { allowRegistration, env } from "../../env.js";
-import { REFRESH_COOKIE, refreshCookieOptions, type AccessClaims } from "../../plugins/auth.js";
+import { REFRESH_COOKIE, refreshCookieOptions, refreshCookiePath, type AccessClaims } from "../../plugins/auth.js";
 import { toPublicUser } from "../../lib/userView.js";
 import { audit } from "../../lib/audit.js";
 
@@ -56,7 +56,7 @@ export async function authRoutes(app: FastifyInstance) {
       data: { name: body.name, email: body.email, role: "USER", passwordHash: await argon2.hash(body.password) },
     });
     const refresh = await issueRefreshToken(app.prisma, user.id);
-    reply.setCookie(REFRESH_COOKIE, refresh, refreshCookieOptions());
+    reply.setCookie(REFRESH_COOKIE, refresh, refreshCookieOptions(req));
     return reply.code(201).send({
       accessToken: signAccess(user),
       user: toPublicUser(user),
@@ -88,7 +88,7 @@ export async function authRoutes(app: FastifyInstance) {
     await audit(app.prisma, { userId: user.id, action: "auth.login", ip: req.ip });
 
     const refresh = await issueRefreshToken(app.prisma, user.id);
-    reply.setCookie(REFRESH_COOKIE, refresh, refreshCookieOptions());
+    reply.setCookie(REFRESH_COOKIE, refresh, refreshCookieOptions(req));
     return reply.send({
       accessToken: signAccess(user),
       user: toPublicUser(user),
@@ -100,19 +100,19 @@ export async function authRoutes(app: FastifyInstance) {
     const current = req.cookies[REFRESH_COOKIE];
     const result = await rotateRefreshToken(app.prisma, current);
     if (!result.ok) {
-      reply.clearCookie(REFRESH_COOKIE, { path: "/auth" });
+      reply.clearCookie(REFRESH_COOKIE, { path: refreshCookiePath(req) });
       return reply.code(401).send({ error: "sessão expirada", reason: result.reason });
     }
     const user = await app.prisma.user.findUnique({ where: { id: result.userId } });
     if (!user) return reply.code(401).send({ error: "sessão expirada" });
-    reply.setCookie(REFRESH_COOKIE, result.plain, refreshCookieOptions());
+    reply.setCookie(REFRESH_COOKIE, result.plain, refreshCookieOptions(req));
     return reply.send({ accessToken: signAccess(user) });
   });
 
   // Logout: revoga o refresh atual e limpa o cookie.
   app.post("/logout", async (req, reply) => {
     await revokeRefreshToken(app.prisma, req.cookies[REFRESH_COOKIE]);
-    reply.clearCookie(REFRESH_COOKIE, { path: "/auth" });
+    reply.clearCookie(REFRESH_COOKIE, { path: refreshCookiePath(req) });
     return reply.code(204).send();
   });
 

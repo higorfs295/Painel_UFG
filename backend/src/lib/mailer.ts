@@ -14,7 +14,16 @@ async function getTransporter(): Promise<Transporter | null> {
     transporter = nodemailer.createTransport({
       host: env.SMTP_HOST,
       port: env.SMTP_PORT,
-      secure: env.SMTP_PORT === 465, // 465 = TLS implícito; 587 = STARTTLS
+      secure: env.SMTP_PORT === 465, // 465 = TLS implícito; 587/2525 = STARTTLS
+      // Sem isto o STARTTLS é oportunista: um servidor que não anuncia a extensão faria
+      // a sessão seguir em texto claro. Com requireTLS a conexão falha em vez de degradar.
+      requireTLS: env.SMTP_PORT !== 465,
+      // O padrão do nodemailer é 2 MINUTOS para conectar. Se a porta estiver bloqueada
+      // (o free do Render bloqueia 25/465/587), o POST /users ficaria pendurado esse tempo
+      // todo antes de responder. Falhar rápido e cair no modo manual é melhor.
+      connectionTimeout: 8_000,
+      greetingTimeout: 8_000,
+      socketTimeout: 15_000,
       ...(env.SMTP_USER ? { auth: { user: env.SMTP_USER, pass: env.SMTP_PASS } } : {}),
     });
   }

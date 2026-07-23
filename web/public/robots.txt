@@ -1,0 +1,11 @@
+# Painel Acadêmico
+User-agent: *
+Allow: /$
+Allow: /entrar
+Allow: /cadastro
+# O painel exige sessão; indexar não traz nada e gasta crawl budget.
+Disallow: /painel/
+Disallow: /admin/
+Disallow: /config
+Disallow: /convite/
+Disallow: /api/

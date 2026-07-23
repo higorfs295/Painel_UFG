@@ -122,7 +122,7 @@ Cada função registra os handlers da área. Contrato detalhado em [`API.md`](AP
   `Scenario.enrollmentId`, `ScenarioDiscipline.scenarioId`, `InviteToken.userId`, `AcademicPeriod.startsAt`).
 - `seed/seed.ts`: `importCourse` para a matriz, cria o **admin sem matrícula** (painel@admin.com) e
   itera `students.json` (modelo extensível de contas-aluno: painel@aluno.com de demonstração +
-  higor_ferreira@discente.ufg.br com a baseline de `perfil-higor.json`); semeia o calendário exemplo.
+  veterano@aluno.local com a baseline fictícia de `perfil-exemplo.json`); semeia o calendário exemplo.
   Exige `SEED_ADMIN_PASSWORD`; `SEED_STUDENT_PASSWORD` opcional.
 - `test/unit/`: domínio + crypto (sem banco). `test/integration/`: rotas via `app.inject` + concorrência
   de sessão (contra Postgres real; `TEST_DATABASE_URL` opcional).

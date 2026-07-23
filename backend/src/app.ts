@@ -1,5 +1,5 @@
 // Fábrica da aplicação Fastify: plugins de segurança + módulos de rotas + erro centralizado.
-import Fastify, { type FastifyError } from "fastify";
+import Fastify, { type FastifyError, type FastifyInstance } from "fastify";
 import { ZodError } from "zod";
 import { Prisma } from "@prisma/client";
 import { securityPlugin } from "./plugins/security.js";
@@ -14,7 +14,7 @@ import { scheduleRoutes, SigaaError } from "./modules/schedules/routes.js";
 import { accountRoutes } from "./modules/account/routes.js";
 import { OwnershipError } from "./lib/ownership.js";
 import { AppError } from "./lib/errors.js";
-import { env, isProd, docsEnabled } from "./env.js";
+import { env, isProd, docsEnabled, API_ALIAS_PREFIX } from "./env.js";
 import { performancePlugin } from "./plugins/performance.js";
 import { docsPlugin } from "./plugins/docs.js";
 import { adminRoutes } from "./modules/admin/routes.js";
@@ -29,6 +29,26 @@ export async function buildApp() {
     // atrás de proxy/CDN (Render, Caddy): respeita X-Forwarded-For para req.ip
     // (rate limit por IP correto) e X-Forwarded-Proto (cookies Secure).
     trustProxy: env.TRUST_PROXY === "true",
+    // ---- Namespace alias (RNF-11) ------------------------------------------------
+    // A API atende no caminho normal (`/auth`, `/me`, `/admin`…) E sob um alias
+    // (`/api/auth`, `/api/me`…). Necessário quando frontend e API dividem a MESMA
+    // origem — a topologia do docker-compose com o Caddy: o Next tem uma PÁGINA em
+    // `/admin/config` e a API tem um ENDPOINT `GET /admin/config`; mesmo método, mesmo
+    // caminho, impossível desambiguar. O alias dá à API um espaço só dela.
+    //
+    // Implementado por REESCRITA, e não montando as rotas duas vezes, por um motivo de
+    // segurança concreto: o rate limit do Fastify mantém um balde por ROTA registrada.
+    // Duas montagens = dois baldes = o teto de tentativas de login dobra (medido: 10 na
+    // raiz + 10 no alias). Reescrevendo antes do roteamento existe uma tabela só, um
+    // balde só, e as métricas não se dividem entre dois caminhos.
+    rewriteUrl(req) {
+      const url = req.url ?? "/";
+      if (!API_ALIAS_PREFIX || !url.startsWith(`${API_ALIAS_PREFIX}/`)) return url;
+      // guarda o caminho de entrada: o cookie de refresh precisa dele para gravar o
+      // `path` certo (ver refreshCookiePath em plugins/auth.ts)
+      (req as { originalUrl?: string }).originalUrl = url;
+      return url.slice(API_ALIAS_PREFIX.length);
+    },
     logger: {
       level: isProd ? "info" : "debug",
       // RNF-10: nunca registrar segredos (Authorization, cookies, senhas, tokens) nos logs.
@@ -65,6 +85,7 @@ export async function buildApp() {
     return reply.code(500).send({ error: "erro interno" });
   });
 
+  // Rotas registradas UMA vez; o alias chega até aqui já reescrito (ver `rewriteUrl` acima).
   app.get("/health", async () => ({ ok: true }));
   await app.register(authRoutes,    { prefix: "/auth" });
   await app.register(userRoutes,    { prefix: "/users" });      // admin (RF-01)
@@ -78,5 +99,6 @@ export async function buildApp() {
   await app.register(adminRoutes,   { prefix: "/admin" });   // estatísticas e visão geral (RF-21)
   await app.register(observabilityRoutes, { prefix: "/admin" }); // métricas + auditoria (RF-27)
   await app.register(devToolsRoutes, { prefix: "/admin/dev" });  // gerador de massa (só DEV_TOOLS)
+
   return app;
 }

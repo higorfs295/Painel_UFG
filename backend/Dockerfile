@@ -9,6 +9,10 @@ COPY prisma ./prisma
 RUN npx prisma generate
 COPY tsconfig.json ./
 COPY src ./src
+# `scripts/` entra porque o build chama copiar-assets.mjs (leva os JSONs do seed para dist/).
+# Sem ele o `npm run build` falharia — e, pior, já falhou em silêncio uma vez: a imagem subia
+# sem os dados e só quebrava na hora de semear, com ENOENT.
+COPY scripts ./scripts
 RUN npm run build
 
 FROM node:22-bookworm-slim AS runtime

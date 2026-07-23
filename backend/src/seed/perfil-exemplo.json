@@ -1,0 +1,115 @@
+{
+ "_doc": "Perfil de EXEMPLO (RF-14): um veterano fictício, para exercitar histórico, integralização e extras com dados realistas. A identidade da conta vem de students.json; aqui valem enrollment.startTerm, approvedSeq e extras. Nenhum dado pessoal real — troque à vontade.",
+ "user": {
+  "name": "Veterano de Exemplo",
+  "email": "veterano@aluno.local",
+  "role": "USER"
+ },
+ "enrollment": {
+  "courseSlug": "engcomp-ufg-2021",
+  "startTerm": "2022.2",
+  "currentTerm": "2026.2",
+  "periodsDone": 8
+ },
+ "approvedSeq": [
+  1,
+  6,
+  7,
+  8,
+  15,
+  16,
+  19,
+  21,
+  27,
+  29,
+  32,
+  33,
+  36,
+  37,
+  38,
+  39,
+  40,
+  42,
+  47,
+  51,
+  52,
+  55,
+  58,
+  60
+ ],
+ "extras": [
+  {
+   "id": "e1",
+   "name": "Libras",
+   "code": "FL0001",
+   "ch": 64,
+   "cat": "NL",
+   "done": true
+  },
+  {
+   "id": "e2",
+   "name": "Introdução à Filosofia",
+   "code": "FAF0101",
+   "ch": 32,
+   "cat": "NL",
+   "done": true
+  },
+  {
+   "id": "e3",
+   "name": "Empreendedorismo",
+   "code": "ADM0210",
+   "ch": 32,
+   "cat": "NL",
+   "done": true
+  },
+  {
+   "id": "e4",
+   "name": "Tópicos em Visão Computacional",
+   "code": "INF0777",
+   "ch": 64,
+   "cat": "OPT",
+   "done": true
+  },
+  {
+   "id": "e5",
+   "name": "Estágio supervisionado",
+   "code": "",
+   "ch": 160,
+   "cat": "AC",
+   "done": true
+  },
+  {
+   "id": "e6",
+   "name": "Iniciação científica (PIBIC)",
+   "code": "",
+   "ch": 120,
+   "cat": "AC",
+   "done": true
+  },
+  {
+   "id": "e7",
+   "name": "Monitoria de Cálculo 1A",
+   "code": "",
+   "ch": 60,
+   "cat": "AC",
+   "done": true
+  },
+  {
+   "id": "e8",
+   "name": "Maratona de programação (regional)",
+   "code": "",
+   "ch": 20,
+   "cat": "AC",
+   "done": true
+  },
+  {
+   "id": "e9",
+   "name": "Projeto de extensão em andamento",
+   "code": "",
+   "ch": 40,
+   "cat": "AC",
+   "done": false
+  }
+ ],
+ "notes": "Perfil de demonstração. As horas de Atividade Complementar somam mais que o mínimo do curso de propósito: é assim que se vê a regra do teto em ação — o excedente aparece à parte e não infla o total de integralização."
+}

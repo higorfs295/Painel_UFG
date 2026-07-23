@@ -112,23 +112,32 @@ crie um monitor gratuito no **UptimeRobot**/**cron-job.org** apontando para
 
 ## 4. Passo a passo: Vercel (frontend)
 
-1. Dashboard da Vercel → *Add New → Project* → importe o repo → **Root Directory: `frontend`**
-   (a Vercel detecta Vite sozinha).
-2. Em *Environment Variables*, defina **`VITE_API_URL`** = URL da API no Render
+1. Dashboard da Vercel → *Add New → Project* → importe o repo → **Root Directory: `web`**
+   (a Vercel detecta o Next.js sozinha).
+2. Em *Environment Variables*, defina **`NEXT_PUBLIC_API_URL`** = URL da API no Render
    (ex.: `https://painel-api.onrender.com`) — para Production e Preview.
-3. Deploy. O `web/vercel.json` declara o framework Next e os cabeçalhos de segurança
-   e de headers de segurança básicos.
+3. Deploy. O `web/vercel.json` declara o framework Next e os cabeçalhos de segurança básicos.
 
-> `VITE_API_URL` é **embutida no build** (não é lida em runtime): mudou a URL da API → redeploy
+> `NEXT_PUBLIC_API_URL` é **embutida no build** (não é lida em runtime): mudou a URL da API → redeploy
 > do frontend. Os previews da Vercel têm URLs próprias — inclua-as no `CORS_ORIGIN` da API se
 > quiser testar auth neles.
 
 ### 4.1 Amarrando as pontas (checklist final)
 
+Automatize o que dá para automatizar:
+
+```bash
+npm run smoke -- https://painel-api.onrender.com https://painel.vercel.app
+```
+
+O script confere saúde, o alias `/api`, superfície fechada (`/docs`, devtools), cabeçalhos e
+CORS com credenciais. O que ele **não** cobre e você precisa ver no navegador: login,
+F5 mantendo a sessão e o botão de e-mail de teste.
+
 - [ ] `APP_URL` (Render) = URL da Vercel → links de convite/reset apontam para o site certo
 - [ ] `CORS_ORIGIN` (Render) contém a URL da Vercel → o navegador aceita as respostas
 - [ ] `COOKIE_SAMESITE=none` (Render) → o cookie de refresh viaja entre os domínios
-- [ ] `VITE_API_URL` (Vercel) = URL do Render → o SPA fala com a API certa
+- [ ] `NEXT_PUBLIC_API_URL` (Vercel) = URL do Render → o frontend fala com a API certa
 - [ ] Teste: cadastro → login → recarregar a página (sessão persiste?) → convite de um segundo
       usuário chega/funciona?
 
@@ -155,17 +164,52 @@ Notas desta topologia:
 Sem SMTP configurado o sistema **funciona** — mas no modo manual: o link de convite é devolvido
 ao admin (e logado no servidor) para repasse por WhatsApp/e-mail pessoal. Para envio automático:
 
+### ⚠️ O plano FREE do Render bloqueia as portas SMTP padrão
+
+Desde **26/09/2025**, web services gratuitos do Render bloqueiam saída nas portas **25, 465 e
+587**. A porta 25 segue bloqueada em todos os planos (o Render roda sobre EC2); 465 e 587
+voltam a funcionar em instâncias pagas. Sintoma no log: `ETIMEDOUT` ao conectar.
+
+A saída sem pagar é a **porta 2525**, que os provedores transacionais (Brevo, SendGrid,
+Mailgun, Postmark) oferecem como alternativa e que não está na lista de bloqueio. Não há
+promessa do Render de que ela fique aberta — é "não bloqueada", não "suportada".
+
 ```bash
-SMTP_HOST="smtp.gmail.com"   # ou smtp.resend.com, smtp-relay.brevo.com…
-SMTP_PORT=587
-SMTP_USER="voce@gmail.com"
-SMTP_PASS="xxxx xxxx xxxx xxxx"   # Gmail: "senha de app" (exige 2FA ativado)
-MAIL_FROM="Painel Acadêmico <voce@gmail.com>"
+SMTP_HOST="smtp-relay.brevo.com"
+SMTP_PORT=2525                    # 587 no dev local; 2525 no Render free
+SMTP_USER="<login SMTP do painel Brevo>"   # NÃO é o e-mail da conta
+SMTP_PASS="<SMTP key gerada no painel>"    # NÃO é a senha da conta
+MAIL_FROM="Painel Acadêmico <remetente-verificado@seu-dominio>"
 ```
 
-Opções gratuitas testadas pela comunidade: **Gmail** (senha de app; limite ~500/dia), **Resend**
-(3k/mês; exige domínio verificado para FROM próprio), **Brevo** (300/dia). A falha de SMTP nunca
-quebra o fluxo: o sistema loga o erro e o link continua disponível no painel admin.
+Opções gratuitas: **Brevo** (300/dia, sem cartão), **Resend** (3k/mês; exige domínio
+verificado), **Gmail** com senha de app (~500/dia, mas as portas dele são 465/587 — não serve
+no Render free). A falha de SMTP nunca quebra o fluxo: o sistema loga o erro e o link continua
+disponível no painel admin.
+
+### Diagnóstico
+
+Use o botão **"Enviar e-mail de teste"** em `/admin/config` — diferente do fluxo de convite,
+ele propaga o erro em vez de engolir.
+
+| Erro | Causa |
+| --- | --- |
+| `EAUTH` / `535` | credencial: revise `SMTP_USER` (formato próprio do painel) e `SMTP_PASS` (SMTP key, não a senha) |
+| `ETIMEDOUT` / `ECONNREFUSED` | porta bloqueada — tente a 2525 |
+| erro 550 / remetente recusado | `MAIL_FROM` não é um sender verificado no provedor |
+
+### Entregabilidade
+
+Enviar com um `MAIL_FROM` em `@gmail.com` via relay de terceiro **não alinha SPF/DKIM** com o
+domínio gmail.com — Gmail, Yahoo e Microsoft passaram a exigir autenticação de domínio para
+remetentes. Não bloqueia a publicação, mas autentique um domínio próprio com DKIM assim que
+possível.
+
+### Plano B: API HTTP
+
+Se a 2525 também for bloqueada, a API HTTP do provedor (porta 443) é imune a restrição de porta
+SMTP. Custa um adaptador novo em `backend/src/lib/mailer.ts` mantendo a assinatura de
+`sendInviteEmail`/`sendTestEmail` — o resto do sistema não precisa saber.
 
 ## 7. Depois de publicar: o que observar
 

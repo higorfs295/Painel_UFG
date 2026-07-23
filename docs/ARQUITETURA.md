@@ -22,11 +22,11 @@ status, validação de código SIGAA) é reexecutado no servidor**.
 flowchart LR
   User([Usuário])
   subgraph Cliente
-    SPA["React SPA<br/>Vite · TanStack Query · Zustand"]
+    SPA["Next.js (App Router)<br/>React 19 · TanStack Query · Zustand"]
   end
   subgraph Edge["Borda (produção)"]
     Caddy["Caddy<br/>TLS · proxy · headers de segurança"]
-    Nginx["nginx<br/>estáticos do SPA"]
+    Next["Next server<br/>(output standalone)"]
   end
   subgraph Servidor
     API["API Fastify<br/>rotas · domínio puro · Prisma"]
@@ -35,9 +35,9 @@ flowchart LR
   Redis[("Redis<br/>(opcional)")]
 
   User -->|HTTPS| Caddy
-  Caddy -->|"/auth /me /users /courses /health"| API
-  Caddy -->|"/* (SPA)"| Nginx
-  Nginx --> SPA
+  Caddy -->|"/api/* · /health"| API
+  Caddy -->|"/* (páginas)"| Next
+  Next --> SPA
   SPA -.->|"fetch (mesma origem)"| Caddy
   API -->|Prisma| DB
   API -.->|"rate limit distribuído"| Redis
@@ -45,7 +45,7 @@ flowchart LR
 
 - **Mesma origem**: o Caddy roteia as rotas de API para o backend e todo o resto para o SPA. Assim o
   cookie de refresh (`path=/auth`) casa e não há CORS em produção.
-- **Dev**: SPA em `:5173` (Vite) e API em `:3333` (Fastify) com CORS restrito; Postgres em Docker.
+- **Dev**: Next em `:5173` e API em `:3333` (Fastify) com CORS restrito; Postgres em Docker.
 - **Redis é opcional**: sem `REDIS_URL` o rate limit é em memória (suficiente para 1 réplica).
 
 ## 3. Ciclo de vida de uma requisição
@@ -329,6 +329,7 @@ flowchart TD
 | Backup portável por `seq` | Sobrevive a re-seed/reimportação da matriz (ids mudam, `seq` não). |
 | Exclusão de curso em duas etapas (RF-28) | O `DELETE` cascateia sobre o progresso de todos os alunos; a lixeira dá 7 dias de arrependimento e a confirmação do slug é validada **no servidor**, não só na UI. |
 | Sugestões da grade calculadas no servidor (RF-29) | Sigla, CH e cor saem da matriz — o cliente não inventa dados; e o `subjectId` recebido é revalidado contra a matrícula. |
+| Alias `/api` por **reescrita de URL**, não por montagem dupla | Registrar as rotas duas vezes dá a cada caminho o seu próprio balde de rate limit — medido: o teto de login passava de 10 para 20 por IP. `rewriteUrl` resolve antes do roteamento: uma tabela, um balde, métricas que não se dividem. O caminho de entrada fica em `req.raw.originalUrl`, de onde sai o `path` do cookie. |
 
 ## 10. Deploy (Compose + Caddy)
 
@@ -357,8 +358,14 @@ Sequência de subida e pontos de atenção:
 1. **`db`** sobe primeiro; o healthcheck (`pg_isready`) segura a API até o Postgres aceitar conexões.
 2. **`api`** roda `prisma migrate deploy` no entrypoint (aplica migrações pendentes, nunca cria novas)
    e então inicia o servidor; encerra graciosamente em `SIGTERM` (drena requests, desconecta o Prisma).
-3. **`web`** é só nginx servindo o build do Vite com fallback para `index.html` (BrowserRouter).
-4. **`caddy`** termina TLS (interno em `localhost`; Let's Encrypt automático com domínio real),
+3. **`web`** roda o servidor Next em modo `standalone` (imagem enxuta, sem `node_modules` completo).
+4. **A API responde também sob `/api`** (`API_ALIAS_PREFIX`). Aqui frontend e API
+   compartilham a origem, e o Next tem páginas em `/admin/*` que colidem com endpoints de
+   mesmo nome — `/admin/config` existe nos dois. O alias dá à API um espaço próprio, e o
+   Caddy roteia por `path /api/*`. O cliente escolhe o prefixo sozinho: URL absoluta → raiz;
+   vazia → `/api`. O cookie de refresh acompanha (`path=/api/auth` quando entra pelo alias),
+   senão a sessão morreria no primeiro refresh.
+5. **`caddy`** termina TLS (interno em `localhost`; Let's Encrypt automático com domínio real),
    injeta os headers de segurança (HSTS/CSP/XFO) e roteia por caminho — mesma origem, sem CORS.
 
 ```bash
@@ -380,7 +387,7 @@ A alternativa hospedada sem servidor próprio — passo a passo operacional em
 flowchart LR
   User([Usuário]) -->|HTTPS| Vercel
   subgraph Vercel["Vercel (free) — CDN global"]
-    SPA["SPA estático (build Vite)<br/>VITE_API_URL embutida no build<br/>vercel.json: SPA rewrites + headers"]
+    SPA["Next.js na Vercel<br/>NEXT_PUBLIC_API_URL embutida no build<br/>vercel.json: headers de segurança"]
   end
   SPA -->|"fetch cross-site<br/>Authorization: Bearer + cookie SameSite=None"| Render
   subgraph Render["Render (free) — hiberna s/ tráfego"]

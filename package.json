@@ -12,13 +12,17 @@
     "seed": "npm --prefix backend run seed",
     "typecheck": "npm --prefix backend run typecheck && npm --prefix web run typecheck",
     "test": "npm --prefix backend test && npm --prefix backend run test:integration",
-    "e2e": "npm --prefix web run e2e"
+    "e2e": "npm --prefix web run e2e",
+    "preflight": "bash scripts/preflight.sh",
+    "smoke": "bash scripts/smoke.sh"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/higorfs295/Painel_UFG.git"
   },
-  "bugs": { "url": "https://github.com/higorfs295/Painel_UFG/issues" },
+  "bugs": {
+    "url": "https://github.com/higorfs295/Painel_UFG/issues"
+  },
   "homepage": "https://github.com/higorfs295/Painel_UFG#readme",
-  "license": "ISC"
+  "license": "MIT"
 }
