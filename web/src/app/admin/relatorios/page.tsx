@@ -128,7 +128,7 @@ function ReportsInner() {
           <StatTile label="Alunos no curso" value={ok.students} icon={RiGroupLine} tone="violet" hint={`${ok.cohorts.length} coorte(s) de ingresso`} />
           <StatTile label="Integralização média" value={ok.progress.avgPct} decimals={1} suffix="%" icon={RiPercentLine} tone="brand" hint={`mediana ${ok.progress.medianPct}%`} />
           <StatTile label="Cursando agora" value={ok.subjects.reduce((s, x) => s + x.enrolled, 0)} icon={RiPlayCircleLine} tone="blue" hint="matrículas em disciplinas neste período" />
-          <StatTile label="Aptos sem cursar" value={ok.subjects.reduce((s, x) => s + x.apt, 0)} icon={RiUserStarLine} tone="amber" hint="vagas que a turma já poderia ocupar" />
+          <StatTile label="Aptos sem cursar" value={ok.subjects.reduce((s, x) => s + x.apt, 0)} icon={RiUserStarLine} tone="amber" hint="soma, disciplina a disciplina, de alunos que já podem cursá-la" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
