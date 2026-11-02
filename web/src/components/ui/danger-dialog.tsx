@@ -1,15 +1,18 @@
 "use client";
 
-// Confirmação em duas etapas para ações destrutivas (RF-28).
+// Confirmação em duas etapas para ações destrutivas (RF-28), no Tremor Raw Dialog (Radix:
+// foco preso, Esc fecha, papel `dialog`).
 //
 // Etapa 1: mostra o que será perdido — números concretos, não um "tem certeza?".
 // Etapa 2: exige que a pessoa digite a palavra-chave (o slug do curso).
 // O mesmo texto é reenviado ao servidor, que também confere: a UI é a segunda trava.
-import { useEffect, useRef, useState } from "react";
-import Button from "./button";
-import { inputCls } from "./index";
-import { IconX } from "./icons";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/tremor/Button";
+import {
+  Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/tremor/Dialog";
+import { Input } from "@/components/tremor/Input";
+import { Label } from "@/components/tremor/Label";
 
 export function DangerDialog({
   open, title, children, keyword, confirmLabel, pending, error, onConfirm, onClose,
@@ -27,56 +30,46 @@ export function DangerDialog({
 }) {
   const [step, setStep] = useState<1 | 2>(1);
   const [typed, setTyped] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { if (open) { setStep(1); setTyped(""); } }, [open]);
-  useEffect(() => { if (step === 2) inputRef.current?.focus(); }, [step]);
-
-  // Esc fecha — uma ação destrutiva nunca deve prender a pessoa no diálogo
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
-  if (!open) return null;
   const armed = typed.trim() === keyword;
 
   return (
-    <div className="fixed inset-0 z-[60] grid place-items-center bg-black/60 p-5 backdrop-blur-sm"
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div role="dialog" aria-modal="true" aria-label={title}
-        className="bg-popover border-t-lock w-full max-w-lg rounded-xl border border-t-2 p-6 shadow-2xl">
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <h3 className="font-display text-foreground text-xl font-semibold tracking-tight">{title}</h3>
-          <button onClick={onClose} aria-label="Fechar"
-            className="text-muted-foreground hover:text-foreground cursor-pointer p-1"><IconX /></button>
-        </div>
-
-        <div className="text-muted-foreground text-sm">{children}</div>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription asChild>
+            <div className="mt-1 text-sm leading-6 text-gray-500 dark:text-gray-400">{children}</div>
+          </DialogDescription>
+        </DialogHeader>
 
         {step === 2 && (
-          <label className="text-muted-foreground mt-4 flex flex-col gap-1.5 text-[0.7rem] font-semibold tracking-[0.12em] uppercase">
-            <span>Para confirmar, digite <code className="text-foreground text-sm normal-case">{keyword}</code></span>
-            <input ref={inputRef} value={typed} onChange={(e) => setTyped(e.target.value)}
-              autoComplete="off" spellCheck={false} placeholder={keyword} className={cn(inputCls, "font-mono")} />
-          </label>
+          <div className="mt-4">
+            <Label htmlFor="danger-keyword">
+              Para confirmar, digite <code>{keyword}</code>
+            </Label>
+            <Input id="danger-keyword" autoFocus value={typed} onChange={(e) => setTyped(e.target.value)}
+              autoComplete="off" spellCheck={false} placeholder={keyword} className="mt-2 font-mono" />
+          </div>
         )}
 
-        {error && <p className="text-lock mt-3 text-sm" role="alert">{error}</p>}
+        {error && <p className="mt-3 text-sm text-red-700 dark:text-red-400" role="alert">{error}</p>}
 
-        <div className="mt-5 flex justify-end gap-2">
-          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+        <DialogFooter className="mt-6 gap-2 sm:gap-0">
+          <DialogClose asChild>
+            <Button variant="secondary" className="w-full sm:w-fit">Cancelar</Button>
+          </DialogClose>
           {step === 1 ? (
-            <Button variant="danger" onClick={() => setStep(2)}>Entendi, continuar</Button>
+            <Button variant="destructive" className="w-full sm:w-fit" onClick={() => setStep(2)}>Entendi, continuar</Button>
           ) : (
-            <Button variant="danger" disabled={!armed || pending} onClick={() => onConfirm(typed.trim())}>
-              {pending ? "Aplicando…" : confirmLabel}
+            <Button variant="destructive" className="w-full sm:w-fit" disabled={!armed} isLoading={pending}
+              loadingText="Aplicando…" onClick={() => onConfirm(typed.trim())}>
+              {confirmLabel}
             </Button>
           )}
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

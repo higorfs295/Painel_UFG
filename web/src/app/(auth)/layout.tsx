@@ -1,51 +1,52 @@
-// Casca das telas de entrada: tela dividida com o herói em gradiente à esquerda e o
-// formulário à direita. Grupo de rota `(auth)` — a URL não ganha segmento, exatamente
-// como o nextjs-admin-dashboard separa `(with-layout)` de `(without-layout)`.
+// Casca das telas de entrada — a página de login do tremorlabs/template-overview (MIT,
+// © 2025 Tremor Labs, Inc.): coluna estreita centralizada, grade de quadradinhos ao fundo
+// com máscara radial e a "placa" com quatro parafusos segurando a marca. Acento laranja.
+// Grupo de rota `(auth)`: a URL não ganha segmento.
+import { InstanceBanner } from "@/components/layout/instance-banner";
 import Link from "next/link";
-import { APP_NAME, APP_TAGLINE } from "@/lib/branding";
-import { IconCheck, IconGrid, IconSprout, IconStar } from "@/components/ui/icons";
-
-const PONTOS = [
-  { icon: IconStar, text: "Recomendações pelo que mais destrava a sua matriz" },
-  { icon: IconGrid, text: "Cenários de grade com os códigos do SIGAA" },
-  { icon: IconSprout, text: "Optativas, Núcleo Livre e horas complementares no lugar" },
-];
+import { APP_NAME } from "@/lib/branding";
+import { BrandMark } from "@/components/brand";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid min-h-svh lg:grid-cols-[1.05fr_0.95fr]">
-      <aside className="relative hidden flex-col justify-center overflow-hidden p-12 text-[#fbefe0] lg:flex"
-        style={{ background: "var(--sidebar-gradient)" }}>
+    // a porta de entrada é a cara pública do projeto: fica no laranja do site, qualquer que seja
+    // a cor de destaque que a pessoa escolheu para o painel (v12)
+    <div data-accent="orange" className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-20 lg:px-6 dark:bg-gray-950">
+      <InstanceBanner className="fixed inset-x-0 top-0 z-50" />
+      <div className="relative w-full sm:mx-auto sm:max-w-sm">
         <div aria-hidden="true"
-          className="pointer-events-none absolute -top-20 -right-28 size-[520px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(255,231,184,.32), transparent 62%)" }} />
+          className="pointer-events-none absolute -top-[18%] left-1/2 -translate-x-1/2 opacity-60 select-none dark:opacity-90"
+          style={{
+            maskImage: "radial-gradient(rgba(0, 0, 0, 1) 0%, transparent 80%)",
+            WebkitMaskImage: "radial-gradient(rgba(0, 0, 0, 1) 0%, transparent 80%)",
+          }}>
+          {/* sombra em sRGB (#ff6900 = orange-500): em oklab, perto do limite do gamut, o
+              desfoque gerava franjas ciano em alguns rasterizadores */}
+          <div className="flex flex-col gap-1">
+            {Array.from({ length: 10 }, (_, i) => (
+              <div key={`l-${i}`} className="flex gap-2">
+                {Array.from({ length: 10 }, (_, j) => (
+                  <div key={`c-${i}-${j}`}
+                    className="size-7 rounded-md shadow-[0_1px_3px_0_rgb(255_105_0/0.4),0_1px_2px_-1px_rgb(255_105_0/0.4)] ring-1 ring-black/5 dark:shadow-[0_1px_3px_0_rgb(255_137_4/0.2),0_1px_2px_-1px_rgb(255_137_4/0.2)] dark:ring-white/10" />
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
 
-        <Link href="/" className="font-display relative flex items-center gap-2.5 text-lg font-semibold text-[#fbefe0]">
-          <span aria-hidden="true" className="grid size-8 place-items-center rounded-lg bg-white/15 text-sm font-bold">PA</span>
-          {APP_NAME}
+        <Link href="/" aria-label={`${APP_NAME} — página inicial`}
+          className="relative mx-auto block w-fit rounded-xl bg-gray-50 p-4 shadow-md ring-1 shadow-black/10 ring-black/10 dark:bg-gray-900 dark:ring-gray-800">
+          <span className="absolute top-[9%] left-[9%] size-1 rounded-full bg-gray-100 shadow-inner dark:bg-gray-800" />
+          <span className="absolute top-[9%] right-[9%] size-1 rounded-full bg-gray-100 shadow-inner dark:bg-gray-800" />
+          <span className="absolute bottom-[9%] left-[9%] size-1 rounded-full bg-gray-100 shadow-inner dark:bg-gray-800" />
+          <span className="absolute right-[9%] bottom-[9%] size-1 rounded-full bg-gray-100 shadow-inner dark:bg-gray-800" />
+          <span className="block w-fit rounded-lg bg-linear-to-b from-orange-500 to-orange-700 p-3 shadow-xs ring-1 shadow-orange-500/50 ring-white/25 ring-inset">
+            <BrandMark onAccent className="size-8" />
+          </span>
         </Link>
 
-        <h2 className="font-display relative mt-10 text-5xl leading-[0.98] font-semibold tracking-tight">
-          Cada aula, um passo rumo ao <em className="not-italic text-[#ffe7b8]">horizonte</em>.
-        </h2>
-        <p className="relative mt-4 max-w-[40ch] text-[#fbefe0]/70">{APP_TAGLINE}</p>
-
-        <ul className="relative mt-10 flex flex-col gap-3">
-          {PONTOS.map(({ icon: Icon, text }) => (
-            <li key={text} className="flex items-center gap-3 text-sm text-[#fbefe0]/75">
-              <Icon className="shrink-0 text-[#ffe7b8]" /> {text}
-            </li>
-          ))}
-        </ul>
-
-        <p className="relative mt-10 flex items-center gap-2 text-xs text-[#fbefe0]/60">
-          <IconCheck className="text-[#ffe7b8]" /> sessão com renovação rotativa e matrícula cifrada em repouso
-        </p>
-      </aside>
-
-      <main className="grid place-items-center p-6 sm:p-12">
-        <div className="w-full max-w-[420px]">{children}</div>
-      </main>
+        <div className="relative">{children}</div>
+      </div>
     </div>
   );
 }

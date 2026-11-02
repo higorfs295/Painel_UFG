@@ -5,6 +5,8 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { importCourse } from "../../domain/importCourse.js";
+import { invalidateCourseGraph } from "../../domain/loadCourse.js";
+import { exportCourse, previewImport } from "./matrix.js";
 import { audit } from "../../lib/audit.js";
 import {
   RETENTION_DAYS, courseImpact, listActiveCourses, listTrash,
@@ -47,8 +49,43 @@ export async function courseRoutes(app: FastifyInstance) {
     return { retentionDays: RETENTION_DAYS, ...(await courseImpact(app.prisma, course.id)) };
   });
 
+  // v12 — baixa a matriz no formato da importação (exportar → editar → reimportar).
+  app.get("/:slug/export", { preHandler: app.requireAdmin }, async (req, reply) => {
+    const { slug } = slugParam.parse(req.params);
+    const matriz = await exportCourse(app.prisma, slug);
+    if (!matriz) return reply.code(404).send({ error: "curso não encontrado" });
+    return reply.header("Content-Disposition", `attachment; filename="matriz-${slug}.json"`).send(matriz);
+  });
+
+  // v12 — nome e carga horária total editáveis na tela (o resto da matriz vem por importação).
+  app.patch("/:slug", { preHandler: app.requireAdmin }, async (req, reply) => {
+    const { slug } = slugParam.parse(req.params);
+    const patch = z.object({
+      name: z.string().trim().min(3).max(160).optional(),
+      totalHours: z.number().int().positive().max(20_000).optional(),
+    }).strict().parse(req.body);
+    const course = await app.prisma.course.findFirst({ where: { slug, deletedAt: null }, select: { id: true } });
+    if (!course) return reply.code(404).send({ error: "curso não encontrado" });
+    const updated = await app.prisma.course.update({
+      where: { id: course.id },
+      data: {
+        ...(patch.name !== undefined ? { name: patch.name } : {}),
+        ...(patch.totalHours !== undefined ? { totalHours: patch.totalHours } : {}),
+      },
+      select: { id: true, slug: true, name: true, totalHours: true },
+    });
+    invalidateCourseGraph(course.id); // totalHours entra no cálculo do progresso
+    await audit(app.prisma, {
+      userId: req.user.sub, action: "course.update", entity: "Course", entityId: slug, meta: patch, ip: req.ip,
+    });
+    return updated;
+  });
+
   // RF-13: importa/atualiza matriz por JSON (mesmo formato do seed). Idempotente.
+  // v12: `?dryRun=1` só valida e compara com o que existe — nada é gravado.
   app.post("/import", { preHandler: app.requireAdmin }, async (req, reply) => {
+    const { dryRun } = z.object({ dryRun: z.enum(["1", "true"]).optional() }).parse(req.query);
+    if (dryRun) return previewImport(app.prisma, req.body);
     const result = await importCourse(app.prisma, req.body); // matrizSchema valida (zod) e lança em erro
     await audit(app.prisma, {
       userId: req.user.sub, action: "course.import", entity: "Course", entityId: result.slug,

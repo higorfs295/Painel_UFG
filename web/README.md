@@ -1,6 +1,10 @@
 # Painel Acadêmico — frontend (Next.js)
 
 App Router + TypeScript + Tailwind CSS v4, consumindo a API Fastify em `../backend`.
+O desenho parte de templates abertos da [Tremor](https://tremor.so) (MIT): o
+**template-dashboard** no app, o **template-solar** no site público e o login do
+**template-overview** — detalhes em [`../docs/DESIGN.md`](../docs/DESIGN.md) e
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ```bash
 npm install
@@ -19,22 +23,28 @@ A API precisa estar de pé (`cd ../backend && npm run dev`). O endereço vem de
 | `npm run build` | build de produção (**pare o `dev` antes**: os dois usam `.next/`) |
 | `npm run start` | serve o build |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm run e2e` | Playwright — precisa da API e do app no ar |
+| `npm run e2e` | Playwright — precisa da API e do app no ar (`E2E_USER_PASSWORD` = senha do seed) |
 
 ## Mapa de rotas
 
 ```
-/                        landing pública (Server Component)
-/entrar · /cadastro      autenticação            ·  grupo (auth), tela dividida
+/                        site público (Server Component, template-solar)
+/entrar · /cadastro      autenticação            ·  grupo (auth), login do template-overview
 /convite/[token]         define a senha do convite
 /painel                  visão geral do aluno    ┐
-/painel/disciplinas                              │
-/painel/extras                                   │  casca com barra lateral
-/painel/cronograma                               │  (AppShell area="student")
+/painel/disciplinas      tabela com lote/gaveta  │
+/painel/mapa             mapa de pré-requisitos  │
+/painel/extras                                   │  sidebar do template-dashboard
+/painel/historico                                │  (AppShell area="student")
 /painel/recomendacoes                            │
-/painel/historico                                │
-/painel/agenda                                   ┘
-/admin …                 7 telas de gestão       (AppShell area="admin")
+/painel/cronograma                               │
+/painel/agenda                                   │
+/painel/avisos                                   ┘  (o admin também usa — v12)
+/admin                   visão do sistema        ┐
+/admin/usuarios          lote, gaveta, CSV       │
+/admin/cursos[/slug]     cartões e matriz        │
+/admin/relatorios        só agregados (≥ 5)      │  AppShell area="admin"
+/admin/avisos · periodos · monitor · auditoria · config ┘
 /config · /ajuda         compartilhadas          (AppShell area="any")
 ```
 
@@ -44,15 +54,22 @@ A API precisa estar de pé (`cd ../backend && npm run dev`). O endereço vem de
 src/
 ├─ app/                    rotas (App Router); grupos (auth) e segmentos painel/ e admin/
 ├─ components/
-│  ├─ layout/              sidebar, header, paleta de comandos, casca autenticada
-│  ├─ ui/                  primitivas (button, card, chip, tabela, diálogo de risco…)
-│  ├─ charts/              gráficos em SVG (donut, barras, área, empilhada)
-│  ├─ marketing/           seções da landing
+│  ├─ tremor/              componentes Tremor Raw portados (Tailwind v4, acento = escala brand-*)
+│  ├─ fx/                  grafismos e movimento (faixa de topo, anel, gráficos pequenos, confete)
+│  ├─ admin/               peças das telas de gestão
+│  ├─ layout/              sidebar, gaveta, seletor de curso, perfil, paleta de comandos
+│  ├─ overview/            cartões da visão geral
+│  ├─ data-table/          DataTable (TanStack) com seleção e barra de comandos em lote
+│  ├─ site/                seções do site público
+│  ├─ ui/ · charts/        primitivas das páginas antigas, com a pele da Tremor
+│  ├─ subject-drawer.tsx   gaveta da disciplina (requisitos, libera, marcações, anotação)
 │  └─ schedule/            "puxar do meu semestre" (RF-29)
-├─ hooks/                  queries do aluno com as chaves centralizadas
+├─ hooks/                  dados do aluno (queryKey centralizadas) e avisos
 └─ lib/
    ├─ api/                 cliente HTTP, endpoints tipados, tipos e a pista de sessão
    ├─ auth-store.ts        sessão e matrícula selecionada (Zustand)
+   ├─ curriculum-graph.ts  topologia da matriz (requisitos, liberadas, camadas)
+   ├─ chart-utils.ts       cores e domínio dos gráficos (Tremor)
    ├─ monitoring.ts        reporte de erro opcional
    └─ csv.ts · sigaa.ts    exportação e parser de horário
 ```
@@ -62,11 +79,21 @@ src/
 **Tudo do painel roda no cliente.** O refresh da sessão vive num cookie `httpOnly` emitido
 por outra origem (a API em `:3333`); um Server Component do Next não o recebe, então
 renderizar o painel no servidor deixaria a sessão sem como se renovar. Server Components
-cuidam da casca estática (landing, layouts, metadados) e os dados vêm por TanStack Query.
+cuidam da casca estática (site, layouts, metadados) e os dados vêm por TanStack Query.
 
-**Gráficos em SVG, sem biblioteca.** Donut, barras, área e empilhada saem em poucas linhas,
-renderizam sem JavaScript extra e herdam as cores do tema. Bibliotecas de chart tocam
-`window` na importação e exigiriam `dynamic(..., { ssr: false })`.
+**Tema segue o sistema.** `defaultTheme="system"`; a escolha (Claro / Escuro / Sistema) é salva
+na conta. O site público é sempre claro (como o template-solar) — a rota `/` força o tema.
+
+**Cor de destaque e barra lateral (v12).** A escala `brand-*` troca de paleta pelo
+`data-accent` do `<html>` e a barra lateral tem três peles (`data-sidebar`) — ver
+`lib/appearance.ts` e `docs/DESIGN.md` §0. Cores de situação ficam fixas em `lib/palette.ts`.
+
+**Contraste antes de fidelidade.** Os tons de laranja do template-solar não passam no WCAG AA
+com texto branco; botões e textos de acento usam `orange-700` no claro (5,23:1). A tabela de
+contrastes está em `docs/DESIGN.md`.
+
+**Gráficos.** O `LineChart` da Tremor usa recharts; barras, anel e barra empilhada são HTML/SVG
+sem biblioteca.
 
 **Tokens de cor com `@theme inline`.** Sem o `inline`, o Tailwind resolve a cor no build e
 utilitários com opacidade (`bg-muted/60`) congelam num dos temas.

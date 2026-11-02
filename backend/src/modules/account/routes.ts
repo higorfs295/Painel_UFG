@@ -11,6 +11,7 @@ import { audit } from "../../lib/audit.js";
 import { publicUserSelect, toPublicUser } from "../../lib/userView.js";
 import { encryptField } from "../../lib/fieldCrypto.js";
 import { notFound } from "../../lib/errors.js";
+import { accentSchema, sidebarSchema, themeSchema } from "../../lib/prefs.js";
 
 export async function accountRoutes(app: FastifyInstance) {
   // Perfil do usuário autenticado (o frontend usa após login/refresh).
@@ -45,11 +46,14 @@ export async function accountRoutes(app: FastifyInstance) {
     return reply.code(204).send();
   });
 
-  // RF-15: perfil por usuário, persistido — tema, nome e dados acadêmicos (matrícula/turno).
+  // RF-15: perfil por usuário, persistido — aparência (tema, cor de destaque e barra lateral, v12),
+  // nome e dados acadêmicos (matrícula/turno).
   // `null` limpa o campo opcional; chave ausente não toca (semântica de PATCH via stripUndefined).
   app.patch("/settings", { preHandler: app.requireAuth }, async (req) => {
     const patch = z.object({
-      theme: z.enum(["dark", "light"]).optional(),
+      theme: themeSchema.optional(),
+      accent: accentSchema.optional(),
+      sidebar: sidebarSchema.optional(),
       name: z.string().min(2).optional(),
       matricula: z.string().trim().max(30).transform((v) => v || null).nullable().optional(),
       shift: z.enum(["matutino", "vespertino", "noturno", "integral"]).nullable().optional(),

@@ -1,143 +1,105 @@
 "use client";
 
-// Gráficos em SVG puro.
+// Gráficos e blocos de métrica no desenho da Tremor.
 //
-// Os templates de dashboard trazem bibliotecas pesadas (ApexCharts no admin dashboard,
-// VisActor no visactor-next-template) e, junto, o problema clássico do App Router: elas
-// tocam `window` na importação e precisam de `dynamic(..., { ssr: false })`, o que
-// atrasa o primeiro desenho e engorda o bundle.
-//
-// O que este painel precisa desenhar é modesto — anel de progresso, barras por período,
-// linha de ritmo, distribuição por curso. Em SVG isso sai em poucas linhas, renderiza no
-// servidor, herda os tokens de cor do tema e não custa um quilobyte de JavaScript extra.
-// O que foi realmente aproveitado dos templates é a COMPOSIÇÃO do visactor: título com
-// ícone + cartões de métrica ao lado do desenho.
-import type { ComponentType, SVGProps } from "react";
-import { cn, num } from "@/lib/utils";
+// • `LineChart` (recharts) é o componente do tremorlabs/template-dashboard (MIT), em
+//   components/tremor/LineChart — usado para séries por período.
+// • Aqui ficam as peças pequenas, sem biblioteca: título de bloco, métrica, barras
+//   horizontais (o BarList da Tremor) e a barra empilhada (o CategoryBar do cartão
+//   "Costs" do template).
+import type { ComponentType, ReactNode, SVGProps } from "react";
+import { cx, num } from "@/lib/utils";
+import { ProgressCircle } from "@/components/tremor/ProgressCircle";
 
-export function ChartTitle({ icon: Icon, title, hint }: {
+export function ChartTitle({ title, hint }: {
+  /** mantido por compatibilidade; a Tremor não põe ícone no título */
   icon?: ComponentType<SVGProps<SVGSVGElement>>; title: string; hint?: string;
 }) {
   return (
-    <div className="flex items-center gap-2">
-      {Icon && <Icon className="text-primary" />}
-      <h3 className="section-label !mb-0">{title}</h3>
-      {hint && <span className="text-subtle-foreground text-xs">{hint}</span>}
+    <div className="flex flex-wrap items-baseline gap-x-2">
+      <h3 className="font-semibold text-gray-900 sm:text-sm dark:text-gray-50">{title}</h3>
+      {hint && <span className="text-sm text-gray-500 dark:text-gray-400">{hint}</span>}
     </div>
   );
 }
 
-export function MetricCard({ title, value, sub, color = "var(--color-primary)" }: {
-  title: string; value: string | number; sub?: string; color?: string;
+/** Métrica do template: rótulo pequeno, valor em text-xl sem peso extra, nota opcional. */
+export function MetricCard({ title, value, sub }: {
+  title: string; value: ReactNode; sub?: string;
+  /** mantido por compatibilidade */
+  color?: string;
 }) {
   return (
-    <div className="border-l-2 pl-3" style={{ borderColor: color }}>
-      <span className="text-muted-foreground block text-xs">{title}</span>
-      <strong className="font-display block text-2xl font-semibold tracking-tight">{value}</strong>
-      {sub && <span className="text-subtle-foreground block text-xs">{sub}</span>}
+    <div>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
+      <p className="mt-1 text-xl text-gray-900 tabular-nums dark:text-gray-50">{value}</p>
+      {sub && <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{sub}</p>}
     </div>
   );
 }
 
-/** Anel de progresso — o número grande da integralização. */
-export function DonutProgress({ pct, label, size = 168 }: { pct: number; label?: string; size?: number }) {
-  const r = 70;
-  const circ = 2 * Math.PI * r;
+/** Anel de progresso = Tremor Raw ProgressCircle com o percentual no centro. */
+export function DonutProgress({ pct, label, size = 136 }: { pct: number; label?: string; size?: number }) {
   const clamped = Math.max(0, Math.min(100, pct));
   return (
-    <div className="grid place-items-center">
-      <svg viewBox="0 0 160 160" width={size} height={size} role="img"
-        aria-label={`${clamped.toFixed(0)}% integralizado`}>
-        <circle cx="80" cy="80" r={r} fill="none" stroke="var(--color-muted)" strokeWidth="12" />
-        <circle cx="80" cy="80" r={r} fill="none" stroke="var(--color-primary)" strokeWidth="12"
-          strokeLinecap="round" transform="rotate(-90 80 80)"
-          strokeDasharray={circ} strokeDashoffset={circ * (1 - clamped / 100)}
-          style={{ transition: "stroke-dashoffset 1s cubic-bezier(0.16,1,0.3,1)" }} />
-        <text x="80" y="76" textAnchor="middle" className="font-display" fill="var(--color-foreground)"
-          fontSize="30" fontWeight="650">{clamped.toFixed(0)}%</text>
-        {label && (
-          <text x="80" y="98" textAnchor="middle" fill="var(--color-muted-foreground)" fontSize="10"
-            letterSpacing="1.4">{label}</text>
-        )}
-      </svg>
-    </div>
+    <ProgressCircle value={clamped} radius={size / 2 - 6} strokeWidth={8} aria-label={`${clamped.toFixed(0)}% ${label ?? ""}`}>
+      <div className="text-center">
+        <p className="text-xl font-medium text-gray-900 tabular-nums dark:text-gray-50">{clamped.toFixed(0)}%</p>
+        {label && <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>}
+      </div>
+    </ProgressCircle>
   );
 }
 
 export type BarDatum = { label: string; value: number; hint?: string };
 
-/** Barras horizontais — carga horária por período, matrículas por curso. */
-export function BarList({ data, unit = "", color = "var(--color-primary)" }: {
-  data: BarDatum[]; unit?: string; color?: string;
+/** BarList da Tremor: barra clara com o rótulo por dentro e o valor à direita. */
+export function BarList({ data, unit = "", tone = "brand" }: {
+  data: BarDatum[]; unit?: string; tone?: "brand" | "red" | "gray";
+  /** mantido por compatibilidade (cor CSS antiga) */
+  color?: string;
 }) {
   const max = Math.max(1, ...data.map((d) => d.value));
+  const bar = {
+    brand: "bg-brand-200 dark:bg-brand-500/30",
+    red: "bg-red-200 dark:bg-red-500/30",
+    gray: "bg-gray-200 dark:bg-gray-700",
+  }[tone];
   return (
-    <ul className="flex flex-col gap-3">
+    <ul className="flex flex-col gap-1.5">
       {data.map((d) => (
-        <li key={d.label}>
-          <div className="text-muted-foreground mb-1 flex justify-between gap-3 text-xs">
-            <span className="truncate"><b className="text-foreground">{d.label}</b>{d.hint && ` · ${d.hint}`}</span>
-            <span>{num(d.value)}{unit}</span>
+        <li key={d.label} className="flex items-center justify-between gap-6">
+          <div className="relative flex h-8 min-w-0 flex-1 items-center">
+            <div className={cx("absolute inset-y-0 left-0 rounded-sm transition-[width] duration-500", bar)}
+              style={{ width: `${Math.max(2, (d.value / max) * 100)}%` }} />
+            <p className="relative truncate px-2 text-sm text-gray-900 dark:text-gray-50" title={d.hint}>
+              {d.label}{d.hint && <span className="text-gray-500 dark:text-gray-400"> · {d.hint}</span>}
+            </p>
           </div>
-          <div className="bg-muted h-2 overflow-hidden rounded-full">
-            <div className="h-full rounded-full transition-[width] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
-              style={{ width: `${(d.value / max) * 100}%`, background: color }} />
-          </div>
+          <p className="shrink-0 text-sm font-medium text-gray-900 tabular-nums dark:text-gray-50">{num(d.value)}{unit}</p>
         </li>
       ))}
     </ul>
   );
 }
 
-/** Linha com área — evolução da carga horária por período. */
-export function AreaSpark({ points, className }: { points: { x: string; y: number }[]; className?: string }) {
-  if (points.length === 0) return null;
-  const w = 320, h = 96, pad = 6;
-  const max = Math.max(1, ...points.map((p) => p.y));
-  // com um único ponto não há intervalo: desenha no meio para não dividir por zero
-  const stepX = points.length > 1 ? (w - pad * 2) / (points.length - 1) : 0;
-  const at = (i: number) => (points.length > 1 ? pad + i * stepX : w / 2);
-  const y = (v: number) => h - pad - (v / max) * (h - pad * 2);
-
-  const line = points.map((p, i) => `${i === 0 ? "M" : "L"}${at(i)},${y(p.y)}`).join(" ");
-  const area = `${line} L${at(points.length - 1)},${h - pad} L${at(0)},${h - pad} Z`;
-
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} className={cn("w-full", className)} role="img"
-      aria-label="Carga horária por período">
-      <defs>
-        <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={area} fill="url(#areaFill)" />
-      <path d={line} fill="none" stroke="var(--color-primary)" strokeWidth="2"
-        strokeLinecap="round" strokeLinejoin="round" />
-      {points.map((p, i) => (
-        <circle key={p.x} cx={at(i)} cy={y(p.y)} r="3" fill="var(--color-background)"
-          stroke="var(--color-primary)" strokeWidth="2" />
-      ))}
-    </svg>
-  );
-}
-
-/** Barras empilhadas horizontais numa faixa só — composição das horas. */
+/** Barra empilhada + legenda — o bloco "Current costs" do template. */
 export function StackedBar({ parts }: { parts: { label: string; value: number; color: string }[] }) {
   const total = Math.max(1, parts.reduce((t, p) => t + p.value, 0));
   return (
     <div>
-      <div className="bg-muted flex h-3 overflow-hidden rounded-full">
+      <div className="flex items-center gap-0.5">
         {parts.map((p) => (
-          <span key={p.label} title={`${p.label}: ${num(p.value)}h`}
-            style={{ width: `${(p.value / total) * 100}%`, background: p.color }} />
+          <div key={p.label} title={`${p.label}: ${num(p.value)}h`} className={cx("h-1.5 rounded-full", p.color)}
+            style={{ width: `${(p.value / total) * 100}%` }} />
         ))}
       </div>
-      <ul className="text-muted-foreground mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+      <ul role="list" className="mt-4 space-y-2">
         {parts.map((p) => (
-          <li key={p.label} className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full" style={{ background: p.color }} />
-            {p.label} <b className="text-foreground">{num(p.value)}h</b>
+          <li key={p.label} className="flex items-center gap-2 text-xs">
+            <span className={cx("size-2.5 rounded-xs", p.color)} aria-hidden="true" />
+            <span className="text-gray-900 dark:text-gray-50">{p.label}</span>
+            <span className="text-gray-600 tabular-nums dark:text-gray-400">({num(p.value)} h / {((p.value / total) * 100).toFixed(1).replace(".", ",")}%)</span>
           </li>
         ))}
       </ul>

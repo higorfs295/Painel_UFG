@@ -55,10 +55,10 @@ export default function EntrarPage() {
 
   return (
     <>
-      <h1 className="text-3xl">Entrar</h1>
-      <p className="text-muted-foreground mt-2 text-sm">Acesse o {APP_NAME} com a sua conta.</p>
+      <h1 className="mt-4 text-center text-xl font-semibold">Entrar</h1>
+      <p className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">Acesse o {APP_NAME} com a sua conta.</p>
 
-      <form onSubmit={submit} className="mt-8 flex flex-col gap-4">
+      <form onSubmit={submit} className="mt-10 flex flex-col gap-4">
         <Field label="E-mail">
           <input type="email" required autoComplete="email" value={email}
             onChange={(e) => setEmail(e.target.value)} className={inputCls} placeholder="voce@discente.ufg.br" />
@@ -70,17 +70,17 @@ export default function EntrarPage() {
 
         {/* ação secundária como link: um botão do mesmo tamanho competia com o "Entrar" */}
         <button type="button" onClick={forgot}
-          className="text-muted-foreground hover:text-primary -mt-2 cursor-pointer self-end text-xs underline-offset-4 hover:underline">
+          className="-mt-2 cursor-pointer self-end text-xs text-gray-500 underline-offset-4 hover:text-orange-700 hover:underline dark:text-gray-400 dark:hover:text-orange-400">
           Esqueci minha senha
         </button>
 
-        {err && <p className="text-lock text-sm" role="alert">{err}</p>}
+        {err && <p className="text-sm text-red-700 dark:text-red-400" role="alert">{err}</p>}
 
         <Button type="submit" variant="primary" disabled={busy}>{busy ? "Entrando…" : "Entrar"}</Button>
       </form>
 
-      <p className="text-muted-foreground mt-8 text-sm">
-        Não tem conta? <Link href="/cadastro" className="text-primary font-medium hover:underline">Criar conta</Link>
+      <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+        Não tem conta? <Link href="/cadastro" className="font-medium text-orange-700 hover:underline dark:text-orange-400">Criar conta</Link>
       </p>
     </>
   );

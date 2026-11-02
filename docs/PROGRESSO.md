@@ -1,5 +1,70 @@
 # Progresso da Implementação
 
+## v12 — "Tremor vivo" e a administração completa (2026-11-02)
+
+Pedido: o site estava "bastante incompleto", as contas de admin "deveriam ter formas diversas de
+usar" e o visual estava "sem graça no quesito cor, estilo, elementos gráficos e animação". O dono
+do projeto escolheu a direção "Tremor vivo + cor à escolha" e que **o admin não veja dado
+acadêmico individual** (só agregados por curso). Detalhes visuais e contraste em `docs/DESIGN.md`
+§0; rotas novas em `docs/API.md` (seção v12); requisitos RF-30..35 em `ESPECIFICACAO.md`.
+
+- **Aparência por pessoa (RF-30)**: cor de destaque (laranja, azul, violeta, verde, rosa) e barra
+  lateral clara, escura ou colorida, salvas na conta (migração `v12_aparencia_config_avisos`).
+  Cores de situação fixas. Contraste AA conferido por script e por E2E nas cinco cores.
+- **Grafismos e movimento**: faixa de topo com o campo de pontos do Solar, anel de progresso,
+  números que contam, minigráficos, mapa de calor, rosca, faixa de estado, medalhas, confete em
+  marcos; gráficos da Tremor (área, barras) animados; tudo respeita `prefers-reduced-motion`.
+- **Admin também cursa (RF-34)**: o seletor da barra lateral vira "Administração / Meu painel";
+  o seed não apaga mais a matrícula do admin.
+- **Gestão nova**: Visão do sistema com cadastros por semana, logins por dia (26 semanas),
+  contas por papel e atividade; Usuários com seleção em lote, gaveta (cadastro, cursos, acesso,
+  atividade), convite e importação por CSV, último login e encerramento de sessões; Cursos em
+  cartões, detalhe da matriz, exportação do JSON, importação com prévia e edição do cabeçalho;
+  **Relatórios** agregados (distribuição da integralização, composições, marcos, coortes,
+  demanda, cursando agora e gargalos — ocultos com menos de 5 alunos); Avisos com curso-alvo,
+  agendamento e validade; Períodos com linha do tempo; Monitor ao vivo (minuto a minuto);
+  **Auditoria** com busca, datas e paginação; Configurações editáveis (cadastro aberto/fechado,
+  domínios aceitos, faixa de aviso — resolve a pendência "ALLOW_REGISTRATION só pelo ambiente").
+- **Aluno**: faixas de topo em todas as páginas, cartões de número, barras por composição em
+  cores próprias, medalhas no histórico, avisos em cartões (com curso e agendamento), Ajuda com
+  acordeão, legenda de cores, atalhos e "quem vê o quê"; cadastro respeita as regras novas.
+- **Site público**: seção "Para coordenações".
+- **Bugs achados no caminho**: AreaChart da Tremor sem séries com React 19 (`react-is` 18 do
+  recharts não reconhece Fragment); barra de lote fora da tela por causa de `animation-fill-mode:
+  both`; botão principal no escuro com 4,03:1 no violeta (a v11 supunha texto gray-950; é
+  gray-900) — agora `brand-400`.
+- **Testes**: backend 43 unitários e 76 de integração (10 novos em `v12.test.ts`); E2E 20/20 no
+  build de produção (5 novos: modo aluno do admin, aparência, convite/remoção, relatório,
+  contraste do botão nas cinco cores).
+
+## Design v11 — fundação nos templates da Tremor (2026-11-02)
+
+Frontend redesenhado sobre templates abertos (MIT) da Tremor, escolhidos pelo dono do projeto:
+**template-dashboard** no app, **template-solar** no site público e o login do
+**template-overview**. Racional, tabela de contraste e lista de mudanças em `docs/DESIGN.md`;
+licença em `web/THIRD_PARTY_NOTICES.md`.
+
+- **App**: sidebar fixa com seletor de curso (o "workspace" do template) e menu de perfil com
+  tema Claro / Escuro / Sistema salvo na conta; visão geral com os cartões do Overview
+  (integralização, marcos, situação das disciplinas, ritmo por período em gráfico de linha,
+  estimativa de formatura); Disciplinas como o "Details" do template (DataTable com busca,
+  filtros, ordenação, paginação, ações por linha e **marcação em lote**); Ajustes no layout de
+  Settings (abas + seções em duas colunas).
+- **Funções novas**: Mapa curricular (camadas de pré-requisito, realce da cadeia exigida e do que
+  é liberado); gaveta da disciplina com requisitos, liberadas e **anotação pessoal** (RF-26, que o
+  backend já tinha e a interface não expunha); página de Avisos com contador de não lidos;
+  "Marcar como cursando" em Recomendações passou a marcar de verdade.
+- **Backend**: tema aceita `"system"`, que passa a ser o padrão de contas novas (migração
+  `20261102040000_tema_sistema`; contas antigas mantêm o valor).
+- **Correções encontradas no caminho**: o painel mostrava "Escolha seu curso" quando a lista de
+  matrículas falhava (rede/429) — agora mostra erro com "tentar novamente"; `inert=""` era ignorado
+  no React 19 (a gaveta fechada do mobile continuava focável); as seções da landing antiga começavam invisíveis
+  (`whileInView`); a página não tinha ícone de aba (404 em `/favicon.ico`); a animação do Dialog da
+  Tremor pularia no Tailwind v4; atalhos da barra de lote disparavam enquanto se digitava.
+- **Testes**: 43 unitários e 66 de integração no backend; E2E atualizado para a nova interface
+  (menu de ações por linha, lote, anotação, rotas novas, contraste calculado em sRGB a partir de
+  oklch).
+
 ## Design v4 — "Cerrado dashboard" (2026-07-10)
 
 Reforma **estrutural** do frontend, mesclando de verdade os 5 templates de referência (Luminary,

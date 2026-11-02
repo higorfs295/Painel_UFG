@@ -2,6 +2,7 @@
 
 // Cronograma (RF-10/11/12/29): cenários, disciplinas com código SIGAA validado no
 // servidor, pintura da grade e o preenchimento automático a partir de cursando/simuladas.
+import { RiTableLine } from "@remixicon/react";
 import { useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -115,7 +116,7 @@ export default function CronogramaPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHead eyebrow="grade semanal" title="Cronograma" />
+      <PageHead eyebrow="grade semanal" title="Cronograma" icon={RiTableLine} tone="blue" />
 
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3">

@@ -1,165 +1,71 @@
 "use client";
 
-// Trilho lateral do painel.
+// Sidebar do app — Sidebar do tremorlabs/template-dashboard (MIT): no desktop, coluna
+// fixa de 18rem com borda; abaixo de `lg`, vira uma barra superior com o seletor de curso,
+// o perfil e o botão da gaveta.
 //
-// A mecânica (contexto próprio, `sticky` no desktop, `fixed` + overlay no mobile,
-// `inert` quando fechado) é a do nextjs-admin-dashboard. A pele é a do projeto: ilha com
-// o gradiente do poente e azulejos coloridos por item.
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { APP_NAME } from "@/lib/branding";
-import { cn, initials } from "@/lib/utils";
-import { useAuth } from "@/lib/auth-store";
-import { isActive, navFor } from "./nav-data";
-import { IconMenu, IconOut, IconX } from "@/components/ui/icons";
+// v12: três peles, escolhidas em Ajustes > Aparência (data-sidebar no <html>):
+//   clara    — a do template, acompanha o tema;
+//   escura   — a barra vira uma ilha do tema escuro (`dark` só no <aside>);
+//   colorida — tema escuro + a escala de cinza remapeada para a cor de destaque (.sb-color,
+//              ver globals.css), então todos os filhos desenham em tons da cor escolhida.
+import { RiSearchLine } from "@remixicon/react";
+import { cx, focusInput } from "@/lib/utils";
+import { useAppearance } from "@/lib/appearance";
+import { CourseSwitcherDesktop, CourseSwitcherMobile } from "./course-switcher";
+import { UserProfileDesktop, UserProfileMobile } from "./user-profile";
+import { MobileSidebar } from "./mobile-sidebar";
+import { NavLinks } from "./nav-links";
+import { openPalette } from "./command-palette";
+import type { Enrollment } from "@/lib/api/types";
+import type { SidebarStyle } from "@/lib/api/types";
 
-type Ctx = {
-  open: boolean; setOpen: (v: boolean) => void; toggle: () => void;
-  collapsed: boolean; toggleCollapsed: () => void;
-  isMobile: boolean;
-};
-const SidebarContext = createContext<Ctx | null>(null);
-
-export function useSidebar() {
-  const ctx = useContext(SidebarContext);
-  if (!ctx) throw new Error("useSidebar precisa estar dentro de <SidebarProvider>");
-  return ctx;
+/** Classes da superfície por pele (a barra do desktop e a faixa do mobile usam as mesmas). */
+export function sidebarSkin(style: SidebarStyle) {
+  if (style === "dark") return "dark sb-dark border-gray-800 text-gray-50";
+  if (style === "color") return "dark sb-color border-white/10 text-gray-50";
+  return "border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950";
 }
 
-export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
-
-  // a preferência de recolher é local (não vale a pena ir ao servidor por isso)
-  useEffect(() => { setCollapsed(localStorage.getItem("side-collapsed") === "1"); }, []);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 1023px)");
-    const sync = () => setIsMobile(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
-
-  const toggleCollapsed = useCallback(() => {
-    setCollapsed((v) => { localStorage.setItem("side-collapsed", v ? "0" : "1"); return !v; });
-  }, []);
-
-  const value = useMemo<Ctx>(
-    () => ({ open, setOpen, toggle: () => setOpen((v) => !v), collapsed, toggleCollapsed, isMobile }),
-    [open, collapsed, toggleCollapsed, isMobile],
-  );
-  return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>;
-}
-
-const railBtn =
-  "grid cursor-pointer place-items-center rounded-md p-1.5 text-sidebar-foreground/70 " +
-  "transition-colors hover:bg-white/15 hover:text-sidebar-foreground";
-
-export function Sidebar({ onLogout }: { onLogout: () => void }) {
-  const pathname = usePathname();
-  const user = useAuth((s) => s.user);
-  const { open, setOpen, collapsed, toggleCollapsed, isMobile } = useSidebar();
-  const sections = navFor(user?.role);
-
-  // fecha a gaveta a cada navegação
-  useEffect(() => { setOpen(false); }, [pathname, setOpen]);
-
-  const mark = APP_NAME.split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("") || "P";
-  const shrunk = collapsed && !isMobile;
-
+export function Sidebar({ enrollments, onLogout }: { enrollments: Enrollment[]; onLogout: () => void }) {
+  const { sidebar } = useAppearance();
+  const skin = sidebarSkin(sidebar);
   return (
     <>
-      {isMobile && open && (
-        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]" onClick={() => setOpen(false)} aria-hidden="true" />
-      )}
-
-      <aside
-        style={{ background: "var(--sidebar-gradient)" }}
-        aria-label="Barra lateral"
-        {...(isMobile && !open ? { inert: "" as unknown as boolean } : {})}
-        className={cn(
-          "text-sidebar-foreground fixed inset-y-0 left-0 z-50 flex flex-col gap-1 overflow-y-auto p-3 shadow-xl",
-          "transition-[transform,width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
-          "lg:sticky lg:top-0 lg:h-svh lg:translate-x-0 lg:shadow-none",
-          shrunk ? "w-64 lg:w-[76px]" : "w-64",
-          open ? "translate-x-0" : "-translate-x-full",
-        )}
-      >
-        <div className={cn("flex items-center gap-2.5 px-1 py-2", shrunk && "lg:flex-col lg:gap-3")}>
-          <span aria-hidden="true"
-            className="font-display grid size-8 shrink-0 place-items-center rounded-lg bg-white/15 text-sm font-bold">
-            {mark}
-          </span>
-          {!shrunk && <span className="font-display truncate text-[0.95rem] font-semibold tracking-tight">{APP_NAME}</span>}
-
-          <button onClick={toggleCollapsed} className={cn(railBtn, "ml-auto hidden lg:grid", shrunk && "lg:ml-0")}
-            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}>
-            <IconMenu />
-          </button>
-          <button onClick={() => setOpen(false)} className={cn(railBtn, "ml-auto lg:hidden")} aria-label="Fechar menu">
-            <IconX />
-          </button>
-        </div>
-
-        {/* o rótulo acessível vai no <nav> (é ele a navegação), não no <aside> */}
-        <nav aria-label="Navegação principal" className="flex flex-1 flex-col gap-5 py-2">
-          {sections.map((section) => (
-            <div key={section.label} className="flex flex-col gap-0.5">
-              {!shrunk && (
-                <span className="text-sidebar-foreground/45 px-3 pb-1.5 text-[0.6rem] font-semibold tracking-[0.18em] uppercase">
-                  {section.label}
-                </span>
-              )}
-              {section.items.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(pathname, item);
-                return (
-                  <Link key={item.href} href={item.href} title={item.label}
-                    aria-current={active ? "page" : undefined}
-                    className={cn(
-                      "group relative flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm font-medium",
-                      "transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white/60",
-                      // indicador lateral: o fundo sozinho é sutil demais sobre o gradiente
-                      "before:absolute before:top-1/2 before:left-0 before:h-5 before:w-0.5 before:-translate-y-1/2",
-                      "before:rounded-r before:bg-white before:transition-transform",
-                      active ? "before:scale-y-100" : "before:scale-y-0",
-                      shrunk && "lg:justify-center lg:px-1.5",
-                      active
-                        ? "bg-white/15 text-sidebar-foreground shadow-sm"
-                        : "text-sidebar-foreground/70 hover:bg-white/10 hover:text-sidebar-foreground",
-                    )}>
-                    <span aria-hidden="true"
-                      style={{ background: `color-mix(in srgb, ${item.color} 22%, transparent)`, color: item.color }}
-                      className="grid size-7 shrink-0 place-items-center rounded-md transition-transform group-hover:scale-105">
-                      <Icon />
-                    </span>
-                    {!shrunk && <span className="truncate">{item.label}</span>}
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
-        </nav>
-
-        <div className={cn("mt-auto flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/5 p-2",
-          shrunk && "lg:flex-col lg:gap-2")}>
-          <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-full bg-white/20 text-[0.7rem] font-bold">
-            {initials(user?.name)}
-          </span>
-          {!shrunk && (
-            <span className="flex min-w-0 flex-1 flex-col leading-tight">
-              <strong className="truncate text-[0.8rem] font-semibold">{user?.name}</strong>
-              <small className="text-sidebar-foreground/60 truncate text-[0.68rem]">
-                {user?.role === "ADMIN" ? "administra o sistema" : user?.email}
-              </small>
-            </span>
+      {/* sidebar (lg+) */}
+      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
+        <aside aria-label="Barra lateral" data-skin={sidebar}
+          className={cx("relative flex grow flex-col gap-y-6 overflow-y-auto border-r p-4", skin)}>
+          {/* grafismo do template-solar: hachura discreta no rodapé das peles escuras */}
+          {sidebar !== "light" && (
+            <div aria-hidden="true" className="hatch pointer-events-none absolute inset-x-0 bottom-0 h-40 text-white/[0.06] [mask-image:linear-gradient(to_top,black,transparent)]" />
           )}
-          <button onClick={onLogout} className={railBtn} title="Sair" aria-label="Sair"><IconOut /></button>
+          <CourseSwitcherDesktop enrollments={enrollments} />
+          <button type="button" onClick={openPalette} aria-label="Buscar páginas e comandos (Ctrl+K)"
+            className={cx(
+              "-mt-2 flex w-full items-center gap-2 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-500 shadow-xs transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400 dark:hover:bg-gray-900",
+              focusInput,
+            )}>
+            <RiSearchLine className="size-4 shrink-0" aria-hidden="true" />
+            Buscar
+            <kbd className="ml-auto rounded-sm border border-gray-200 px-1 font-sans text-[0.65rem] text-gray-500 dark:border-gray-800 dark:text-gray-400">Ctrl K</kbd>
+          </button>
+          <NavLinks />
+          <div className="relative mt-auto">
+            <UserProfileDesktop onLogout={onLogout} />
+          </div>
+        </aside>
+      </div>
+
+      {/* barra superior (xs–lg) */}
+      <div data-skin={sidebar}
+        className={cx("sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between gap-x-2 border-b px-2 shadow-xs sm:gap-x-6 sm:px-4 lg:hidden", skin)}>
+        <CourseSwitcherMobile enrollments={enrollments} />
+        <div className="flex items-center gap-1 sm:gap-2">
+          <UserProfileMobile onLogout={onLogout} />
+          <MobileSidebar />
         </div>
-      </aside>
+      </div>
     </>
   );
 }

@@ -68,7 +68,9 @@ model User {
   email        String   @unique
   passwordHash String?                          // null até o usuário definir a própria senha (RF-02)
   role         Role     @default(USER)
-  theme        String   @default("dark")          // validado como "dark"|"light" no zod da rota
+  theme        String   @default("system")        // "dark"|"light"|"system" (zod da rota); system = segue o SO
+  accent       String   @default("orange")        // cor de destaque: ver ACCENTS em src/lib/prefs.ts
+  sidebar      String   @default("light")         // barra lateral: "light"|"dark"|"color" (SIDEBARS)
   matricula    String?                            // nº de matrícula do aluno (opcional, RF-01)
   shift        String?                            // turno: matutino|vespertino|noturno|integral (aluno)
   createdAt    DateTime @default(now())
@@ -115,6 +117,7 @@ model Course {
   milestones   Milestone[]
   subjects     Subject[]
   enrollments  Enrollment[]
+  announcements Announcement[]
   @@index([deletedAt])
 }
 
@@ -258,8 +261,14 @@ model Announcement {                                // RF-24: avisos/comunicados
   body      String
   audience  Audience @default(ALL)
   pinned    Boolean  @default(false)
+  // v12: aviso direcionado a um curso (null = todos), agendado e com validade
+  course    Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  String?
+  publishAt DateTime @default(now())                 // só entra no feed a partir daqui
+  expiresAt DateTime?                                // e sai depois daqui (null = não expira)
   createdAt DateTime @default(now())
   @@index([createdAt])
+  @@index([publishAt])
   // o feed filtra por audiência e ordena por fixado+recência — índice composto cobre a consulta
   @@index([audience, pinned, createdAt])
 }
@@ -309,4 +318,14 @@ model AuditLog {                                    // RF-27: trilha de auditori
   @@index([createdAt])
   @@index([action])
   @@index([userId])   // "o que este usuário fez?" é a consulta natural da auditoria
+}
+
+// Configurações da instância editáveis em runtime pelo admin (v12). Antes vinham só do ambiente
+// (ALLOW_REGISTRATION), o que exigia redeploy para abrir/fechar o cadastro. Uma linha por chave;
+// a chave ausente cai no padrão de src/lib/settings.ts (que ainda respeita o ambiente).
+model InstanceSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+  updatedBy String?                                   // id do admin; sem FK — sobrevive à remoção da conta
 }

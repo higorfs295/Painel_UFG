@@ -1,5 +1,5 @@
 // Popula: curso EngComp (matriz 2021.1 via importCourse), a conta ADMIN (painel@admin.com —
-// administra, não cursa), as contas-aluno definidas em students.json (modelo padrão + a conta
+// administra e, se quiser, também cursa), as contas-aluno definidas em students.json (modelo padrão + a conta
 // pessoal do Higor com a baseline auditada) e o calendário acadêmico global (RF-20 v2).
 // Idempotente. Requer SEED_ADMIN_PASSWORD; SEED_STUDENT_PASSWORD é opcional (cai no admin).
 // Para criar mais alunos conforme o desenvolvimento, basta adicionar objetos em students.json.
@@ -87,13 +87,14 @@ async function main() {
   // 1) curso + matriz (mesmo caminho de POST /courses/import — RF-13)
   await importCourse(prisma, matriz);
 
-  // 2) ADMIN — sem matrícula (gerencia o sistema, não cursa). Senha trocável em /me/password.
+  // 2) ADMIN — nasce sem matrícula. Desde a v12 o admin pode TAMBÉM cursar (modo aluno: escolhe o
+  // curso em "Meu painel"), então o seed não apaga mais matrículas dele — reexecutar o seed não
+  // pode destruir o progresso de quem administra e estuda. Senha trocável em /me/password.
   const admin = await prisma.user.upsert({
     where: { email: ADMIN.email },
     update: { role: "ADMIN" },
     create: { name: ADMIN.name, email: ADMIN.email, role: "ADMIN", passwordHash: adminHash },
   });
-  await prisma.enrollment.deleteMany({ where: { userId: admin.id } });
 
   // 3) contas-aluno definidas em students.json (extensível)
   const results = [];

@@ -21,6 +21,9 @@ function watchErrors(page: Page) {
 
 const ROTAS_ALUNO = [
   ["Disciplinas", "Disciplinas"],
+  ["Mapa curricular", "Mapa curricular"],
+  // o nome acessível do link inclui o contador de não lidos ("Avisos 3 não lidos")
+  [/^Avisos/, "Avisos"],
   ["Extras", "Componentes extras"],
   ["Cronograma", "Cronograma"],
   ["Recomendações", "Recomendações"],
@@ -33,18 +36,21 @@ const ROTAS_ALUNO = [
 
 const ROTAS_ADMIN = [
   ["Usuários", "Usuários"],
-  ["Cursos", "Cursos"],
-  ["Períodos", "Períodos"],
+  ["Cursos", "Cursos e matrizes"],
+  ["Relatórios", "Retrato do curso"],
+  ["Períodos", "Períodos letivos"],
   ["Avisos", "Avisos"],
   ["Monitor", "Monitor"],
+  ["Auditoria", "Auditoria"],
   ["Configurações", "Configurações"],
+  ["Ajustes", "Ajustes"],
   ["Visão do sistema", "Visão do sistema"],
 ] as const;
 
 /** Clica no item da barra lateral e espera o título da página. */
-async function irPara(page: Page, link: string, titulo: string) {
+async function irPara(page: Page, link: string | RegExp, titulo: string) {
   await page.getByRole("navigation", { name: "Navegação principal" })
-    .getByRole("link", { name: link, exact: true }).click();
+    .getByRole("link", typeof link === "string" ? { name: link, exact: true } : { name: link }).click();
   await expect(page.getByRole("heading", { level: 1, name: titulo })).toBeVisible({ timeout: 15_000 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
     `overflow horizontal em ${link}`).toBe(false);

@@ -8,8 +8,8 @@ geral é testar **comportamento** (o que o usuário/consumidor da API observa), 
 | Camada | Onde | O que cobre | Custo | Precisa de |
 | --- | --- | --- | --- | --- |
 | **Unitários** (43) | `backend/test/unit/` | domínio puro: grafo, somas, parser SIGAA, período, histórico/MGA, conquistas, crypto, cache | ~ms | nada |
-| **Integração** (66) | `backend/test/integration/` | rotas HTTP reais (zod→posse→serviço→domínio→Prisma), auth, concorrência, gestão acadêmica, **cifra de campo**, **lixeira de cursos**, **cronograma inteligente** e o **alias de namespace** | ~s | Postgres |
-| **E2E** (6) | `web/e2e/` | fluxos completos no navegador (login, simulação, extras, grade por teclado, admin) | ~30s | stack inteira |
+| **Integração** (76) | `backend/test/integration/` | rotas HTTP reais (zod→posse→serviço→domínio→Prisma), auth, concorrência, gestão acadêmica, **cifra de campo**, **lixeira de cursos**, **cronograma inteligente**, o **alias de namespace** e, na v12, aparência, configurações em runtime, avisos agendados, relatório agregado com supressão de grupos pequenos, importação de usuários, matriz como arquivo e busca na auditoria (`v12.test.ts`) | ~s | Postgres |
+| **E2E** (20) | `web/e2e/` | passeio por todas as rotas dos dois papéis, fluxos completos (simulação, lote, anotação, extras, grade por teclado, períodos, lixeira, paleta), modo aluno do admin, aparência, convite/remoção, relatório, e guardas visuais (contraste do texto e do botão nas cinco cores de destaque) | ~35s | stack inteira |
 
 Filosofia: a lógica acadêmica (a parte com mais nuance) fica em funções puras testadas em
 milissegundos; a integração garante que a orquestração HTTP (validação, posse, transação) está

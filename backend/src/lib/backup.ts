@@ -2,6 +2,8 @@
 // são referenciadas por `seq` (não por id), então o backup sobrevive a re-seed/reimportação da matriz.
 import type { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import { stripUndefined } from "./strip.js";
+import { accentSchema, sidebarSchema, themeSchema, type Accent, type Sidebar, type Theme } from "./prefs.js";
 
 export const BACKUP_VERSION = 1;
 
@@ -11,7 +13,9 @@ export const backupSchema = z.object({
   user: z.object({
     name: z.string().optional(),
     email: z.string().email().optional(),
-    theme: z.enum(["dark", "light"]).optional(),
+    theme: themeSchema.optional(),
+    accent: accentSchema.optional(),
+    sidebar: sidebarSchema.optional(),
   }),
   enrollments: z.array(z.object({
     courseSlug: z.string(),
@@ -46,7 +50,7 @@ export type Backup = z.infer<typeof backupSchema>;
 // Monta o backup completo dos dados do usuário.
 export async function exportUser(prisma: PrismaClient, userId: string): Promise<Backup> {
   const user = await prisma.user.findUniqueOrThrow({
-    where: { id: userId }, select: { name: true, email: true, theme: true },
+    where: { id: userId }, select: { name: true, email: true, theme: true, accent: true, sidebar: true },
   });
   const enrollments = await prisma.enrollment.findMany({
     where: { userId },
@@ -60,7 +64,10 @@ export async function exportUser(prisma: PrismaClient, userId: string): Promise<
   return {
     version: BACKUP_VERSION,
     exportedAt: new Date().toISOString(),
-    user: { name: user.name, email: user.email, theme: user.theme as "dark" | "light" },
+    user: {
+      name: user.name, email: user.email,
+      theme: user.theme as Theme, accent: user.accent as Accent, sidebar: user.sidebar as Sidebar,
+    },
     enrollments: enrollments.map(e => ({
       courseSlug: e.course.slug,
       startTerm: e.startTerm,
@@ -91,7 +98,9 @@ export async function importUser(prisma: PrismaClient, userId: string, raw: unkn
   let restored = 0;
 
   await prisma.$transaction(async (tx) => {
-    if (data.user.theme) await tx.user.update({ where: { id: userId }, data: { theme: data.user.theme } });
+    // aparência: só as chaves presentes no backup (backups da v11 não têm accent/sidebar)
+    const look = stripUndefined({ theme: data.user.theme, accent: data.user.accent, sidebar: data.user.sidebar });
+    if (Object.keys(look).length) await tx.user.update({ where: { id: userId }, data: look });
 
     for (const enr of data.enrollments) {
       const course = await tx.course.findUnique({ where: { slug: enr.courseSlug } });

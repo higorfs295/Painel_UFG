@@ -1,26 +1,27 @@
 "use client";
 
-// Casca das rotas autenticadas: guarda de sessão + sidebar + header + conteúdo.
+// Casca das rotas autenticadas: guarda de sessão + sidebar + conteúdo.
+//
+// Layout do tremorlabs/template-dashboard (MIT): sidebar fixa de 18rem (`lg:w-72`) e o
+// conteúdo em `lg:pl-72`, com o mesmo respiro do template (`p-4 sm:px-6 sm:pt-10
+// lg:px-10 lg:pt-7`). Sem cabeçalho no desktop — a página começa no título, como lá.
 //
 // A guarda espera o bootstrap terminar ("loading") antes de decidir — sem isso um F5
-// numa rota interna piscaria a tela de login. Papel errado é redirecionado: o ADMIN não
-// cursa (não tem matrícula) e o aluno não administra.
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
+// numa rota interna piscaria a tela de login. O aluno não administra. O ADMIN, desde a v12,
+// pode também cursar: entra no /painel e, sem matrícula, escolhe o curso como qualquer aluno.
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { auth, courses, me } from "@/lib/api/endpoints";
 import { setAccessToken } from "@/lib/api/client";
 import { clearSessionHint } from "@/lib/api/session-hint";
 import { useApp, useAuth } from "@/lib/auth-store";
-import { APP_NAME } from "@/lib/branding";
-import { Sidebar, SidebarProvider } from "./sidebar";
-import { Header } from "./header";
+import { Button } from "@/components/tremor/Button";
+import { Label } from "@/components/tremor/Label";
+import { Sidebar } from "./sidebar";
 import { CommandPalette } from "./command-palette";
-import Button from "@/components/ui/button";
-import { Card, EmptyState, Field, inputCls } from "@/components/ui";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { selectCls } from "@/components/ui";
+import { InstanceBanner } from "./instance-banner";
 
 /** Aluno recém-criado ainda não tem matrícula (RF-17): escolhe o curso aqui. */
 function CoursePicker() {
@@ -32,58 +33,65 @@ function CoursePicker() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["enrollments"] }),
   });
 
+  const isAdmin = useAuth((s) => s.user?.role === "ADMIN");
   return (
-    <Card className="mx-auto mt-12 w-full max-w-md">
-      <h2>Escolha seu curso</h2>
-      <p className="text-muted-foreground mt-1 text-sm">
-        Sua conta está pronta — selecione a matriz curricular para começar a acompanhar.
+    <section aria-labelledby="escolha-curso" className="max-w-xl">
+      <h1 id="escolha-curso">{isAdmin ? "Acompanhar o seu curso" : "Escolha seu curso"}</h1>
+      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        {isAdmin
+          ? "Além de administrar, você pode acompanhar a sua própria integralização. Escolha a matriz — a gestão continua no menu do topo."
+          : "Sua conta está pronta — selecione a matriz curricular para começar a acompanhar."}
       </p>
       {!list ? (
-        <div className="skeleton mt-5 h-10" />
+        <div className="skeleton mt-6 h-9" />
       ) : list.length === 0 ? (
-        <EmptyState>
+        <p className="mt-6 rounded-md border border-dashed border-gray-300 p-4 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-400">
           Nenhum curso cadastrado nesta instância ainda. Peça a um administrador para importar uma matriz.
-        </EmptyState>
+        </p>
       ) : (
-        <div className="mt-5 flex flex-col gap-4">
-          <Field label="Curso">
-            <select value={slug} onChange={(e) => setSlug(e.target.value)} className={inputCls}>
+        <form className="mt-6 flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); if (slug) enroll.mutate(slug); }}>
+          <div>
+            <Label htmlFor="curso-inicial" className="font-medium">Curso</Label>
+            <select id="curso-inicial" value={slug} onChange={(e) => setSlug(e.target.value)} className={`${selectCls} mt-2`}>
               <option value="">— selecione —</option>
               {list.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
             </select>
-          </Field>
-          {enroll.isError && <p className="text-lock text-sm" role="alert">Não foi possível matricular. Tente novamente.</p>}
-          <Button variant="primary" disabled={!slug || enroll.isPending} onClick={() => enroll.mutate(slug)}>
-            {enroll.isPending ? "Matriculando…" : "Começar"}
+          </div>
+          {enroll.isError && <p className="text-sm text-red-700 dark:text-red-400" role="alert">Não foi possível matricular. Tente novamente.</p>}
+          <Button type="submit" className="w-fit" disabled={!slug} isLoading={enroll.isPending} loadingText="Matriculando…">
+            Começar
           </Button>
-        </div>
+        </form>
       )}
-    </Card>
+    </section>
   );
 }
 
 /** `any` = página compartilhada (Ajustes, Ajuda): serve aos dois papéis, sem redirecionar. */
 export function AppShell({ area, children }: { area: "student" | "admin" | "any"; children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, status, clear } = useAuth();
   const isAdmin = user?.role === "ADMIN";
   const { enrollmentId, setEnrollment } = useApp();
+  // a área do aluno precisa da matrícula; a de gestão e as compartilhadas, não
+  const needsEnrollment = area === "student";
 
   // guarda de rota
   useEffect(() => {
     if (status === "out") router.replace("/entrar");
     else if (status === "in" && area === "admin" && !isAdmin) router.replace("/painel");
-    else if (status === "in" && area === "student" && isAdmin) router.replace("/admin");
   }, [status, area, isAdmin, router]);
 
-  const { data: enrollments, isLoading } = useQuery({
+  // todo mundo busca as matrículas: o admin também pode cursar (e o seletor da sidebar as lista)
+  const { data: enrollments, isLoading, isError: enrollError, refetch } = useQuery({
     queryKey: ["enrollments"],
     queryFn: me.enrollments,
-    enabled: status === "in" && !isAdmin, // admin não tem matrícula — nem busca
+    enabled: status === "in",
   });
 
   useEffect(() => {
-    if (enrollments?.length && !enrollmentId) setEnrollment(enrollments[0]!.id);
+    if (enrollments?.length && !enrollments.some((e) => e.id === enrollmentId)) setEnrollment(enrollments[0]!.id);
   }, [enrollments, enrollmentId, setEnrollment]);
 
   async function logout() {
@@ -97,50 +105,50 @@ export function AppShell({ area, children }: { area: "student" | "admin" | "any"
   if (status !== "in") {
     return (
       <div className="grid min-h-svh place-items-center" role="status" aria-live="polite">
-        <span className="text-muted-foreground text-sm">Carregando sua sessão…</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">Carregando sua sessão…</span>
       </div>
     );
   }
 
-  const needsCourse = !isAdmin && !isLoading && (enrollments?.length ?? 0) === 0;
+  // só oferece "escolha seu curso" quando a lista VEIO vazia — uma falha de rede (ou um
+  // 429 do limitador) não pode ser confundida com "não tem matrícula"
+  const needsCourse = needsEnrollment && !isLoading && !enrollError && (enrollments?.length ?? 0) === 0;
+
+  let content: React.ReactNode = children;
+  if (isLoading && needsEnrollment) {
+    content = (
+      <div className="flex flex-col gap-6">
+        <div className="skeleton h-7 w-56" />
+        <div className="grid gap-14 sm:grid-cols-2 xl:grid-cols-3">
+          {[0, 1, 2].map((i) => <div key={i} className="skeleton h-40" />)}
+        </div>
+      </div>
+    );
+  } else if (enrollError && needsEnrollment && !enrollments) {
+    content = (
+      <section className="max-w-xl">
+        <h1>Não foi possível carregar seus cursos</h1>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">A API não respondeu. Verifique a conexão e tente de novo.</p>
+        <Button variant="secondary" className="mt-6" onClick={() => refetch()}>Tentar novamente</Button>
+      </section>
+    );
+  } else if (needsCourse) {
+    content = <CoursePicker />;
+  }
 
   return (
-    <SidebarProvider>
-      <div className="bg-background flex min-h-svh">
-        <a href="#conteudo"
-          className="bg-card text-foreground absolute left-3 top-[-60px] z-[70] rounded-lg border px-4 py-2.5
-                     shadow-md transition-[top] focus:top-3">
-          Pular para o conteúdo
-        </a>
-
-        <Sidebar onLogout={logout} />
-
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Header enrollments={isAdmin ? [] : enrollments ?? []} />
-
-          <main id="conteudo" className="mx-auto w-full max-w-[1280px] flex-1 px-4 py-6 sm:px-6 sm:py-8">
-            {isLoading && !isAdmin ? (
-              <div className="flex flex-col gap-4">
-                <div className="skeleton h-9 w-64" />
-                <div className="skeleton h-40" />
-              </div>
-            ) : needsCourse ? <CoursePicker /> : children}
-          </main>
-
-          <footer className={cn(
-            "mx-auto flex w-full max-w-[1280px] items-baseline justify-between gap-4 border-t px-4 py-6 sm:px-6",
-          )}>
-            <Link href="/" className="font-display text-muted-foreground/60 hover:text-primary text-lg font-semibold tracking-tight">
-              {APP_NAME}
-            </Link>
-            <small className="text-subtle-foreground text-[0.68rem] tracking-[0.16em] uppercase">
-              feito no cerrado · {new Date().getFullYear()}
-            </small>
-          </footer>
-        </div>
-
-        <CommandPalette />
-      </div>
-    </SidebarProvider>
+    <div className="mx-auto max-w-screen-2xl">
+      <a href="#conteudo"
+        className="absolute top-[-60px] left-3 z-[70] rounded-md border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-md transition-[top] focus:top-3 dark:border-gray-800 dark:bg-gray-950">
+        Pular para o conteúdo
+      </a>
+      <Sidebar enrollments={enrollments ?? []} onLogout={logout} />
+      <main id="conteudo" className="lg:pl-72">
+        <InstanceBanner />
+        {/* key = rota: cada troca de página reapresenta o conteúdo com a entrada suave */}
+        <div key={pathname} className="page-enter relative p-4 sm:px-6 sm:pt-10 sm:pb-10 lg:px-10 lg:pt-7">{content}</div>
+      </main>
+      <CommandPalette />
+    </div>
   );
 }

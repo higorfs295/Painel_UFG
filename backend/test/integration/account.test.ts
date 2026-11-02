@@ -41,13 +41,24 @@ describe("perfil e tema (RF-15)", () => {
     const { accessToken } = await enrolledUser();
     const me = await app.inject({ method: "GET", url: "/me", headers: authHeader(accessToken) });
     expect(me.statusCode).toBe(200);
-    expect(me.json().theme).toBe("dark");
+    // conta nova segue o tema do sistema operacional até a pessoa escolher outro
+    expect(me.json().theme).toBe("system");
 
     const patch = await app.inject({
       method: "PATCH", url: "/me/settings", headers: authHeader(accessToken), payload: { theme: "light" },
     });
     expect(patch.statusCode).toBe(200);
     expect(patch.json().theme).toBe("light");
+
+    const back = await app.inject({
+      method: "PATCH", url: "/me/settings", headers: authHeader(accessToken), payload: { theme: "system" },
+    });
+    expect(back.json().theme).toBe("system");
+
+    const bad = await app.inject({
+      method: "PATCH", url: "/me/settings", headers: authHeader(accessToken), payload: { theme: "neon" },
+    });
+    expect(bad.statusCode).toBe(400);
   });
 });
 

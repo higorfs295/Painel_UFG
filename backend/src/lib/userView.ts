@@ -6,7 +6,7 @@ import { decryptField } from "./fieldCrypto.js";
 
 /** Colunas seguras de User. Nunca inclua passwordHash aqui. */
 export const publicUserSelect = {
-  id: true, name: true, email: true, role: true, theme: true,
+  id: true, name: true, email: true, role: true, theme: true, accent: true, sidebar: true,
   matricula: true, shift: true, createdAt: true,
 } as const;
 

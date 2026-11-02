@@ -1,6 +1,9 @@
 // Tipos das respostas da API (espelham o backend).
 export type Role = "ADMIN" | "USER";
-export type Theme = "dark" | "light";
+export type Theme = "dark" | "light" | "system";
+/** v12: cor de destaque e estilo da barra lateral (backend: src/lib/prefs.ts) */
+export type Accent = "orange" | "blue" | "violet" | "emerald" | "rose";
+export type SidebarStyle = "light" | "dark" | "color";
 export type SubjectState = "APPROVED" | "SIMULATED" | "ENROLLED";
 export type GraphStatus = "done" | "avail" | "co" | "lock";
 export type ExtraCategory = "NC" | "NE" | "OPT" | "NL" | "AC" | "NONE";
@@ -22,6 +25,7 @@ export type Shift = "matutino" | "vespertino" | "noturno" | "integral";
 
 export type User = {
   id: string; name: string; email: string; role: Role; theme: Theme;
+  accent?: Accent; sidebar?: SidebarStyle;
   matricula?: string | null; shift?: Shift | null;
   createdAt?: string; period?: PeriodInfo;
 };
@@ -73,6 +77,8 @@ export type AdminUser = {
   id: string; name: string; email: string; role: Role; createdAt: string;
   matricula: string | null; shift: Shift | null;
   active: boolean; courses: { enrollmentId: string; slug: string; name: string }[];
+  /** v12: último login (trilha de auditoria) e sessões vivas */
+  lastLoginAt: string | null; sessions: number;
 };
 
 export type AdminStats = {
@@ -84,7 +90,7 @@ export type AdminStats = {
 };
 
 export type AdminConfig = {
-  registration: { allowed: boolean };
+  registration: { allowed: boolean; envDefault: boolean; source: "settings" | "env" };
   invite: { expiresHours: number };
   appUrl: string;
   env: string;
@@ -125,6 +131,10 @@ export type Audience = "ALL" | "STUDENTS" | "ADMINS";
 export type Announcement = {
   id: string; title: string; body: string; audience: Audience; pinned: boolean;
   createdAt: string; author?: { name: string } | null;
+  /** v12: curso-alvo (null = todos), agendamento e validade; status calculado no servidor */
+  courseId?: string | null; course?: { slug: string; name: string } | null;
+  publishAt: string; expiresAt: string | null;
+  status: "scheduled" | "live" | "expired";
 };
 
 export type Metrics = {
@@ -136,6 +146,8 @@ export type Metrics = {
     latencyMs: { p50: number | null; p95: number | null; p99: number | null };
     topRoutes: { route: string; count: number; avgMs: number; maxMs: number; errors5xx: number }[];
     slowestRoutes: { route: string; count: number; avgMs: number; maxMs: number; errors5xx: number }[];
+    /** v12: últimos 60 minutos, um ponto por minuto */
+    timeline: TimelinePoint[];
   };
   db: { ok: boolean; pingMs: number };
 };
@@ -146,3 +158,56 @@ export type AuditEntry = {
 };
 
 export type SessionInfo = { id: string; createdAt: string; expiresAt: string };
+
+export type TimelinePoint = { at: string; count: number; errors5xx: number; errors4xx: number; avgMs: number; maxMs: number };
+
+// ---- v12: administração ----
+export type SeriesPoint = { date: string; count: number };
+export type AdminAnalytics = {
+  generatedAt: string;
+  users: {
+    total: number; admins: number; students: number; pendingInvites: number;
+    new7d: number; new30d: number; withoutCourse: number; active7d: number; active30d: number;
+  };
+  signupsByWeek: SeriesPoint[];
+  loginsByDay: SeriesPoint[];
+  courses: { slug: string; name: string; totalHours: number; subjects: number; enrollments: number }[];
+  announcements: { live: number; scheduled: number };
+  activity: { subjectStatuses: number; extras: number; scenarios: number; tasks: number };
+  recent: AuditEntry[];
+};
+
+export type ReportSubject = {
+  seq: number; code: string; name: string; hours: number; nucleus: "NC" | "NE"; groupOpt: number;
+  approved: number; enrolled: number; apt: number; pending: number; unlocks: number;
+};
+type ReportBase = { course: { slug: string; name: string; totalHours: number }; students: number; minGroup: number };
+export type CourseReport =
+  | (ReportBase & { suppressed: true })
+  | (ReportBase & {
+      suppressed: false;
+      progress: { avgPct: number; medianPct: number; histogram: { from: number; to: number; count: number }[] };
+      compositions: { key: string; label: string; required: number; avgPct: number; completedPct: number }[];
+      milestones: { key: string; hours: number; description: string; reachedPct: number }[];
+      cohorts: { term: string; count: number }[];
+      subjects: ReportSubject[];
+    });
+
+export type Banner = { message: string; tone: "info" | "warning" | "success" };
+export type InstanceSettings = { registrationOpen: boolean; registrationDomains: string[]; banner: Banner | null };
+export type PublicSettings = InstanceSettings;
+
+export type ImportPreview =
+  | { valid: false; errors: { path: string; message: string }[] }
+  | {
+      valid: true; slug: string; name: string; exists: boolean; totalHours: number;
+      counts: { subjects: number; requirements: number; milestones: number; requisites: number };
+      added: number[]; changed: number[]; missing: number[];
+      orphans: { seq: number; ref: number | string }[];
+      warnings: string[];
+    };
+
+export type UserImportResult = {
+  created: number; total: number;
+  results: { row: number; email: string; status: "created" | "exists" | "error"; error?: string; invite?: { link: string; emailed: boolean } }[];
+};

@@ -2,8 +2,10 @@
 
 // Recomendações (RF-07): disponíveis agora, ordenadas pelo quanto cada uma destrava
 // adiante — obrigatórias primeiro, depois o total transitivo.
+import { RiSparkling2Line } from "@remixicon/react";
 import Link from "next/link";
-import { useRecommendations } from "@/hooks/use-progress";
+import toast from "react-hot-toast";
+import { useCourseDetail, useRecommendations, useSetSubject } from "@/hooks/use-progress";
 import { Card, Chip, EmptyState, PageHead } from "@/components/ui";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { ExportButton, csvColumnsFrom } from "@/components/ui/export-button";
@@ -12,15 +14,28 @@ import type { Recommendation } from "@/lib/api/types";
 
 export default function RecomendacoesPage() {
   const { data, isLoading } = useRecommendations(24);
+  const { data: course } = useCourseDetail();
+  const setSubject = useSetSubject();
   const recs = data ?? [];
   const top = recs.slice(0, 3);
+  const idBySeq = new Map(course?.subjects.map((s) => [s.seq, s.id]) ?? []);
+
+  // marca de verdade (antes o botão só levava para Disciplinas)
+  function enroll(r: Recommendation) {
+    const id = idBySeq.get(r.seq);
+    if (!id) return;
+    setSubject.mutate({ subjectId: id, state: "ENROLLED" }, {
+      onSuccess: () => toast.success(`${r.name} marcada como cursando.`),
+      onError: () => toast.error("Não foi possível marcar."),
+    });
+  }
 
   const columns: Column<Recommendation>[] = [
-    { header: "Código", cell: (r) => <span className="text-muted-foreground font-mono text-xs">{r.code}</span>, value: (r) => r.code },
-    { header: "Disciplina", cell: (r) => r.name, value: (r) => r.name },
-    { header: "CH", cell: (r) => `${r.hours}h`, value: (r) => r.hours },
+    { header: "Código", cell: (r) => <span className="font-mono text-xs">{r.code}</span>, value: (r) => r.code },
+    { header: "Disciplina", cell: (r) => <span className="font-medium text-gray-900 dark:text-gray-50">{r.name}</span>, value: (r) => r.name },
+    { header: "CH", align: "right", cell: (r) => <span className="tabular-nums">{r.hours} h</span>, value: (r) => r.hours },
     { header: "Destrava (obrig.)", align: "right", value: (r) => `${r.tot} (${r.ob})`,
-      cell: (r) => <span><b>{r.tot}</b> <span className="text-muted-foreground">({r.ob})</span></span> },
+      cell: (r) => <span className="tabular-nums"><b className="text-gray-900 dark:text-gray-50">{r.tot}</b> ({r.ob})</span> },
   ];
 
   if (isLoading) {
@@ -37,36 +52,36 @@ export default function RecomendacoesPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHead eyebrow="planejamento" title="Recomendações">
+      <PageHead eyebrow="planejamento" title="Recomendações" icon={RiSparkling2Line} tone="emerald">
         <ExportButton name="recomendacoes" rows={recs} columns={csvColumnsFrom(columns)} />
       </PageHead>
-      <p className="text-muted-foreground max-w-3xl text-sm">
-        Tudo aqui já está <b className="text-foreground">disponível</b> para matrícula: os pré-requisitos
+      <p className="-mt-2 max-w-3xl text-sm text-gray-500 dark:text-gray-400">
+        Tudo aqui já está <b className="text-gray-900 dark:text-gray-50">disponível</b> para matrícula: os pré-requisitos
         estão cumpridos. A ordem é pelo quanto cada disciplina libera adiante — priorizando as obrigatórias.
       </p>
 
       {recs.length === 0 ? (
         <EmptyState>
           Nenhuma disciplina disponível no momento. Marque o que já cursou em{" "}
-          <Link href="/painel/disciplinas" className="text-primary hover:underline">Disciplinas</Link>.
+          <Link href="/painel/disciplinas" className="text-brand-700 hover:underline dark:text-brand-400">Disciplinas</Link>.
         </EmptyState>
       ) : (
         <>
           <div className="grid gap-5 sm:grid-cols-3">
             {top.map((r, i) => (
               <Card key={r.seq} className="flex flex-col">
-                <span className="font-display text-primary text-3xl leading-none font-semibold">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="font-display mt-3 text-lg font-semibold tracking-tight">{r.name}</h3>
-                <p className="text-subtle-foreground mt-1 font-mono text-xs">{r.code} · {r.hours}h</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{i + 1}ª recomendação</p>
+                <h3 className="mt-1 font-semibold text-gray-900 dark:text-gray-50">{r.name}</h3>
+                <p className="mt-1 font-mono text-xs text-gray-500 dark:text-gray-400">{r.code} · {r.hours} h</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Chip tone="avail">destrava {r.tot}</Chip>
                   {r.ob > 0 && <Chip tone="done">{r.ob} obrigatória(s)</Chip>}
                 </div>
-                <Link href="/painel/disciplinas" className="mt-auto pt-5">
-                  <Button size="sm">Marcar como cursando</Button>
-                </Link>
+                <div className="mt-auto pt-5">
+                  <Button size="sm" disabled={!idBySeq.get(r.seq) || setSubject.isPending} onClick={() => enroll(r)}>
+                    Marcar como cursando
+                  </Button>
+                </div>
               </Card>
             ))}
           </div>

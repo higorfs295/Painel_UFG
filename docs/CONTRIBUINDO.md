@@ -61,7 +61,7 @@ web/src/
 ├─ components/  ⟵ ui/ (primitivas) · layout/ (casca) · ErrorBoundary
 ├─ lib/         ⟵ api/ (client + endpoints tipados) · auth-store (Zustand) · branding
 │                 sigaa.ts é ESPELHO do domínio (feedback imediato; servidor decide)
-└─ styles/      ⟵ index.css — Tailwind v4: @theme (tokens do cerrado) + @layer components
+└─ app/globals.css ⟵ Tailwind v4: @theme (tokens = cinzas da Tremor) + keyframes + @layer components
 ```
 
 Referência função a função: `docs/MODULOS.md`. Regras do domínio explicadas: `docs/DOMINIO.md`.

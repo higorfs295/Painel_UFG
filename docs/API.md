@@ -1,6 +1,71 @@
 
 ---
 
+## v12 — aparência, configurações, administração e relatórios agregados
+
+### Aparência por usuário (RF-30) `autenticado`
+`PATCH /me/settings` aceita também `accent` (`orange` · `blue` · `violet` · `emerald` · `rose`) e
+`sidebar` (`light` · `dark` · `color`). `GET /me` devolve os dois; o backup (`/me/export`) os
+leva junto. Valores fora da lista → `400`.
+
+### Configurações da instância (RF-31)
+- **GET /settings/public** `público` — `{ registrationOpen, registrationDomains[], banner }`
+  (`banner` = `{ message, tone: info|warning|success }` ou `null`). Usado pela tela de cadastro e
+  pela faixa de aviso.
+- **GET /admin/settings** · **PATCH /admin/settings** `ADMIN` — lê/grava qualquer subconjunto de
+  `{ registrationOpen: boolean, registrationDomains: string[] (≤ 20, ex.: "ufg.br"), banner }`.
+  Responde `{ settings, stored }` (`stored` = chaves gravadas no banco; o resto vem do
+  ambiente). Auditado como `settings.update`.
+- `POST /auth/register` passa a respeitar o banco (padrão: `ALLOW_REGISTRATION`): fechado →
+  `403`; e-mail fora dos domínios → `403` com `{ error, domains }`. Subdomínios entram junto.
+
+### Avisos agendados e por curso (RF-32)
+`POST/PATCH /admin/announcements` aceitam `courseSlug` (`null` = todos os cursos), `publishAt` e
+`expiresAt` (precisa ser depois da publicação → senão `400`). As respostas trazem `course` e
+`status` (`scheduled` · `live` · `expired`, calculado no servidor). O feed `GET /announcements`
+mostra só o que está no ar, da audiência e dos cursos de quem lê; um admin com matrícula
+recebe também os avisos de alunos.
+
+### Visão do sistema e relatórios (RF-33) `ADMIN`
+- **GET /admin/analytics** — números OPERACIONAIS: contas (total, admins, alunos, convites
+  pendentes, novas em 7/30 dias, sem curso, ativas em 7/30 dias pelo refresh token),
+  `signupsByWeek` (12 semanas), `loginsByDay` (182 dias), `courses[]` (disciplinas e matrículas
+  por curso), avisos no ar/agendados, contadores de atividade e as 12 ações de gestão mais
+  recentes (logins ficam de fora do feed).
+- **GET /admin/reports/courses/:slug** — retrato ACADÊMICO AGREGADO do curso. Com menos de 5
+  alunos, devolve só `{ course, students, minGroup: 5, suppressed: true }`. Com 5 ou mais:
+  `progress` (média, mediana, histograma em 10 faixas), `compositions` (média e % que fechou),
+  `milestones` (% que alcançou), `cohorts` (por período de ingresso) e `subjects[]` (aprovados,
+  cursando, aptos, pendentes e quantas disciplinas cada uma libera). Nenhum id, e-mail ou nota
+  sai. Auditado como `report.course`.
+
+### Ferramentas de usuários (RF-34) `ADMIN`
+- `GET /users` ganha `lastLoginAt` (último `auth.login` da trilha) e `sessions` (refresh tokens vivos).
+- `PATCH /users/:id` aceita também `matricula` (cifrada) e `shift`; auditado como `user.update`
+  sem o valor da matrícula.
+- **POST /users/import** — `{ users: [{ name, email, role?, courseSlug? }] }` (até 200). Cada
+  linha vira conta + convite; a resposta traz `created`, `total` e `results[]` com `status`
+  `created` · `exists` · `error` e o link do convite.
+- **POST /users/:id/sessions/revoke** — encerra todas as sessões de outra conta (a própria → `400`).
+- `DELETE /users/:id` passa a ser auditado (`user.delete`).
+
+### Matriz como arquivo (RF-35) `ADMIN`
+- **GET /courses/:slug/export** — o JSON no formato da importação; reimportá-lo não muda nada.
+- **POST /courses/import?dryRun=1** — valida e compara com o que existe, sem gravar: `valid`,
+  `counts`, `added[]`, `changed[]`, `missing[]` (no banco, fora do arquivo — a importação não
+  remove), `orphans[]` (requisito para seq/marco inexistente) e `warnings[]`; inválido →
+  `{ valid: false, errors[] }`.
+- **PATCH /courses/:slug** — `{ name?, totalHours? }`; derruba o cache do grafo; auditado.
+
+### Auditoria e monitor `ADMIN`
+- `GET /admin/audit` ganha `q` (busca em ação, alvo, nome e e-mail de quem fez), `from`, `to` e
+  devolve `nextBefore` para a próxima página.
+- **GET /admin/audit/actions** — ações distintas com contagem.
+- `GET /admin/metrics` ganha `http.timeline`: 60 pontos, um por minuto (requisições, 4xx, 5xx,
+  média e pico de latência).
+
+---
+
 ## Gestão acadêmica ampliada (RF-22..27)
 
 ### Notas, faltas e histórico (RF-22/23) `autenticado`
@@ -355,7 +420,7 @@ curl -X PUT http://localhost:3333/me/scenarios/$SID/paint \
 Perfil do usuário logado + período letivo **global** (RF-20 v2), resolvido do calendário
 acadêmico (ver `/admin/periods`); sem calendário, cai na heurística de meses:
 ```json
-{ "id":"...", "name":"...", "email":"...", "role":"USER", "theme":"dark",
+{ "id":"...", "name":"...", "email":"...", "role":"USER", "theme":"system",
   "matricula":"20240010000", "shift":"matutino",
   "period": { "term":"2026.1", "onBreak":false, "label":"2026.1",
               "nextTerm":"2026.2", "source":"calendar", "nextStartsAt":"2026-07-06T03:00:00.000Z" } }
@@ -365,7 +430,8 @@ Em férias: `{ "term":null, "onBreak":true, "label":"Férias", "nextTerm":"2026.
 `matricula` (nº de matrícula, opcional) e `shift` (turno) podem ser `null`.
 
 ### PATCH /me/settings
-Perfil do próprio usuário (`.strict()`): `theme` (RF-15), `name`, `matricula` (opcional, `""`/`null`
+Perfil do próprio usuário (`.strict()`): `theme` (RF-15: `"dark" | "light" | "system"`; contas
+novas começam em `"system"`), `name`, `matricula` (opcional, `""`/`null`
 limpa) e `shift` (`matutino|vespertino|noturno|integral` ou `null`). `{ "matricula":"20240010000",
 "shift":"noturno" }` → `200` com o perfil atualizado.
 

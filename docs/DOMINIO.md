@@ -405,7 +405,7 @@ trocar de servidor ou clonar o próprio perfil num ambiente de teste.
 | **Slot** | Uma célula dia×aula da grade (`"2-M1"` = segunda, 1ª aula da manhã) |
 | **Período (`2026.2`)** | Semestre letivo; **global**, resolvido do calendário acadêmico agendado (admin), com heurística de fallback |
 | **Virada / calendário** | Entrada `AcademicPeriod`: numa data começa um `TERM` (rótulo) ou `BREAK` (férias); vale para todos |
-| **Seed** | Script idempotente: importa a matriz de EngComp, cria o **admin sem matrícula**, a **conta-aluno** baseline e o calendário exemplo |
+| **Seed** | Script idempotente: importa a matriz de EngComp, cria o **admin** (nasce sem matrícula; o seed não apaga a que ele escolher depois), a **conta-aluno** baseline e o calendário exemplo |
 
 ## 12. Perguntas frequentes de quem chega agora
 
