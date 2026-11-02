@@ -54,14 +54,14 @@ export function DonutProgress({ pct, label, size = 136 }: { pct: number; label?:
 export type BarDatum = { label: string; value: number; hint?: string };
 
 /** BarList da Tremor: barra clara com o rótulo por dentro e o valor à direita. */
-export function BarList({ data, unit = "", tone = "orange" }: {
-  data: BarDatum[]; unit?: string; tone?: "orange" | "red" | "gray";
+export function BarList({ data, unit = "", tone = "brand" }: {
+  data: BarDatum[]; unit?: string; tone?: "brand" | "red" | "gray";
   /** mantido por compatibilidade (cor CSS antiga) */
   color?: string;
 }) {
   const max = Math.max(1, ...data.map((d) => d.value));
   const bar = {
-    orange: "bg-orange-200 dark:bg-orange-500/30",
+    brand: "bg-brand-200 dark:bg-brand-500/30",
     red: "bg-red-200 dark:bg-red-500/30",
     gray: "bg-gray-200 dark:bg-gray-700",
   }[tone];

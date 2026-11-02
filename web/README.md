@@ -39,8 +39,12 @@ A API precisa estar de pé (`cd ../backend && npm run dev`). O endereço vem de
 /painel/recomendacoes                            │
 /painel/cronograma                               │
 /painel/agenda                                   │
-/painel/avisos                                   ┘
-/admin …                 7 telas de gestão       (AppShell area="admin")
+/painel/avisos                                   ┘  (o admin também usa — v12)
+/admin                   visão do sistema        ┐
+/admin/usuarios          lote, gaveta, CSV       │
+/admin/cursos[/slug]     cartões e matriz        │
+/admin/relatorios        só agregados (≥ 5)      │  AppShell area="admin"
+/admin/avisos · periodos · monitor · auditoria · config ┘
 /config · /ajuda         compartilhadas          (AppShell area="any")
 ```
 
@@ -50,7 +54,9 @@ A API precisa estar de pé (`cd ../backend && npm run dev`). O endereço vem de
 src/
 ├─ app/                    rotas (App Router); grupos (auth) e segmentos painel/ e admin/
 ├─ components/
-│  ├─ tremor/              componentes Tremor Raw portados (Tailwind v4, acento laranja)
+│  ├─ tremor/              componentes Tremor Raw portados (Tailwind v4, acento = escala brand-*)
+│  ├─ fx/                  grafismos e movimento (faixa de topo, anel, gráficos pequenos, confete)
+│  ├─ admin/               peças das telas de gestão
 │  ├─ layout/              sidebar, gaveta, seletor de curso, perfil, paleta de comandos
 │  ├─ overview/            cartões da visão geral
 │  ├─ data-table/          DataTable (TanStack) com seleção e barra de comandos em lote
@@ -77,6 +83,10 @@ cuidam da casca estática (site, layouts, metadados) e os dados vêm por TanStac
 
 **Tema segue o sistema.** `defaultTheme="system"`; a escolha (Claro / Escuro / Sistema) é salva
 na conta. O site público é sempre claro (como o template-solar) — a rota `/` força o tema.
+
+**Cor de destaque e barra lateral (v12).** A escala `brand-*` troca de paleta pelo
+`data-accent` do `<html>` e a barra lateral tem três peles (`data-sidebar`) — ver
+`lib/appearance.ts` e `docs/DESIGN.md` §0. Cores de situação ficam fixas em `lib/palette.ts`.
 
 **Contraste antes de fidelidade.** Os tons de laranja do template-solar não passam no WCAG AA
 com texto branco; botões e textos de acento usam `orange-700` no claro (5,23:1). A tabela de

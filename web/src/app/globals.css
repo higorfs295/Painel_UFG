@@ -1,5 +1,11 @@
 /* ══════════════════════════════════════════════════════════════════════════════
-   Painel Acadêmico — design v11 (Tailwind CSS v4)
+   Painel Acadêmico — design v12 "Tremor vivo" (Tailwind CSS v4)
+
+   v12 sobre a v11: a cor de destaque deixou de ser fixa. A escala `brand-*` aponta para a
+   paleta escolhida pela pessoa (`<html data-accent="…">`: laranja, azul, violeta, verde ou
+   rosa — todas com o tom 700 acima de 4,5:1 com branco, ver docs/DESIGN.md) e a barra
+   lateral tem três peles (`data-sidebar`: clara, escura ou colorida). As cores de SITUAÇÃO
+   (aprovada, cursando, disponível…) são fixas: não mudam com o destaque.
 
    Fundação: dois templates abertos da Tremor (MIT, © 2025 Tremor Labs, Inc.):
      • tremorlabs/template-dashboard → o app (sidebar branca de 18rem, seções sem
@@ -32,12 +38,12 @@
   --border: var(--color-gray-200);
   --input: var(--color-gray-300);
 
-  --primary: var(--color-orange-700);     /* texto/botão: 5,23:1 com branco */
+  --primary: var(--brand-700);            /* texto/botão: ≥ 5,23:1 com branco nas 5 paletas */
   --primary-foreground: #ffffff;
-  --accent-fill: var(--color-orange-600); /* barras e marcas gráficas (3,59:1 sobre branco) */
+  --accent-fill: var(--brand-600);        /* barras e marcas gráficas (≥ 3,59:1 sobre branco) */
 
   --done: var(--color-emerald-700);
-  --avail: var(--color-orange-700);
+  --avail: var(--color-amber-700);        /* fixo: "disponível" não muda com o destaque */
   --co: var(--color-blue-700);
   --lock: var(--color-gray-500);
   --sim: var(--color-violet-700);
@@ -57,16 +63,119 @@
   --border: var(--color-gray-800);
   --input: var(--color-gray-800);
 
-  --primary: var(--color-orange-400);
+  --primary: var(--brand-400);
   --primary-foreground: var(--color-gray-950);
-  --accent-fill: var(--color-orange-500);
+  --accent-fill: var(--brand-500);
 
   --done: var(--color-emerald-400);
-  --avail: var(--color-orange-400);
+  --avail: var(--color-amber-400);
   --co: var(--color-blue-400);
   --lock: var(--color-gray-400);
   --sim: var(--color-violet-400);
   --danger: var(--color-red-400);
+}
+
+/* ── Cor de destaque (v12) — a escala brand-* inteira troca de paleta ──
+   Declarada também em [data-accent] de elementos internos: o site público força o laranja
+   num wrapper, mesmo que a pessoa tenha escolhido outra cor para o painel. */
+:root,
+[data-accent="orange"] {
+  --brand-50: var(--color-orange-50);
+  --brand-100: var(--color-orange-100);
+  --brand-200: var(--color-orange-200);
+  --brand-300: var(--color-orange-300);
+  --brand-400: var(--color-orange-400);
+  --brand-500: var(--color-orange-500);
+  --brand-600: var(--color-orange-600);
+  --brand-700: var(--color-orange-700);
+  --brand-800: var(--color-orange-800);
+  --brand-900: var(--color-orange-900);
+  --brand-950: var(--color-orange-950);
+}
+[data-accent="blue"] {
+  --brand-50: var(--color-blue-50);
+  --brand-100: var(--color-blue-100);
+  --brand-200: var(--color-blue-200);
+  --brand-300: var(--color-blue-300);
+  --brand-400: var(--color-blue-400);
+  --brand-500: var(--color-blue-500);
+  --brand-600: var(--color-blue-600);
+  --brand-700: var(--color-blue-700);
+  --brand-800: var(--color-blue-800);
+  --brand-900: var(--color-blue-900);
+  --brand-950: var(--color-blue-950);
+}
+[data-accent="violet"] {
+  --brand-50: var(--color-violet-50);
+  --brand-100: var(--color-violet-100);
+  --brand-200: var(--color-violet-200);
+  --brand-300: var(--color-violet-300);
+  --brand-400: var(--color-violet-400);
+  --brand-500: var(--color-violet-500);
+  --brand-600: var(--color-violet-600);
+  --brand-700: var(--color-violet-700);
+  --brand-800: var(--color-violet-800);
+  --brand-900: var(--color-violet-900);
+  --brand-950: var(--color-violet-950);
+}
+[data-accent="emerald"] {
+  --brand-50: var(--color-emerald-50);
+  --brand-100: var(--color-emerald-100);
+  --brand-200: var(--color-emerald-200);
+  --brand-300: var(--color-emerald-300);
+  --brand-400: var(--color-emerald-400);
+  --brand-500: var(--color-emerald-500);
+  --brand-600: var(--color-emerald-600);
+  --brand-700: var(--color-emerald-700);
+  --brand-800: var(--color-emerald-800);
+  --brand-900: var(--color-emerald-900);
+  --brand-950: var(--color-emerald-950);
+}
+[data-accent="rose"] {
+  --brand-50: var(--color-rose-50);
+  --brand-100: var(--color-rose-100);
+  --brand-200: var(--color-rose-200);
+  --brand-300: var(--color-rose-300);
+  --brand-400: var(--color-rose-400);
+  --brand-500: var(--color-rose-500);
+  --brand-600: var(--color-rose-600);
+  --brand-700: var(--color-rose-700);
+  --brand-800: var(--color-rose-800);
+  --brand-900: var(--color-rose-900);
+  --brand-950: var(--color-rose-950);
+}
+
+/* ── Peles da barra lateral (v12) ──
+   escura: a barra vira uma ilha do tema escuro (`.dark` no <aside>, então os componentes usam
+   as próprias variantes dark: da Tremor);
+   colorida: o mesmo, mais a escala de cinza REMAPEADA para a escala do destaque — os
+   utilitários do Tailwind v4 leem var(--color-gray-*), então tudo dentro da barra (seletor
+   de curso, busca, links, perfil) passa a desenhar em tons da cor escolhida. Contrastes:
+   brand-200 sobre brand-800 ≥ 5,42:1 e branco sobre brand-800 ≥ 7,35:1 nas cinco paletas. */
+.sb-dark {
+  background-color: var(--color-gray-950);
+}
+.sb-color {
+  --color-gray-50: #ffffff;
+  --color-gray-100: var(--brand-50);
+  --color-gray-200: var(--brand-100);
+  --color-gray-300: var(--brand-200);
+  --color-gray-400: var(--brand-200);
+  --color-gray-500: var(--brand-200);
+  --color-gray-600: var(--brand-300);
+  --color-gray-700: var(--brand-600);
+  --color-gray-800: var(--brand-700);
+  --color-gray-900: color-mix(in srgb, var(--brand-950) 45%, var(--brand-800));
+  --color-gray-950: var(--brand-900);
+  background-color: var(--brand-800);
+  background-image:
+    radial-gradient(120% 60% at 0% 0%, color-mix(in srgb, var(--brand-500) 55%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--brand-800), var(--brand-950));
+}
+/* na barra colorida o item ativo vira "pílula" branca translúcida (texto branco: ≥ 5,45:1) */
+.sb-color [aria-current="page"] {
+  color: #fff;
+  background-color: rgb(255 255 255 / 0.14);
 }
 
 /* `inline` é obrigatório: sem ele o Tailwind resolve a cor no build e os utilitários
@@ -85,7 +194,20 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-accent-fill: var(--accent-fill);
-  --color-ring: var(--color-orange-500);
+  --color-ring: var(--brand-500);
+
+  /* v12: a escala do destaque (bg-brand-600, text-brand-700, ring-brand-500/30…) */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
 
   --color-done: var(--done);
   --color-avail: var(--avail);
@@ -156,10 +278,10 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
   ::selection {
-    @apply bg-orange-100 text-orange-800;
+    @apply bg-brand-100 text-brand-800;
   }
   .dark ::selection {
-    @apply bg-orange-500/30 text-orange-50;
+    @apply bg-brand-500/30 text-brand-50;
   }
   h1 {
     @apply text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50;
@@ -183,8 +305,24 @@
   .num {
     @apply tabular-nums;
   }
+  /* v12: brilho que corre (em vez do pulso) — o mesmo cinza da Tremor por baixo */
   .skeleton {
-    @apply animate-pulse rounded-md bg-gray-100 dark:bg-gray-800;
+    @apply rounded-md bg-gray-100 dark:bg-gray-800;
+    background-image: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.55) 50%, transparent 100%);
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+  .dark .skeleton {
+    background-image: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.06) 50%, transparent 100%);
+  }
+  /* grafismos do template-solar trazidos para dentro do app (v12) */
+  .hatch {
+    background-image: repeating-linear-gradient(-45deg, currentColor 0 1px, transparent 1px 7px);
+  }
+  .dot-grid {
+    background-image: radial-gradient(currentColor 1px, transparent 1.2px);
+    background-size: 14px 14px;
   }
   /* a máscara radial do template-solar (fundo "Game of Life" do herói) */
   .mask {
@@ -221,6 +359,51 @@
   0%, 100% { scale: 1; }
   20% { scale: var(--pulse, 1.06); }
 }
+
+/* ── Movimento v12 ── tudo desligado por prefers-reduced-motion (bloco abaixo) ── */
+@keyframes shimmer { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+/* barras crescem ao aparecer (a largura final vem do style inline; mudanças depois usam a
+   transição de largura) */
+@keyframes growX { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.bar-grow {
+  transform-origin: left center;
+  animation: growX 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes growY { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.bar-grow-y {
+  transform-origin: center bottom;
+  animation: growY 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* anel e linhas que se desenham: o comprimento total vem em --len */
+@keyframes draw { from { stroke-dashoffset: var(--len); } }
+.draw {
+  animation: draw 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* entrada em cascata dos filhos (cartões de uma grade, itens de lista).
+   `backwards`, NÃO `both`: com o transform "preenchido" depois do fim, o Chrome continua
+   tratando o elemento como transformado — e ele vira o bloco de contenção dos filhos
+   `position: fixed` (a barra de comandos em lote foi parar 1.200 px abaixo da tela). */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.stagger > * { animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.stagger > :nth-child(2) { animation-delay: 50ms; }
+.stagger > :nth-child(3) { animation-delay: 100ms; }
+.stagger > :nth-child(4) { animation-delay: 150ms; }
+.stagger > :nth-child(5) { animation-delay: 200ms; }
+.stagger > :nth-child(6) { animation-delay: 250ms; }
+.stagger > :nth-child(7) { animation-delay: 300ms; }
+.stagger > :nth-child(8) { animation-delay: 350ms; }
+.stagger > :nth-child(n + 9) { animation-delay: 400ms; }
+/* troca de página: o conteúdo entra subindo de leve */
+.page-enter { animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+/* ponto "ao vivo" do monitor */
+@keyframes livePing { 75%, 100% { transform: scale(2.4); opacity: 0; } }
+.live-dot { position: relative; display: inline-flex; width: 0.5rem; height: 0.5rem; border-radius: 9999px; background: currentColor; }
+.live-dot::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: currentColor; animation: livePing 1.6s cubic-bezier(0, 0, 0.2, 1) infinite; }
+/* flutuação lenta dos elementos decorativos */
+@keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.floaty { animation: floaty 6s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   *,

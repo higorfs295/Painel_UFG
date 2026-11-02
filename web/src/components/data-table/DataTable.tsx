@@ -94,7 +94,7 @@ export function DataTable<TData>({
                         cell.column.columnDef.meta?.className,
                       )}>
                       {index === 0 && row.getIsSelected() && (
-                        <div className="absolute inset-y-0 left-0 w-0.5 bg-orange-600 dark:bg-orange-500" />
+                        <div className="absolute inset-y-0 left-0 w-0.5 bg-brand-600 dark:bg-brand-500" />
                       )}
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>

@@ -1,6 +1,7 @@
 "use client";
 
 // Agenda (RF-25): provas, trabalhos e entregas com prazo, agrupados por urgência.
+import { RiCalendarCheckLine } from "@remixicon/react";
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -80,7 +81,7 @@ export default function AgendaPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHead eyebrow="organização" title="Agenda" />
+      <PageHead eyebrow="organização" title="Agenda" icon={RiCalendarCheckLine} tone="amber" />
       <p className="text-muted-foreground text-sm">
         {pending > 0
           ? <>Você tem <b className="text-foreground">{pending}</b> pendência(s){late > 0 && <> — <b className="text-lock">{late} atrasada(s)</b></>}.</>

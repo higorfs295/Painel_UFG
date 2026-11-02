@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Inter } from "next/font/google";
 import { APP_NAME, APP_TAGLINE } from "@/lib/branding";
 import { Providers } from "@/components/providers";
+import { APPEARANCE_BOOT_SCRIPT } from "@/lib/appearance";
 import "./globals.css";
 
 // As fontes dos dois templates de base: Inter no app (tremorlabs/template-dashboard) e
@@ -26,6 +27,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     // suppressHydrationWarning: o next-themes escreve a classe do tema antes da hidratação
     <html lang="pt-BR" className={`${inter.variable} ${geist.variable}`} suppressHydrationWarning>
+      <head>
+        {/* v12: cor de destaque e barra lateral antes da primeira pintura (ver lib/appearance) */}
+        <script dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT_SCRIPT }} />
+      </head>
       <body className="overflow-y-scroll scroll-auto">
         <Providers>{children}</Providers>
       </body>

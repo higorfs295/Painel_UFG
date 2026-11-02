@@ -31,6 +31,10 @@ import {
 import { useOnWindowResize } from "@/lib/use-on-window-resize"
 import { cx } from "@/lib/utils"
 
+// Painel: as séries entram animadas (900 ms; no template, sem animação) e respeitam
+// prefers-reduced-motion — o recharts não olha essa preferência sozinho
+const REDUCED_MOTION = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+
 //#region Legend
 
 interface LegendItemProps {
@@ -803,7 +807,8 @@ const LineChart = React.forwardRef<HTMLDivElement, LineChartProps>(
                 strokeWidth={2}
                 strokeLinejoin="round"
                 strokeLinecap="round"
-                isAnimationActive={false}
+                isAnimationActive={!REDUCED_MOTION}
+                animationDuration={900}
                 connectNulls={connectNulls}
               />
             ))}

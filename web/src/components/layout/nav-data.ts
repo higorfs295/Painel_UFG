@@ -5,6 +5,7 @@ import {
   RiBookOpenLine, RiCalendarCheckLine, RiDashboardLine, RiFileList3Line, RiGitMergeLine,
   RiLineChartLine, RiMegaphoneLine, RiPulseLine, RiQuestionLine, RiServerLine, RiSettings5Line,
   RiShieldUserLine, RiSparkling2Line, RiStackLine, RiTableLine, RiTeamLine, RiCalendar2Line,
+  RiBarChartBoxLine, RiFileShield2Line, RiUserHeartLine,
 } from "@remixicon/react";
 
 export type NavItem = {
@@ -56,27 +57,58 @@ export const ADMIN_NAV: NavSection[] = [
   {
     label: "",
     items: [
-      { href: "/admin", label: "Visão do sistema", icon: RiShieldUserLine, exact: true, hint: "números da instância" },
-      { href: "/admin/usuarios", label: "Usuários", icon: RiTeamLine, hint: "convites, papéis e matrículas" },
-      { href: "/admin/cursos", label: "Cursos", icon: RiBookOpenLine, hint: "matrizes e lixeira" },
+      { href: "/admin", label: "Visão do sistema", icon: RiShieldUserLine, exact: true, hint: "cadastros, acessos e atividade" },
+      { href: "/admin/usuarios", label: "Usuários", icon: RiTeamLine, hint: "convites, lote, papéis e sessões" },
+      { href: "/admin/cursos", label: "Cursos", icon: RiBookOpenLine, hint: "matrizes, importação e lixeira" },
+      { href: "/admin/relatorios", label: "Relatórios", icon: RiBarChartBoxLine, hint: "agregados por curso, sem dado individual" },
+    ],
+  },
+  {
+    label: "Comunicação",
+    items: [
+      { href: "/admin/avisos", label: "Avisos", icon: RiMegaphoneLine, hint: "por público, curso e agendados" },
       { href: "/admin/periodos", label: "Períodos", icon: RiCalendar2Line, hint: "calendário acadêmico" },
-      { href: "/admin/avisos", label: "Avisos", icon: RiMegaphoneLine, hint: "comunicados por público" },
     ],
   },
   {
     label: "Operação",
     items: [
-      { href: "/admin/monitor", label: "Monitor", icon: RiPulseLine, hint: "métricas e auditoria" },
-      { href: "/admin/config", label: "Configurações", icon: RiServerLine, hint: "e-mail, cadastro, ambiente" },
+      { href: "/admin/monitor", label: "Monitor", icon: RiPulseLine, hint: "tráfego ao vivo e saúde" },
+      { href: "/admin/auditoria", label: "Auditoria", icon: RiFileShield2Line, hint: "quem fez o quê, com busca" },
+      { href: "/admin/config", label: "Configurações", icon: RiServerLine, hint: "cadastro, faixa de aviso, e-mail" },
     ],
   },
   CONTA,
 ];
 
+/** v12: o admin que também cursa ganha o atalho para a outra área no fim da lista. */
+const TO_STUDENT: NavSection = {
+  label: "Pessoal",
+  items: [{ href: "/painel", label: "Meu painel", icon: RiUserHeartLine, exact: true, hint: "acompanhar o seu próprio curso" }],
+};
+const TO_ADMIN: NavSection = {
+  label: "Gestão",
+  items: [{ href: "/admin", label: "Administração", icon: RiShieldUserLine, exact: true, hint: "voltar para a gestão" }],
+};
+
 /** Histórico do aluno também tem um atalho de arquivo; mantido aqui para a paleta. */
 export const EXTRA_COMMANDS = [{ href: "/painel/historico", label: "Exportar histórico (CSV)", icon: RiFileList3Line }];
 
-export const navFor = (role: string | undefined) => (role === "ADMIN" ? ADMIN_NAV : STUDENT_NAV);
+/**
+ * Navegação da área atual. O aluno só tem a dele; o admin (v12) alterna: em /painel vê a do
+ * aluno + o atalho de volta, no resto vê a de gestão + o atalho para "Meu painel".
+ */
+export function navFor(role: string | undefined, pathname = "") {
+  if (role !== "ADMIN") return STUDENT_NAV;
+  const student = pathname === "/painel" || pathname.startsWith("/painel/");
+  return student ? [...STUDENT_NAV.slice(0, -1), TO_ADMIN, CONTA] : [...ADMIN_NAV.slice(0, -1), TO_STUDENT, CONTA];
+}
+
+/** Para a paleta de comandos: o admin alcança as duas áreas de qualquer lugar. */
+export function allNavFor(role: string | undefined) {
+  if (role !== "ADMIN") return STUDENT_NAV;
+  return [...ADMIN_NAV.slice(0, -1), ...STUDENT_NAV.slice(0, -1).map((s) => ({ ...s, label: s.label ? `Meu painel · ${s.label}` : "Meu painel" })), CONTA];
+}
 
 /** Casa a rota atual com um item — `exact` evita que a raiz do grupo fique sempre ativa. */
 export const isActive = (pathname: string, item: NavItem) =>

@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { RiSearchLine } from "@remixicon/react";
 import { useAuth } from "@/lib/auth-store";
-import { navFor } from "./nav-data";
+import { allNavFor } from "./nav-data";
 import { cx } from "@/lib/utils";
 
 export const openPalette = () => window.dispatchEvent(new Event("palette:open"));
@@ -35,7 +35,7 @@ export function CommandPalette() {
   const listRef = useRef<HTMLUListElement>(null);
 
   const commands = useMemo<Command[]>(() => {
-    const nav = navFor(user?.role).flatMap((section) =>
+    const nav = allNavFor(user?.role).flatMap((section) =>
       section.items.map((item) => ({
         id: `nav:${item.href}`, label: item.label, group: section.label || "Páginas",
         hint: item.hint ?? item.href, run: () => router.push(item.href),

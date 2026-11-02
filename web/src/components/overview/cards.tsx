@@ -4,6 +4,7 @@
 // Labs, Inc.): DashboardProgressBarCard, DashboardCategoryBarCard e DashboardChartCard.
 // Mesma marcação e mesmas classes; os dados agora vêm da matriz e do histórico do aluno,
 // e o link de rodapé ("cta") virou um <Link> do Next.
+import { tone } from "@/lib/palette";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/tremor/Badge";
@@ -11,7 +12,7 @@ import { ProgressBar } from "@/components/tremor/ProgressBar";
 import { LineChart } from "@/components/tremor/LineChart";
 import { cx } from "@/lib/utils";
 
-export type KpiEntry = { title: string; percentage: number; current: string; allowed: string; unit?: string; hint?: string };
+export type KpiEntry = { title: string; percentage: number; current: string; allowed: string; unit?: string; hint?: string; tone?: string };
 
 type CtaProps = { ctaDescription: string; ctaText: string; ctaLink: string };
 
@@ -19,7 +20,7 @@ function Cta({ ctaDescription, ctaText, ctaLink }: CtaProps) {
   return (
     <p className="mt-6 text-xs text-gray-500 dark:text-gray-400">
       {ctaDescription}{" "}
-      <Link href={ctaLink} className="text-orange-700 hover:underline dark:text-orange-400">{ctaText}</Link>
+      <Link href={ctaLink} className="text-brand-700 hover:underline dark:text-brand-400">{ctaText}</Link>
     </p>
   );
 }
@@ -49,7 +50,14 @@ export function ProgressBarCard({ title, change, changeVariant = "neutral", valu
                   <span className="font-normal text-gray-500 dark:text-gray-400">/{item.allowed}{item.unit}</span>
                 </span>
               </p>
-              <ProgressBar value={item.percentage} className="mt-2 [&>*]:h-1.5" />
+              {item.tone ? (
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800" role="progressbar"
+                  aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(item.percentage)} aria-label={item.title}>
+                  <div className={cx("bar-grow h-full rounded-full", tone(item.tone).dot)} style={{ width: `${Math.min(100, item.percentage)}%` }} />
+                </div>
+              ) : (
+                <ProgressBar value={item.percentage} className="mt-2 [&>*]:h-1.5" />
+              )}
             </li>
           ))}
         </ul>
@@ -145,7 +153,7 @@ export function ChartCard({ title, points, format, previousLabel }: {
         className="mt-6 h-32"
         data={points.map((p) => ({ periodo: p.label, [title]: p.value }))}
         index="periodo"
-        colors={["orange"]}
+        colors={["brand"]}
         startEndOnly
         valueFormatter={(v) => format(v as number)}
         showYAxis={false}

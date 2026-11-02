@@ -4,6 +4,12 @@
 // o histórico escolar completo — com filtro por período que também vale para o CSV.
 // Desenho: seções do tremorlabs/template-dashboard (título, métricas lado a lado sem
 // caixa, LineChart da Tremor, tabela com divisórias finas).
+import { RiFlagLine, RiLineChartLine, RiMedalLine, RiSpeedLine } from "@remixicon/react";
+import { PageBanner } from "@/components/fx/page-banner";
+import { ProgressRing } from "@/components/fx/progress-ring";
+import { CountUp } from "@/components/fx/count-up";
+import { Medal, StatTile } from "@/components/fx/art";
+import { AreaChart } from "@/components/tremor/AreaChart";
 import { useMemo, useState } from "react";
 import { useAchievements, useHistory } from "@/hooks/use-progress";
 import { BarList } from "@/components/charts";
@@ -26,6 +32,8 @@ function Kpi({ title, value, desc }: { title: string; value: string; desc: strin
     </div>
   );
 }
+
+const MEDAL_TONES = ["amber", "emerald", "blue", "violet", "pink", "cyan", "brand"];
 
 export default function HistoricoPage() {
   const { data, isLoading } = useHistory();
@@ -60,13 +68,22 @@ export default function HistoricoPage() {
 
   return (
     <>
-      <section aria-labelledby="historico">
-        <h1 id="historico">Histórico acadêmico</h1>
-        <dl className="mt-4 grid grid-cols-1 gap-14 sm:mt-8 sm:grid-cols-3 lg:mt-10">
-          <Kpi title="Média global" value={dec(data.mga)} desc="ponderada pela carga horária (MGA)" />
-          <Kpi title="Ritmo por período" value={data.pace.avgHoursPerTerm != null ? `${num(data.pace.avgHoursPerTerm)} h` : "—"} desc="média dos períodos registrados" />
-          <Kpi title="Períodos restantes" value={data.pace.estTermsLeft != null ? String(data.pace.estTermsLeft) : "—"} desc={`faltam ${num(data.totals.remaining)} h para integralizar`} />
-        </dl>
+      <PageBanner eyebrow="Trajetória" icon={RiLineChartLine} title="Histórico acadêmico" tone="emerald"
+        description="Notas, ritmo por período e conquistas — tudo calculado a partir do que você marcou como aprovado, com nota e período."
+        aside={data.mga != null ? (
+          <ProgressRing value={data.mga * 10} tone="emerald" size={124} stroke={11} label={`média global ${dec(data.mga)}`}>
+            <div>
+              <CountUp value={data.mga} decimals={2} className="text-xl font-semibold text-gray-900 dark:text-gray-50" />
+              <p className="text-[0.65rem] text-gray-500 dark:text-gray-400">média global<br />(MGA)</p>
+            </div>
+          </ProgressRing>
+        ) : undefined}
+      />
+      <section aria-label="Resumo" className="stagger mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatTile label="Média global" value={data.mga ?? 0} decimals={2} icon={RiMedalLine} tone="emerald" hint="ponderada pela carga horária (MGA)" />
+        <StatTile label="Ritmo por período" value={data.pace.avgHoursPerTerm ?? 0} suffix=" h" icon={RiSpeedLine} tone="blue" hint="média dos períodos registrados"
+          trend={data.terms.map((t) => t.hours)} />
+        <StatTile label="Períodos restantes" value={data.pace.estTermsLeft ?? 0} icon={RiFlagLine} tone="violet" hint={`faltam ${num(data.totals.remaining)} h para integralizar`} />
       </section>
 
       {data.terms.length > 0 && (
@@ -76,8 +93,8 @@ export default function HistoricoPage() {
           <div className="grid grid-cols-1 gap-14 xl:grid-cols-5">
             <div className="xl:col-span-3">
               <p className="font-bold text-gray-900 sm:text-sm dark:text-gray-50">Horas aprovadas</p>
-              <LineChart className="mt-6 h-64" data={data.terms.map((t) => ({ periodo: t.term, Horas: t.hours }))}
-                index="periodo" categories={["Horas"]} colors={["orange"]} showLegend={false}
+              <AreaChart className="mt-6 h-64" data={data.terms.map((t) => ({ periodo: t.term, Horas: t.hours }))}
+                index="periodo" categories={["Horas"]} colors={["emerald"]} showLegend={false} fill="gradient"
                 valueFormatter={(v) => `${num(v)} h`} yAxisWidth={52} />
             </div>
             <div className="xl:col-span-2">
@@ -104,15 +121,17 @@ export default function HistoricoPage() {
             <h2 id="conquistas" className="text-lg font-semibold sm:text-xl">Conquistas</h2>
             <Badge variant="neutral">{ach.earned} de {ach.total}</Badge>
           </div>
-          <Divider className="mt-4 mb-2" />
-          <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-800">
+          <Divider className="mt-4 mb-6" />
+          <ul role="list" className="stagger grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {ach.achievements.map((a) => (
-              <li key={a.key} className="flex items-center justify-between gap-4 py-3">
-                <div className="min-w-0">
-                  <p className={cx("text-sm font-medium", a.earned ? "text-gray-900 dark:text-gray-50" : "text-gray-500 dark:text-gray-400")}>{a.label}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{a.desc}</p>
-                </div>
-                <Badge variant={a.earned ? "success" : "neutral"}>{a.earned ? "alcançado" : "pendente"}</Badge>
+              <li key={a.key} className={cx(
+                "flex flex-col items-center rounded-lg border p-4 text-center transition-[translate,box-shadow] hover:-translate-y-0.5 hover:shadow-md",
+                a.earned ? "border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950" : "border-dashed border-gray-300 dark:border-gray-800",
+              )}>
+                <Medal icon={a.icon} tone={MEDAL_TONES[ach.achievements.indexOf(a) % MEDAL_TONES.length]} earned={a.earned} />
+                <p className={cx("mt-2 text-sm font-semibold", a.earned ? "text-gray-900 dark:text-gray-50" : "text-gray-500 dark:text-gray-400")}>{a.label}</p>
+                <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{a.desc}</p>
+                <Badge variant={a.earned ? "success" : "neutral"} className="mt-2">{a.earned ? "alcançada" : "a conquistar"}</Badge>
               </li>
             ))}
           </ul>

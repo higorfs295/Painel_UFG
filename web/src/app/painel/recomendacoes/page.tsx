@@ -2,6 +2,7 @@
 
 // Recomendações (RF-07): disponíveis agora, ordenadas pelo quanto cada uma destrava
 // adiante — obrigatórias primeiro, depois o total transitivo.
+import { RiSparkling2Line } from "@remixicon/react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { useCourseDetail, useRecommendations, useSetSubject } from "@/hooks/use-progress";
@@ -51,7 +52,7 @@ export default function RecomendacoesPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHead eyebrow="planejamento" title="Recomendações">
+      <PageHead eyebrow="planejamento" title="Recomendações" icon={RiSparkling2Line} tone="emerald">
         <ExportButton name="recomendacoes" rows={recs} columns={csvColumnsFrom(columns)} />
       </PageHead>
       <p className="-mt-2 max-w-3xl text-sm text-gray-500 dark:text-gray-400">
@@ -62,7 +63,7 @@ export default function RecomendacoesPage() {
       {recs.length === 0 ? (
         <EmptyState>
           Nenhuma disciplina disponível no momento. Marque o que já cursou em{" "}
-          <Link href="/painel/disciplinas" className="text-orange-700 hover:underline dark:text-orange-400">Disciplinas</Link>.
+          <Link href="/painel/disciplinas" className="text-brand-700 hover:underline dark:text-brand-400">Disciplinas</Link>.
         </EmptyState>
       ) : (
         <>

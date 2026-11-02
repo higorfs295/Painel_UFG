@@ -14,6 +14,7 @@ import { auth } from "@/lib/api/endpoints";
 import { clearSessionHint, hadSession } from "@/lib/api/session-hint";
 import { useAuth } from "@/lib/auth-store";
 import { reportError } from "@/lib/monitoring";
+import { applyAppearance } from "@/lib/appearance";
 
 /**
  * Tenta restaurar a sessão pelo cookie de refresh assim que o app monta.
@@ -39,6 +40,11 @@ function SessionBootstrap({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (user?.theme) setTheme(user.theme);
   }, [user?.theme, setTheme]);
+
+  // v12: cor de destaque e pele da barra lateral também moram na conta
+  useEffect(() => {
+    if (user) applyAppearance({ accent: user.accent ?? "orange", sidebar: user.sidebar ?? "light" });
+  }, [user]);
 
   return <>{children}</>;
 }

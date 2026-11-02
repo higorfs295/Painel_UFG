@@ -20,8 +20,8 @@ import type { SubjectProgress } from "@/lib/api/types";
 
 const textarea =
   "block w-full resize-y rounded-md border border-gray-300 bg-white px-2.5 py-2 text-sm text-gray-900 shadow-xs outline-hidden transition " +
-  "placeholder:text-gray-500 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 " +
-  "dark:border-gray-800 dark:bg-gray-950 dark:text-gray-50 dark:placeholder:text-gray-400 dark:focus:border-orange-700 dark:focus:ring-orange-700/30";
+  "placeholder:text-gray-500 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 " +
+  "dark:border-gray-800 dark:bg-gray-950 dark:text-gray-50 dark:placeholder:text-gray-400 dark:focus:border-brand-700 dark:focus:ring-brand-700/30";
 
 export function SubjectDrawer({ seq, onClose, onNavigate }: {
   seq: number | null;

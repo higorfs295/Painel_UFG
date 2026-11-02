@@ -6,7 +6,8 @@ import type {
   User, Enrollment, Progress, Recommendation, Extra, CourseSummary, Scenario, AdminUser,
   AdminStats, SubjectState, ExtraCategory, Theme, AcademicPeriodEntry, PeriodInfo, Shift, AdminConfig,
   History, Achievements, StudyTask, TaskKind, SubjectNote, Announcement, Audience,
-  Metrics, AuditEntry, SessionInfo,
+  Metrics, AuditEntry, SessionInfo, Accent, SidebarStyle, AdminAnalytics, CourseReport,
+  InstanceSettings, PublicSettings, ImportPreview, UserImportResult,
 } from "./types";
 
 // ---- auth ----
@@ -41,7 +42,10 @@ export const auth = {
 // ---- conta ----
 export const me = {
   profile: () => api<User>("/me"),
-  updateSettings: (patch: { theme?: Theme; name?: string; matricula?: string | null; shift?: Shift | null }) =>
+  updateSettings: (patch: {
+    theme?: Theme; accent?: Accent; sidebar?: SidebarStyle;
+    name?: string; matricula?: string | null; shift?: Shift | null;
+  }) =>
     api<User>("/me/settings", { method: "PATCH", body: JSON.stringify(patch) }),
   changePassword: (current: string, next: string) =>
     api<void>("/me/password", { method: "POST", body: JSON.stringify({ current, next }) }),
@@ -97,12 +101,17 @@ export const planner = {
 };
 
 // ---- avisos (RF-24) ----
+export type AnnouncementInput = {
+  title: string; body: string; audience?: Audience; pinned?: boolean;
+  /** v12: null = todos os cursos */
+  courseSlug?: string | null; publishAt?: string; expiresAt?: string | null;
+};
 export const announcements = {
   feed: () => api<Announcement[]>("/announcements"),
   listAll: () => api<Announcement[]>("/admin/announcements"),
-  create: (data: { title: string; body: string; audience?: Audience; pinned?: boolean }) =>
+  create: (data: AnnouncementInput) =>
     api<Announcement>("/admin/announcements", { method: "POST", body: JSON.stringify(data) }),
-  update: (id: string, patch: { title?: string; body?: string; audience?: Audience; pinned?: boolean }) =>
+  update: (id: string, patch: Partial<AnnouncementInput>) =>
     api<Announcement>(`/admin/announcements/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
   remove: (id: string) => api<void>(`/admin/announcements/${id}`, { method: "DELETE" }),
 };
@@ -134,6 +143,15 @@ export const courses = {
   import: (matriz: unknown) => api<{ slug: string; subjects: number }>("/courses/import", {
     method: "POST", body: JSON.stringify(matriz),
   }),
+  // v12: valida e compara sem gravar
+  previewImport: (matriz: unknown) => api<ImportPreview>("/courses/import?dryRun=1", {
+    method: "POST", body: JSON.stringify(matriz),
+  }),
+  exportMatrix: (slug: string) => api<unknown>(`/courses/${slug}/export`),
+  patch: (slug: string, patch: { name?: string; totalHours?: number }) =>
+    api<{ id: string; slug: string; name: string; totalHours: number }>(`/courses/${slug}`, {
+      method: "PATCH", body: JSON.stringify(patch),
+    }),
   // prévia do estrago, mostrada na 1ª confirmação
   impact: (slug: string) => api<CourseImpact>(`/courses/${slug}/impact`),
   // `confirm` = o slug redigitado; o servidor recusa qualquer outra coisa
@@ -183,23 +201,34 @@ export const admin = {
     api<{ user: User; invite: { link: string; expiresAt: string; emailed: boolean } }>("/users", { method: "POST", body: JSON.stringify(data) }),
   reinvite: (id: string) =>
     api<{ invite: { link: string; expiresAt: string; purpose: string; emailed: boolean } }>(`/users/${id}/invite`, { method: "POST" }),
-  patchUser: (id: string, patch: { role?: "ADMIN" | "USER"; name?: string }) =>
+  patchUser: (id: string, patch: { role?: "ADMIN" | "USER"; name?: string; matricula?: string | null; shift?: Shift | null }) =>
     api<{ id: string; role: "ADMIN" | "USER" }>(`/users/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
   enrollUser: (id: string, courseSlug: string) =>
     api<{ enrollmentId: string }>(`/users/${id}/enrollments`, { method: "POST", body: JSON.stringify({ courseSlug }) }),
   unenrollUser: (id: string, enrollmentId: string) =>
     api<void>(`/users/${id}/enrollments/${enrollmentId}`, { method: "DELETE" }),
   removeUser: (id: string) => api<void>(`/users/${id}`, { method: "DELETE" }),
+  // v12
+  importUsers: (users: { name: string; email: string; role?: "ADMIN" | "USER"; courseSlug?: string }[]) =>
+    api<UserImportResult>("/users/import", { method: "POST", body: JSON.stringify({ users }) }),
+  revokeSessions: (id: string) => api<{ revoked: number }>(`/users/${id}/sessions/revoke`, { method: "POST" }),
+  analytics: () => api<AdminAnalytics>("/admin/analytics"),
+  courseReport: (slug: string) => api<CourseReport>(`/admin/reports/courses/${slug}`),
+  settings: () => api<{ settings: InstanceSettings; stored: (keyof InstanceSettings)[] }>("/admin/settings"),
+  updateSettings: (patch: Partial<InstanceSettings>) =>
+    api<{ settings: InstanceSettings; stored: (keyof InstanceSettings)[] }>("/admin/settings", {
+      method: "PATCH", body: JSON.stringify(patch),
+    }),
+  auditActions: () => api<{ actions: { action: string; count: number }[] }>("/admin/audit/actions"),
   stats: () => api<AdminStats>("/admin/stats"),
   config: () => api<AdminConfig>("/admin/config"),
   testMail: () => api<{ sent: boolean; to?: string; error?: string }>("/admin/mail/test", { method: "POST" }),
   // observabilidade (RF-27)
   metrics: () => api<Metrics>("/admin/metrics"),
-  audit: (q: { limit?: number; action?: string } = {}) => {
+  audit: (q: { limit?: number; action?: string; userId?: string; q?: string; from?: string; to?: string; before?: string } = {}) => {
     const p = new URLSearchParams();
-    if (q.limit) p.set("limit", String(q.limit));
-    if (q.action) p.set("action", q.action);
-    return api<{ entries: AuditEntry[] }>(`/admin/audit${p.toString() ? `?${p}` : ""}`);
+    for (const [k, v] of Object.entries(q)) if (v !== undefined && v !== "") p.set(k, String(v));
+    return api<{ entries: AuditEntry[]; nextBefore: string | null }>(`/admin/audit${p.toString() ? `?${p}` : ""}`);
   },
   // ferramentas de desenvolvimento (só com DEV_TOOLS=true)
   seedStudents: (data: { count: number; courseSlug: string; progress?: number }) =>
@@ -213,4 +242,9 @@ export const admin = {
   addPeriod: (data: { type: "TERM" | "BREAK"; term?: string | null; startsAt: string }) =>
     api<AcademicPeriodEntry>("/admin/periods", { method: "POST", body: JSON.stringify(data) }),
   removePeriod: (id: string) => api<void>(`/admin/periods/${id}`, { method: "DELETE" }),
+};
+
+// ---- v12: configurações públicas da instância (cadastro e faixa de aviso) ----
+export const instance = {
+  publicSettings: () => api<PublicSettings>("/settings/public"),
 };

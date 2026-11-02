@@ -6,7 +6,7 @@ import { cx } from "@/lib/utils";
 export function BrandMark({ className, onAccent }: { className?: string; onAccent?: boolean }) {
   // `onAccent`: versão branca para ir sobre o laranja (a célula "acesa" fica translúcida)
   const base = onAccent ? "fill-white" : "fill-gray-900 dark:fill-gray-50";
-  const lit = onAccent ? "fill-white/45" : "fill-orange-600 dark:fill-orange-500";
+  const lit = onAccent ? "fill-white/45" : "fill-brand-600 dark:fill-brand-500";
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className={cx("size-6 shrink-0", className)}>
       <rect x="2" y="2" width="9" height="9" rx="2" className={base} />

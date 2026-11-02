@@ -15,8 +15,8 @@ const progressCircleVariants = tv({
   variants: {
     variant: {
       default: {
-        background: "stroke-orange-200 dark:stroke-orange-500/30",
-        circle: "stroke-orange-600 dark:stroke-orange-500",
+        background: "stroke-brand-200 dark:stroke-brand-500/30",
+        circle: "stroke-brand-600 dark:stroke-brand-500",
       },
       neutral: {
         background: "stroke-gray-200 dark:stroke-gray-500/40",

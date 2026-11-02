@@ -7,10 +7,10 @@
 // lg:px-10 lg:pt-7`). Sem cabeçalho no desktop — a página começa no título, como lá.
 //
 // A guarda espera o bootstrap terminar ("loading") antes de decidir — sem isso um F5
-// numa rota interna piscaria a tela de login. Papel errado é redirecionado: o ADMIN não
-// cursa (não tem matrícula) e o aluno não administra.
+// numa rota interna piscaria a tela de login. O aluno não administra. O ADMIN, desde a v12,
+// pode também cursar: entra no /painel e, sem matrícula, escolhe o curso como qualquer aluno.
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { auth, courses, me } from "@/lib/api/endpoints";
 import { setAccessToken } from "@/lib/api/client";
@@ -21,6 +21,7 @@ import { Label } from "@/components/tremor/Label";
 import { Sidebar } from "./sidebar";
 import { CommandPalette } from "./command-palette";
 import { selectCls } from "@/components/ui";
+import { InstanceBanner } from "./instance-banner";
 
 /** Aluno recém-criado ainda não tem matrícula (RF-17): escolhe o curso aqui. */
 function CoursePicker() {
@@ -32,11 +33,14 @@ function CoursePicker() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["enrollments"] }),
   });
 
+  const isAdmin = useAuth((s) => s.user?.role === "ADMIN");
   return (
     <section aria-labelledby="escolha-curso" className="max-w-xl">
-      <h1 id="escolha-curso">Escolha seu curso</h1>
+      <h1 id="escolha-curso">{isAdmin ? "Acompanhar o seu curso" : "Escolha seu curso"}</h1>
       <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        Sua conta está pronta — selecione a matriz curricular para começar a acompanhar.
+        {isAdmin
+          ? "Além de administrar, você pode acompanhar a sua própria integralização. Escolha a matriz — a gestão continua no menu do topo."
+          : "Sua conta está pronta — selecione a matriz curricular para começar a acompanhar."}
       </p>
       {!list ? (
         <div className="skeleton mt-6 h-9" />
@@ -66,21 +70,24 @@ function CoursePicker() {
 /** `any` = página compartilhada (Ajustes, Ajuda): serve aos dois papéis, sem redirecionar. */
 export function AppShell({ area, children }: { area: "student" | "admin" | "any"; children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, status, clear } = useAuth();
   const isAdmin = user?.role === "ADMIN";
   const { enrollmentId, setEnrollment } = useApp();
+  // a área do aluno precisa da matrícula; a de gestão e as compartilhadas, não
+  const needsEnrollment = area === "student";
 
   // guarda de rota
   useEffect(() => {
     if (status === "out") router.replace("/entrar");
     else if (status === "in" && area === "admin" && !isAdmin) router.replace("/painel");
-    else if (status === "in" && area === "student" && isAdmin) router.replace("/admin");
   }, [status, area, isAdmin, router]);
 
+  // todo mundo busca as matrículas: o admin também pode cursar (e o seletor da sidebar as lista)
   const { data: enrollments, isLoading, isError: enrollError, refetch } = useQuery({
     queryKey: ["enrollments"],
     queryFn: me.enrollments,
-    enabled: status === "in" && !isAdmin, // admin não tem matrícula — nem busca
+    enabled: status === "in",
   });
 
   useEffect(() => {
@@ -105,10 +112,10 @@ export function AppShell({ area, children }: { area: "student" | "admin" | "any"
 
   // só oferece "escolha seu curso" quando a lista VEIO vazia — uma falha de rede (ou um
   // 429 do limitador) não pode ser confundida com "não tem matrícula"
-  const needsCourse = !isAdmin && !isLoading && !enrollError && (enrollments?.length ?? 0) === 0;
+  const needsCourse = needsEnrollment && !isLoading && !enrollError && (enrollments?.length ?? 0) === 0;
 
   let content: React.ReactNode = children;
-  if (isLoading && !isAdmin) {
+  if (isLoading && needsEnrollment) {
     content = (
       <div className="flex flex-col gap-6">
         <div className="skeleton h-7 w-56" />
@@ -117,7 +124,7 @@ export function AppShell({ area, children }: { area: "student" | "admin" | "any"
         </div>
       </div>
     );
-  } else if (enrollError && !isAdmin && !enrollments) {
+  } else if (enrollError && needsEnrollment && !enrollments) {
     content = (
       <section className="max-w-xl">
         <h1>Não foi possível carregar seus cursos</h1>
@@ -135,9 +142,11 @@ export function AppShell({ area, children }: { area: "student" | "admin" | "any"
         className="absolute top-[-60px] left-3 z-[70] rounded-md border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-md transition-[top] focus:top-3 dark:border-gray-800 dark:bg-gray-950">
         Pular para o conteúdo
       </a>
-      <Sidebar enrollments={isAdmin ? [] : enrollments ?? []} onLogout={logout} />
+      <Sidebar enrollments={enrollments ?? []} onLogout={logout} />
       <main id="conteudo" className="lg:pl-72">
-        <div className="relative p-4 sm:px-6 sm:pt-10 sm:pb-10 lg:px-10 lg:pt-7">{content}</div>
+        <InstanceBanner />
+        {/* key = rota: cada troca de página reapresenta o conteúdo com a entrada suave */}
+        <div key={pathname} className="page-enter relative p-4 sm:px-6 sm:pt-10 sm:pb-10 lg:px-10 lg:pt-7">{content}</div>
       </main>
       <CommandPalette />
     </div>

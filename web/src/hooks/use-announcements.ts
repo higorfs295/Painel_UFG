@@ -25,8 +25,9 @@ export function useAnnouncements(enabled = true) {
     return () => { window.removeEventListener(SEEN_EVENT, sync); window.removeEventListener("storage", sync); };
   }, []);
 
-  const isNew = useCallback((createdAt: string) => new Date(createdAt).getTime() > seen, [seen]);
-  const unread = (query.data ?? []).filter((a) => isNew(a.createdAt)).length;
+  // v12: um aviso agendado "chega" na publicação, não na criação — é essa data que conta
+  const isNew = useCallback((publishedAt: string) => new Date(publishedAt).getTime() > seen, [seen]);
+  const unread = (query.data ?? []).filter((a) => isNew(a.publishAt ?? a.createdAt)).length;
 
   const markAllSeen = useCallback(() => {
     try { localStorage.setItem(SEEN_KEY, String(Date.now())); } catch { /* sem storage: vale só nesta aba */ }

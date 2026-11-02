@@ -36,3 +36,11 @@ export function downloadCSV<T>(name: string, rows: T[], columns: Column<T>[]) {
 /** Número no formato pt-BR (vírgula decimal) — Excel brasileiro não entende "8.5". */
 export const ptNum = (n: number | null | undefined, digits = 1) =>
   n === null || n === undefined ? "" : n.toFixed(digits).replace(".", ",");
+
+/** Baixa um objeto como arquivo .json (v12: exportação de matriz). */
+export function downloadJSON(name: string, data: unknown) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}

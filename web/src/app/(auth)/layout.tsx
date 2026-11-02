@@ -2,13 +2,17 @@
 // © 2025 Tremor Labs, Inc.): coluna estreita centralizada, grade de quadradinhos ao fundo
 // com máscara radial e a "placa" com quatro parafusos segurando a marca. Acento laranja.
 // Grupo de rota `(auth)`: a URL não ganha segmento.
+import { InstanceBanner } from "@/components/layout/instance-banner";
 import Link from "next/link";
 import { APP_NAME } from "@/lib/branding";
 import { BrandMark } from "@/components/brand";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-20 lg:px-6 dark:bg-gray-950">
+    // a porta de entrada é a cara pública do projeto: fica no laranja do site, qualquer que seja
+    // a cor de destaque que a pessoa escolheu para o painel (v12)
+    <div data-accent="orange" className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-20 lg:px-6 dark:bg-gray-950">
+      <InstanceBanner className="fixed inset-x-0 top-0 z-50" />
       <div className="relative w-full sm:mx-auto sm:max-w-sm">
         <div aria-hidden="true"
           className="pointer-events-none absolute -top-[18%] left-1/2 -translate-x-1/2 opacity-60 select-none dark:opacity-90"

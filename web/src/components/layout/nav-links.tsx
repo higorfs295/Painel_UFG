@@ -19,7 +19,7 @@ function Item({ item, mobile, unread }: { item: NavItem; mobile?: boolean; unrea
     <Link href={item.href} aria-current={active ? "page" : undefined}
       className={cx(
         active
-          ? "text-orange-700 dark:text-orange-400"
+          ? "text-brand-700 dark:text-brand-400"
           : "text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
         "flex items-center gap-x-2.5 rounded-md px-2 py-1.5 font-medium transition hover:bg-gray-100 dark:hover:bg-gray-900",
         mobile ? "text-base sm:text-sm" : "text-sm",
@@ -28,7 +28,7 @@ function Item({ item, mobile, unread }: { item: NavItem; mobile?: boolean; unrea
       <item.icon className={cx("shrink-0", mobile ? "size-5" : "size-4")} aria-hidden="true" />
       <span className="truncate">{item.label}</span>
       {item.badge && unread > 0 && (
-        <span className="ml-auto rounded-sm bg-orange-50 px-1.5 py-0.5 text-xs font-semibold text-orange-800 tabular-nums ring-1 ring-orange-500/30 dark:bg-orange-400/10 dark:text-orange-400 dark:ring-orange-400/30"
+        <span className="ml-auto rounded-sm bg-brand-50 px-1.5 py-0.5 text-xs font-semibold text-brand-800 tabular-nums ring-1 ring-brand-500/30 dark:bg-brand-400/10 dark:text-brand-400 dark:ring-brand-400/30"
           aria-label={`${unread} não lido${unread > 1 ? "s" : ""}`}>
           {unread}
         </span>
@@ -40,11 +40,12 @@ function Item({ item, mobile, unread }: { item: NavItem; mobile?: boolean; unrea
 
 export function NavLinks({ mobile }: { mobile?: boolean }) {
   const role = useAuth((s) => s.user?.role);
-  // o admin publica avisos (não tem feed de aluno); o badge conta só o que não foi visto
-  const { unread } = useAnnouncements(role !== "ADMIN");
+  const pathname = usePathname();
+  // o badge conta só o que não foi visto; o admin só tem feed quando está na área de aluno
+  const { unread } = useAnnouncements(role !== "ADMIN" || pathname.startsWith("/painel"));
   return (
-    <nav aria-label="Navegação principal" className="flex flex-1 flex-col space-y-8">
-      {navFor(role).map((section) => (
+    <nav aria-label="Navegação principal" className="flex flex-1 flex-col space-y-7">
+      {navFor(role, pathname).map((section) => (
         <div key={section.label || "principal"}>
           {section.label && (
             <span className={cx("font-medium leading-6 text-gray-500 dark:text-gray-400", mobile ? "text-sm sm:text-xs" : "text-xs")}>

@@ -1,11 +1,14 @@
 "use client";
 
-// Seletor de curso no topo da sidebar — o "WorkspacesDropdown" do tremorlabs/template-
-// dashboard (MIT), onde cada workspace virou uma matrícula. O subtítulo mostra o período
-// letivo corrente (RF-20, calendário global mantido pelos admins).
+// Seletor no topo da sidebar — o "WorkspacesDropdown" do tremorlabs/template-dashboard (MIT).
+// Para o aluno, cada "workspace" é uma matrícula. Para o ADMIN (v12) a lista ganha a área de
+// Administração no topo: o mesmo menu leva da gestão para o "Meu painel" de cada curso que o
+// admin também cursa — é assim que uma conta de admin passa a ter os dois usos.
+// O subtítulo mostra o período letivo corrente (RF-20, calendário global).
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { RiAddLine, RiArrowRightSLine, RiExpandUpDownLine } from "@remixicon/react";
+import { RiAddLine, RiArrowRightSLine, RiExpandUpDownLine, RiShieldUserLine } from "@remixicon/react";
 import { me } from "@/lib/api/endpoints";
 import { useApp, useAuth } from "@/lib/auth-store";
 import {
@@ -13,6 +16,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/tremor/Dropdown";
 import { cx, focusInput } from "@/lib/utils";
+import { hashTone, tone } from "@/lib/palette";
 import type { Enrollment } from "@/lib/api/types";
 
 const STOP = new Set(["de", "da", "do", "das", "dos", "e", "em"]);
@@ -27,6 +31,9 @@ export function courseInitials(name: string) {
 /** Nome do curso sem o sufixo institucional, para caber na sidebar. */
 export const shortCourse = (name: string) => (name.split(/\s+[—-]\s+/)[0] ?? name).trim();
 
+/** Rota atual é da área do aluno? (o admin alterna entre as duas) */
+export const inStudentArea = (pathname: string) => pathname === "/painel" || pathname.startsWith("/painel/");
+
 function usePeriodLine() {
   const user = useAuth((s) => s.user);
   const { data: profile } = useQuery({ queryKey: ["me"], queryFn: me.profile, staleTime: 5 * 60_000 });
@@ -35,34 +42,77 @@ function usePeriodLine() {
   return period.onBreak ? `Férias · próximo ${period.nextTerm}` : `Período ${period.label}`;
 }
 
-function Tile({ text, className }: { text: string; className?: string }) {
+/** Azulejo com as iniciais: o curso ganha uma cor estável; a administração, o destaque. */
+function Tile({ text, admin, seed, className }: { text: string; admin?: boolean; seed?: string; className?: string }) {
+  const color = admin
+    ? "bg-brand-700 text-white dark:bg-brand-400 dark:text-gray-950"
+    : tone(hashTone(seed ?? text)).solid;
   return (
     <span aria-hidden="true"
-      className={cx("flex aspect-square items-center justify-center rounded-sm bg-orange-700 p-2 text-xs font-medium text-white dark:bg-orange-500 dark:text-gray-950", className)}>
-      {text}
+      className={cx("flex aspect-square shrink-0 items-center justify-center rounded-sm p-2 text-xs font-semibold", color, className)}>
+      {admin ? <RiShieldUserLine className="size-4" /> : text}
     </span>
   );
 }
 
-function Items({ enrollments }: { enrollments: Enrollment[] }) {
+function useWorkspace(enrollments: Enrollment[]) {
+  const user = useAuth((s) => s.user);
+  const enrollmentId = useApp((s) => s.enrollmentId);
+  const pathname = usePathname();
+  const isAdmin = user?.role === "ADMIN";
+  const current = enrollments.find((e) => e.id === enrollmentId);
+  // admin fora do /painel está na área de administração (inclusive em Ajustes/Ajuda)
+  const adminMode = isAdmin && !inStudentArea(pathname);
+  return { isAdmin, adminMode, current };
+}
+
+function Items({ enrollments, isAdmin, adminMode }: { enrollments: Enrollment[]; isAdmin: boolean; adminMode: boolean }) {
   const { enrollmentId, setEnrollment } = useApp();
+  const router = useRouter();
+  const pathname = usePathname();
+  const pick = (id: string) => {
+    setEnrollment(id);
+    if (!inStudentArea(pathname)) router.push("/painel");
+  };
   return (
     <>
+      {isAdmin && (
+        <>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Gestão</DropdownMenuLabel>
+            <DropdownMenuItem onSelect={() => router.push("/admin")}>
+              <div className="flex w-full items-center gap-x-2.5">
+                <Tile text="AD" admin className="size-8" />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-50">Administração</p>
+                  <p className="text-xs text-gray-700 dark:text-gray-400">{adminMode ? "área atual" : "usuários, cursos, relatórios"}</p>
+                </div>
+              </div>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+        </>
+      )}
       <DropdownMenuGroup>
-        <DropdownMenuLabel>Cursos ({enrollments.length})</DropdownMenuLabel>
+        <DropdownMenuLabel>{isAdmin ? "Meu painel" : "Cursos"} ({enrollments.length})</DropdownMenuLabel>
         {enrollments.map((e) => (
-          <DropdownMenuItem key={e.id} onSelect={() => setEnrollment(e.id)}>
+          <DropdownMenuItem key={e.id} onSelect={() => pick(e.id)}>
             <div className="flex w-full items-center gap-x-2.5">
-              <Tile text={courseInitials(e.course.name)} className="size-8" />
+              <Tile text={courseInitials(e.course.name)} seed={e.course.slug} className="size-8" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-50">{shortCourse(e.course.name)}</p>
                 <p className="text-xs text-gray-700 dark:text-gray-400">
-                  {e.course.slug}{e.id === enrollmentId ? " · selecionado" : ""}
+                  {e.course.slug}{e.id === enrollmentId && !adminMode ? " · selecionado" : ""}
                 </p>
               </div>
             </div>
           </DropdownMenuItem>
         ))}
+        {isAdmin && enrollments.length === 0 && (
+          <DropdownMenuItem onSelect={() => router.push("/painel")}>
+            <span className="text-sm text-gray-700 dark:text-gray-300">Acompanhar o meu curso também…</span>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
       <DropdownMenuItem asChild>
@@ -75,15 +125,11 @@ function Items({ enrollments }: { enrollments: Enrollment[] }) {
 }
 
 export function CourseSwitcherDesktop({ enrollments }: { enrollments: Enrollment[] }) {
-  const user = useAuth((s) => s.user);
-  const enrollmentId = useApp((s) => s.enrollmentId);
+  const { isAdmin, adminMode, current } = useWorkspace(enrollments);
   const periodLine = usePeriodLine();
-  const isAdmin = user?.role === "ADMIN";
-  const current = enrollments.find((e) => e.id === enrollmentId);
 
-  const title = isAdmin ? "Administração" : current ? shortCourse(current.course.name) : "Sem curso";
-  const subtitle = isAdmin ? (periodLine || "Administrador") : periodLine || "Aluno";
-  const initials = isAdmin ? "AD" : current ? courseInitials(current.course.name) : "PA";
+  const title = adminMode ? "Administração" : current ? shortCourse(current.course.name) : "Sem curso";
+  const subtitle = adminMode ? (periodLine || "Administrador") : periodLine || "Aluno";
 
   const trigger = (
     <button
@@ -91,54 +137,52 @@ export function CourseSwitcherDesktop({ enrollments }: { enrollments: Enrollment
         "flex w-full items-center gap-x-2.5 rounded-md border border-gray-300 bg-white p-2 text-left text-sm shadow-xs transition-all hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950 dark:hover:bg-gray-900",
         focusInput,
       )}
-      aria-label={isAdmin ? "Área de administração" : "Trocar de curso"}>
-      <Tile text={initials} className="size-8" />
+      aria-label={isAdmin ? "Trocar de área ou de curso" : "Trocar de curso"}>
+      {adminMode
+        ? <Tile text="AD" admin className="size-8" />
+        : <Tile text={current ? courseInitials(current.course.name) : "PA"} seed={current?.course.slug} className="size-8" />}
       <div className="flex w-full items-center justify-between gap-x-4 truncate">
         <div className="truncate">
           <p className="truncate text-sm font-medium whitespace-nowrap text-gray-900 dark:text-gray-50">{title}</p>
           <p className="text-left text-xs whitespace-nowrap text-gray-700 dark:text-gray-300">{subtitle}</p>
         </div>
-        {!isAdmin && <RiExpandUpDownLine className="size-5 shrink-0 text-gray-500" aria-hidden="true" />}
+        <RiExpandUpDownLine className="size-5 shrink-0 text-gray-500" aria-hidden="true" />
       </div>
     </button>
   );
 
-  if (isAdmin) return <div className="pointer-events-none">{trigger}</div>;
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="!min-w-[var(--radix-dropdown-menu-trigger-width)]">
-        <Items enrollments={enrollments} />
+        <Items enrollments={enrollments} isAdmin={isAdmin} adminMode={adminMode} />
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
 
 export function CourseSwitcherMobile({ enrollments }: { enrollments: Enrollment[] }) {
-  const user = useAuth((s) => s.user);
-  const enrollmentId = useApp((s) => s.enrollmentId);
-  const isAdmin = user?.role === "ADMIN";
-  const current = enrollments.find((e) => e.id === enrollmentId);
-  const title = isAdmin ? "Administração" : current ? shortCourse(current.course.name) : "Painel";
-  const initials = isAdmin ? "AD" : current ? courseInitials(current.course.name) : "PA";
+  const { isAdmin, adminMode, current } = useWorkspace(enrollments);
+  const title = adminMode ? "Administração" : current ? shortCourse(current.course.name) : "Painel";
 
   const trigger = (
     <button className="flex min-w-0 items-center gap-x-1.5 rounded-md p-2 hover:bg-gray-100 focus:outline-hidden dark:hover:bg-gray-900"
-      aria-label={isAdmin ? "Área de administração" : "Trocar de curso"}>
-      <Tile text={initials} className="size-7" />
+      aria-label={isAdmin ? "Trocar de área ou de curso" : "Trocar de curso"}>
+      {adminMode
+        ? <Tile text="AD" admin className="size-7" />
+        : <Tile text={current ? courseInitials(current.course.name) : "PA"} seed={current?.course.slug} className="size-7" />}
       <RiArrowRightSLine className="size-4 shrink-0 text-gray-500" aria-hidden="true" />
       <div className="flex w-full min-w-0 items-center justify-between gap-x-3 truncate">
         <p className="truncate text-sm font-medium whitespace-nowrap text-gray-900 dark:text-gray-50">{title}</p>
-        {!isAdmin && <RiExpandUpDownLine className="size-4 shrink-0 text-gray-500" aria-hidden="true" />}
+        <RiExpandUpDownLine className="size-4 shrink-0 text-gray-500" aria-hidden="true" />
       </div>
     </button>
   );
-  if (isAdmin) return <div className="pointer-events-none min-w-0">{trigger}</div>;
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
       <DropdownMenuContent className="!min-w-72">
-        <Items enrollments={enrollments} />
+        <Items enrollments={enrollments} isAdmin={isAdmin} adminMode={adminMode} />
       </DropdownMenuContent>
     </DropdownMenu>
   );

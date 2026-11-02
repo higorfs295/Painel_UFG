@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTheme } from "next-themes";
 import toast from "react-hot-toast";
-import { RiComputerLine, RiMoonLine, RiSunLine } from "@remixicon/react";
+import { RiComputerLine, RiMoonLine, RiSettings5Line, RiSunLine } from "@remixicon/react";
 import { courses, me } from "@/lib/api/endpoints";
 import { useAuth } from "@/lib/auth-store";
 import { reportError } from "@/lib/monitoring";
@@ -18,6 +18,8 @@ import { Input } from "@/components/tremor/Input";
 import { Label } from "@/components/tremor/Label";
 import { TabNavigation, TabNavigationLink } from "@/components/tremor/TabNavigation";
 import { selectCls } from "@/components/ui";
+import { PageBanner } from "@/components/fx/page-banner";
+import { AccentPicker, AppearancePreview, SidebarPicker } from "@/components/appearance-picker";
 import { cx, fmtDate } from "@/lib/utils";
 import type { Shift, Theme } from "@/lib/api/types";
 
@@ -26,7 +28,7 @@ const SHIFTS: { v: Shift; label: string }[] = [
   { v: "noturno", label: "Noturno" }, { v: "integral", label: "Integral" },
 ];
 const TERM_RE = /^\d{4}\.[12]$/;
-type Tab = "geral" | "seguranca" | "cursos";
+type Tab = "geral" | "aparencia" | "seguranca" | "cursos";
 
 /** Bloco de configuração: título/descrição à esquerda, conteúdo em 2/3 à direita. */
 function Block({ id, title, desc, children }: { id: string; title: string; desc: React.ReactNode; children: React.ReactNode }) {
@@ -68,12 +70,12 @@ function ThemePicker() {
           <button key={v} type="button" role="radio" aria-checked={on} onClick={() => pick(v)}
             className={cx(
               "flex cursor-pointer items-center gap-3 rounded-md border p-4 text-left text-sm shadow-xs transition",
-              "outline-orange-500 focus-visible:outline-2 focus-visible:outline-offset-2",
+              "outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2",
               on
-                ? "border-orange-500 ring-1 ring-orange-500 dark:border-orange-500"
+                ? "border-brand-500 ring-1 ring-brand-500 dark:border-brand-500"
                 : "border-gray-300 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900",
             )}>
-            <Icon className={cx("size-5 shrink-0", on ? "text-orange-700 dark:text-orange-400" : "text-gray-500 dark:text-gray-400")} aria-hidden="true" />
+            <Icon className={cx("size-5 shrink-0", on ? "text-brand-700 dark:text-brand-400" : "text-gray-500 dark:text-gray-400")} aria-hidden="true" />
             <span className="font-medium text-gray-900 dark:text-gray-50">{label}</span>
           </button>
         );
@@ -98,22 +100,25 @@ export default function ConfigPage() {
 
   // /config#cursos (atalho do seletor de curso) abre direto na aba de cursos
   useEffect(() => {
-    const sync = () => { if (window.location.hash === "#cursos" && !isAdmin) setTab("cursos"); };
+    const sync = () => {
+      if (window.location.hash === "#cursos") setTab("cursos");
+      else if (window.location.hash === "#aparencia") setTab("aparencia");
+    };
     sync();
     window.addEventListener("hashchange", sync);
     return () => window.removeEventListener("hashchange", sync);
   }, [isAdmin]);
 
   const { data: sessions } = useQuery({ queryKey: ["sessions"], queryFn: me.sessions });
-  const { data: enrollments } = useQuery({ queryKey: ["enrollments"], queryFn: me.enrollments, enabled: !isAdmin });
-  const { data: courseList } = useQuery({ queryKey: ["courses"], queryFn: courses.list, enabled: !isAdmin });
+  const { data: enrollments } = useQuery({ queryKey: ["enrollments"], queryFn: me.enrollments });
+  const { data: courseList } = useQuery({ queryKey: ["courses"], queryFn: courses.list });
 
   async function saveProfile(e: React.FormEvent) {
     e.preventDefault();
     try {
       const updated = await me.updateSettings({
         name,
-        ...(isAdmin ? {} : { matricula: acad.matricula.trim() || null, shift: (acad.shift || null) as Shift | null }),
+        matricula: acad.matricula.trim() || null, shift: (acad.shift || null) as Shift | null,
       });
       patchUser({ name: updated.name, matricula: updated.matricula, shift: updated.shift });
       toast.success("Dados salvos.");
@@ -187,14 +192,16 @@ export default function ConfigPage() {
 
   const tabs: { v: Tab; label: string }[] = [
     { v: "geral", label: "Geral" },
+    { v: "aparencia", label: "Aparência" },
     { v: "seguranca", label: "Segurança" },
-    ...(isAdmin ? [] : [{ v: "cursos" as Tab, label: "Cursos e backup" }]),
+    { v: "cursos", label: isAdmin ? "Meus cursos" : "Cursos e backup" },
   ];
 
   return (
     <>
-      <h1>Ajustes</h1>
-      <TabNavigation className="mt-4 sm:mt-6 lg:mt-10">
+      <PageBanner eyebrow="Conta" icon={RiSettings5Line} title="Ajustes"
+        description="Seus dados, a aparência do painel, segurança da conta e os cursos que você acompanha." />
+      <TabNavigation className="mt-6">
         {tabs.map((t) => (
           <TabNavigationLink key={t.v} asChild active={tab === t.v}>
             <button type="button" onClick={() => setTab(t.v)}>{t.label}</button>
@@ -206,7 +213,7 @@ export default function ConfigPage() {
         {tab === "geral" && (
           <>
             <Block id="perfil" title="Informações pessoais"
-              desc={isAdmin ? "Seu nome como aparece no sistema." : "Nome, número de matrícula e turno. A matrícula é guardada cifrada no banco."}>
+              desc="Nome, número de matrícula e turno (opcionais para quem só administra). A matrícula é guardada cifrada no banco.">
               <form onSubmit={saveProfile} className="grid grid-cols-1 gap-4 sm:grid-cols-6">
                 <div className="col-span-full sm:col-span-3">
                   <Label htmlFor="nome" className="font-medium">Nome</Label>
@@ -217,7 +224,7 @@ export default function ConfigPage() {
                   <Input id="email" value={user?.email ?? ""} disabled className="mt-2" />
                   <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">Papel: {isAdmin ? "administrador" : "aluno"}.</p>
                 </div>
-                {!isAdmin && (
+                {(
                   <>
                     <div className="col-span-full sm:col-span-3">
                       <Label htmlFor="matricula" className="font-medium">Nº de matrícula</Label>
@@ -239,10 +246,27 @@ export default function ConfigPage() {
                 </div>
               </form>
             </Block>
-            <Divider />
-            <Block id="aparencia" title="Aparência"
-              desc="O tema fica salvo na sua conta. “Sistema” acompanha o claro/escuro do seu computador ou celular.">
+          </>
+        )}
+
+        {tab === "aparencia" && (
+          <>
+            <Block id="aparencia" title="Tema"
+              desc="Fica salvo na sua conta. “Sistema” acompanha o claro/escuro do seu computador ou celular.">
               <ThemePicker />
+            </Block>
+            <Divider />
+            <Block id="destaque" title="Cor de destaque"
+              desc="Botões, links, item ativo e gráficos principais. As cores de situação (aprovada, cursando…) não mudam. Todas passam no contraste AA.">
+              <div className="flex flex-col gap-5">
+                <AccentPicker />
+                <AppearancePreview />
+              </div>
+            </Block>
+            <Divider />
+            <Block id="barra" title="Barra lateral"
+              desc="Clara como no template, escura nos dois temas ou na sua cor de destaque.">
+              <SidebarPicker />
             </Block>
           </>
         )}
@@ -291,7 +315,7 @@ export default function ConfigPage() {
           </>
         )}
 
-        {tab === "cursos" && !isAdmin && (
+        {tab === "cursos" && (
           <>
             <Block id="cursos" title="Meus cursos" desc="O período de ingresso alimenta a estimativa de formatura.">
               {!enrollments || enrollments.length === 0 ? (

@@ -5,6 +5,7 @@
 // em text-sm semibold, badges retangulares com anel, barra de progresso de 1,5 px de
 // altura, campos com o `inputStyles` do template. A API das versões anteriores foi
 // mantida para as páginas antigas continuarem funcionando sem reescrita.
+import { PageBanner } from "@/components/fx/page-banner";
 import { cloneElement, isValidElement, useId, type ComponentType, type HTMLAttributes, type ReactNode, type SVGProps } from "react";
 import { cx } from "@/lib/utils";
 import { ProgressBar } from "@/components/tremor/ProgressBar";
@@ -50,20 +51,17 @@ export function Section({
   );
 }
 
-/** Título da página: h1 do template (text-lg/xl semibold) + descrição opcional. */
-export function PageHead({ eyebrow: _eyebrow, title, description, children }: {
-  /** mantido por compatibilidade; não é desenhado */
+/**
+ * Título da página. Desde a v12 é a faixa de topo (PageBanner): campo de pontos, hachura e o
+ * selo de ícone na cor de destaque, com o <h1> e as ações da página.
+ */
+export function PageHead({ eyebrow, title, description, children, icon, aside, tone }: {
   eyebrow?: string; title: ReactNode; description?: ReactNode; children?: ReactNode;
+  icon?: ComponentType<{ className?: string }>; aside?: ReactNode;
+  tone?: "brand" | "emerald" | "violet" | "blue" | "amber";
 }) {
-  return (
-    <header className="flex flex-wrap items-end justify-between gap-4">
-      <div className="min-w-0">
-        <h1 className="scroll-mt-10">{title}</h1>
-        {description && <p className="mt-1 max-w-3xl text-sm leading-6 text-gray-500 dark:text-gray-400">{description}</p>}
-      </div>
-      {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
-    </header>
-  );
+  const label = eyebrow ? eyebrow.charAt(0).toUpperCase() + eyebrow.slice(1) : undefined;
+  return <PageBanner eyebrow={label} icon={icon} title={title} description={description} actions={children} aside={aside} tone={tone} />;
 }
 
 /** KPI no estilo dos cartões do template: título em negrito, valor grande sem peso, nota. */
@@ -89,9 +87,9 @@ export function StatCard({ label, value, sub, className, children, badge }: {
 // Badge da Tremor (rounded, ring-1, text-xs semibold) — tons pelo significado acadêmico
 const TONES: Record<string, string> = {
   done: "bg-emerald-50 text-emerald-800 ring-emerald-600/30 dark:bg-emerald-400/10 dark:text-emerald-400 dark:ring-emerald-400/20",
-  avail: "bg-orange-50 text-orange-800 ring-orange-500/30 dark:bg-orange-400/10 dark:text-orange-400 dark:ring-orange-400/30",
-  primary: "bg-orange-50 text-orange-800 ring-orange-500/30 dark:bg-orange-400/10 dark:text-orange-400 dark:ring-orange-400/30",
-  co: "bg-blue-50 text-blue-800 ring-blue-600/30 dark:bg-blue-400/10 dark:text-blue-400 dark:ring-blue-400/20",
+  avail: "bg-amber-50 text-amber-800 ring-amber-600/30 dark:bg-amber-400/10 dark:text-amber-400 dark:ring-amber-400/30",
+  primary: "bg-brand-50 text-brand-800 ring-brand-500/30 dark:bg-brand-400/10 dark:text-brand-400 dark:ring-brand-400/30",
+  co: "bg-sky-50 text-sky-800 ring-sky-600/30 dark:bg-sky-400/10 dark:text-sky-400 dark:ring-sky-400/20",
   cursando: "bg-blue-50 text-blue-800 ring-blue-600/30 dark:bg-blue-400/10 dark:text-blue-400 dark:ring-blue-400/20",
   sim: "bg-violet-50 text-violet-800 ring-violet-600/30 dark:bg-violet-400/10 dark:text-violet-400 dark:ring-violet-400/20",
   lock: "bg-gray-50 text-gray-700 ring-gray-500/30 dark:bg-gray-400/10 dark:text-gray-300 dark:ring-gray-400/20",
@@ -117,10 +115,20 @@ const STATUS_LABEL: Record<GraphStatus, string> = {
   done: "Concluída", avail: "Disponível", co: "Co-requisito", lock: "Bloqueada",
 };
 
+const DOT: Record<string, string> = {
+  done: "bg-emerald-600 dark:bg-emerald-400", avail: "bg-amber-500", co: "bg-sky-500",
+  lock: "bg-gray-400", sim: "bg-violet-500", cursando: "bg-blue-600 dark:bg-blue-400",
+};
+
+/** Situação com ponto colorido (v12): as cores fixas de situação (lib/palette). */
 export function StatusChip({ status, state }: { status: GraphStatus; state?: SubjectState | null }) {
-  if (state === "SIMULATED") return <Chip tone="sim">Simulada</Chip>;
-  if (state === "ENROLLED") return <Chip tone="cursando">Cursando</Chip>;
-  return <Chip tone={status}>{STATUS_LABEL[status]}</Chip>;
+  const tone = state === "SIMULATED" ? "sim" : state === "ENROLLED" ? "cursando" : status;
+  const label = state === "SIMULATED" ? "Simulada" : state === "ENROLLED" ? "Cursando" : STATUS_LABEL[status];
+  return (
+    <Chip tone={tone}>
+      <span className={cx("size-1.5 rounded-full", DOT[tone])} aria-hidden="true" />{label}
+    </Chip>
+  );
 }
 
 /** Código/slug: monoespaçado, discreto. */
@@ -162,7 +170,7 @@ export function Segmented<T extends string>({ value, onChange, options, label }:
           onClick={() => onChange(o.v)}
           className={cx(
             "cursor-pointer rounded-sm px-3 py-1 text-sm font-medium whitespace-nowrap transition",
-            "outline-orange-500 focus-visible:outline-2 focus-visible:outline-offset-2",
+            "outline-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2",
             value === o.v
               ? "bg-white text-gray-900 shadow-xs ring-1 ring-black/5 dark:bg-gray-950 dark:text-gray-50 dark:ring-white/10"
               : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200",
@@ -203,7 +211,7 @@ export const inputCls =
   "border-gray-300 dark:border-gray-800 text-gray-900 dark:text-gray-50 bg-white dark:bg-gray-950 " +
   "placeholder:text-gray-500 dark:placeholder:text-gray-400 " +
   "disabled:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400 dark:disabled:border-gray-700 dark:disabled:bg-gray-800 dark:disabled:text-gray-500 " +
-  "focus:ring-2 focus:ring-orange-200 focus:border-orange-500 dark:focus:ring-orange-700/30 dark:focus:border-orange-700";
+  "focus:ring-2 focus:ring-brand-200 focus:border-brand-500 dark:focus:ring-brand-700/30 dark:focus:border-brand-700";
 
 /** Select nativo com a mesma pele (o seletor do sistema, acessível e testável). */
 export const selectCls = `${inputCls} w-full pr-8`;

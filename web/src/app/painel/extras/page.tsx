@@ -3,6 +3,7 @@
 // Extras (RF-08/09): optativas fora da matriz, Núcleo Livre, Atividades Complementares e
 // registros. Três estados — concluído soma no oficial, em andamento só na projeção,
 // planejado não soma — e categoria reclassificável (um NL pode virar NC, NE ou optativa).
+import { RiStackLine } from "@remixicon/react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -94,7 +95,7 @@ export default function ExtrasPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHead eyebrow="além da matriz" title="Componentes extras" />
+      <PageHead eyebrow="além da matriz" title="Componentes extras" icon={RiStackLine} tone="violet" />
       <p className="text-muted-foreground max-w-3xl text-sm">
         Optativas fora da matriz, Núcleo Livre, Atividades Complementares e registros (estágio, ligas, IC).
         <b className="text-foreground"> Concluído</b> soma no oficial;{" "}

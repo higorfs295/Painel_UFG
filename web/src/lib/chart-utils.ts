@@ -4,7 +4,14 @@
 export type ColorUtility = "bg" | "stroke" | "fill" | "text"
 
 export const chartColors = {
-  // acento do Painel (laranja do template-solar)
+  // v12: a cor de destaque escolhida pela pessoa (escala brand-*, ver globals.css)
+  brand: {
+    bg: "bg-brand-600 dark:bg-brand-500",
+    stroke: "stroke-brand-600 dark:stroke-brand-500",
+    fill: "fill-brand-600 dark:fill-brand-500",
+    text: "text-brand-700 dark:text-brand-400",
+  },
+  // laranja fixo do template-solar (o site público não muda com o destaque)
   orange: {
     bg: "bg-orange-600 dark:bg-orange-500",
     stroke: "stroke-orange-600 dark:stroke-orange-500",
@@ -12,28 +19,28 @@ export const chartColors = {
     text: "text-orange-700 dark:text-orange-400",
   },
   blue: {
-    bg: "bg-blue-500",
-    stroke: "stroke-blue-500",
-    fill: "fill-blue-500",
-    text: "text-blue-500",
+    bg: "bg-blue-600 dark:bg-blue-500",
+    stroke: "stroke-blue-600 dark:stroke-blue-500",
+    fill: "fill-blue-600 dark:fill-blue-500",
+    text: "text-blue-700 dark:text-blue-400",
   },
   emerald: {
-    bg: "bg-emerald-500",
-    stroke: "stroke-emerald-500",
-    fill: "fill-emerald-500",
-    text: "text-emerald-500",
+    bg: "bg-emerald-600 dark:bg-emerald-500",
+    stroke: "stroke-emerald-600 dark:stroke-emerald-500",
+    fill: "fill-emerald-600 dark:fill-emerald-500",
+    text: "text-emerald-700 dark:text-emerald-400",
   },
   violet: {
-    bg: "bg-violet-500",
-    stroke: "stroke-violet-500",
-    fill: "fill-violet-500",
-    text: "text-violet-500",
+    bg: "bg-violet-600 dark:bg-violet-500",
+    stroke: "stroke-violet-600 dark:stroke-violet-500",
+    fill: "fill-violet-600 dark:fill-violet-500",
+    text: "text-violet-700 dark:text-violet-400",
   },
   amber: {
-    bg: "bg-amber-500",
-    stroke: "stroke-amber-500",
-    fill: "fill-amber-500",
-    text: "text-amber-500",
+    bg: "bg-amber-600 dark:bg-amber-500",
+    stroke: "stroke-amber-600 dark:stroke-amber-500",
+    fill: "fill-amber-600 dark:fill-amber-500",
+    text: "text-amber-700 dark:text-amber-400",
   },
   gray: {
     bg: "bg-gray-400 dark:bg-gray-600",
@@ -42,10 +49,10 @@ export const chartColors = {
     text: "text-gray-400 dark:text-gray-600",
   },
   cyan: {
-    bg: "bg-cyan-500",
-    stroke: "stroke-cyan-500",
-    fill: "fill-cyan-500",
-    text: "text-cyan-500",
+    bg: "bg-cyan-600 dark:bg-cyan-500",
+    stroke: "stroke-cyan-600 dark:stroke-cyan-500",
+    fill: "fill-cyan-600 dark:fill-cyan-500",
+    text: "text-cyan-700 dark:text-cyan-400",
   },
   indigo: {
     bg: "bg-indigo-600 dark:bg-indigo-500",
@@ -58,6 +65,43 @@ export const chartColors = {
     stroke: "stroke-pink-500",
     fill: "fill-pink-500",
     text: "text-pink-500",
+  },
+  // v12: mais cores para categorias (600 no claro — ≥ 3:1 sobre branco como elemento gráfico)
+  rose: {
+    bg: "bg-rose-600 dark:bg-rose-500",
+    stroke: "stroke-rose-600 dark:stroke-rose-500",
+    fill: "fill-rose-600 dark:fill-rose-500",
+    text: "text-rose-700 dark:text-rose-400",
+  },
+  sky: {
+    bg: "bg-sky-600 dark:bg-sky-500",
+    stroke: "stroke-sky-600 dark:stroke-sky-500",
+    fill: "fill-sky-600 dark:fill-sky-500",
+    text: "text-sky-700 dark:text-sky-400",
+  },
+  teal: {
+    bg: "bg-teal-600 dark:bg-teal-500",
+    stroke: "stroke-teal-600 dark:stroke-teal-500",
+    fill: "fill-teal-600 dark:fill-teal-500",
+    text: "text-teal-700 dark:text-teal-400",
+  },
+  red: {
+    bg: "bg-red-600 dark:bg-red-500",
+    stroke: "stroke-red-600 dark:stroke-red-500",
+    fill: "fill-red-600 dark:fill-red-500",
+    text: "text-red-700 dark:text-red-400",
+  },
+  lime: {
+    bg: "bg-lime-600 dark:bg-lime-500",
+    stroke: "stroke-lime-600 dark:stroke-lime-500",
+    fill: "fill-lime-600 dark:fill-lime-500",
+    text: "text-lime-700 dark:text-lime-400",
+  },
+  fuchsia: {
+    bg: "bg-fuchsia-600 dark:bg-fuchsia-500",
+    stroke: "stroke-fuchsia-600 dark:stroke-fuchsia-500",
+    fill: "fill-fuchsia-600 dark:fill-fuchsia-500",
+    text: "text-fuchsia-700 dark:text-fuchsia-400",
   },
 } as const satisfies {
   [color: string]: {

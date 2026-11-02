@@ -9,6 +9,7 @@
 //
 // Sem biblioteca de grafo: com ~120 nós, colunas + realce comunicam a estrutura sem o
 // emaranhado de arestas cruzadas que um desenho força-dirigido produziria.
+import { RiGitMergeLine } from "@remixicon/react";
 import { useMemo, useState } from "react";
 import { useCourseDetail, useProgress } from "@/hooks/use-progress";
 import { buildGraph, closure } from "@/lib/curriculum-graph";
@@ -73,7 +74,7 @@ export default function MapaPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHead eyebrow="matriz curricular" title="Mapa curricular"
+      <PageHead eyebrow="matriz curricular" title="Mapa curricular" icon={RiGitMergeLine} tone="brand"
         description="Colunas por profundidade de pré-requisito. Clique numa disciplina para acender o que ela exige e o que ela libera; clique de novo para abrir os detalhes." />
 
       <Card className="flex flex-wrap items-center justify-between gap-3 !py-3.5">
@@ -91,7 +92,7 @@ export default function MapaPage() {
       </Card>
 
       {sel && (
-        <div className="flex flex-wrap items-center gap-3 rounded-md border border-orange-200 bg-orange-50 px-4 py-2.5 text-sm text-gray-900 dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-gray-50">
+        <div className="flex flex-wrap items-center gap-3 rounded-md border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm text-gray-900 dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-gray-50">
           <span className="min-w-0 flex-1">
             <b>{sel.name}</b> exige <b className="num">{up.size}</b> disciplina(s) na cadeia e libera{" "}
             <b className="num">{down.size}</b> adiante.
@@ -129,8 +130,8 @@ export default function MapaPage() {
                         className={cn(
                           "group relative cursor-pointer rounded-md border border-gray-200 bg-white px-2.5 py-2 text-left shadow-xs transition-[opacity,box-shadow,border-color]",
                           "hover:border-gray-300 dark:border-gray-800 dark:bg-gray-950 dark:hover:border-gray-700",
-                          isSel && "border-orange-500 ring-2 ring-orange-500/30 dark:border-orange-500",
-                          inUp && "border-orange-300 bg-orange-50 dark:border-orange-500/50 dark:bg-orange-500/10",
+                          isSel && "border-brand-500 ring-2 ring-brand-500/30 dark:border-brand-500",
+                          inUp && "border-brand-300 bg-brand-50 dark:border-brand-500/50 dark:bg-brand-500/10",
                           inDown && "border-blue-300 bg-blue-50 dark:border-blue-500/50 dark:bg-blue-500/10",
                           dim && "opacity-30",
                           p?.state === "SIMULATED" && "border-dashed",
@@ -143,7 +144,7 @@ export default function MapaPage() {
                         <span className="mt-1 line-clamp-2 block text-[0.8rem] leading-snug font-medium text-gray-900 dark:text-gray-50">{s.name}</span>
                         {s.groupOpt > 0 && <span className="mt-0.5 block text-[0.68rem] text-violet-700 dark:text-violet-400">optativa · grupo {s.groupOpt}</span>}
                         {graph.milestones.get(seq)?.length ? (
-                          <span className="mt-0.5 block text-[0.68rem] text-orange-700 dark:text-orange-400">exige {graph.milestones.get(seq)!.join(" + ")}</span>
+                          <span className="mt-0.5 block text-[0.68rem] text-brand-700 dark:text-brand-400">exige {graph.milestones.get(seq)!.join(" + ")}</span>
                         ) : null}
                       </button>
                     );

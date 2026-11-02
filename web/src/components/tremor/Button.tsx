@@ -26,12 +26,12 @@ const buttonVariants = tv({
         // text color
         "text-white dark:text-gray-900",
         // background color
-        "bg-orange-700 dark:bg-orange-500",
+        "bg-brand-700 dark:bg-brand-400",  // Painel: 400 no escuro — com texto gray-900, ≥ 6,2:1 nas cinco cores
         // hover color
-        "hover:bg-orange-800 dark:hover:bg-orange-400",
+        "hover:bg-brand-800 dark:hover:bg-brand-300",
         // disabled
-        "disabled:bg-orange-100 disabled:text-gray-400",
-        "disabled:dark:bg-orange-950 disabled:dark:text-orange-400",
+        "disabled:bg-brand-100 disabled:text-gray-400",
+        "disabled:dark:bg-brand-950 disabled:dark:text-brand-400",
       ],
       secondary: [
         // border

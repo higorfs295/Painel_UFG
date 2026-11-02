@@ -8,7 +8,9 @@ import { useCallback, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
-import { RiDownloadLine, RiMoreFill, RiStickyNoteLine } from "@remixicon/react";
+import { RiDownloadLine, RiMoreFill, RiStickyNoteLine, RiBookOpenLine } from "@remixicon/react";
+import { PageBanner } from "@/components/fx/page-banner";
+import { SITUATION, tone } from "@/lib/palette";
 import { keys, useCourseDetail, useEnrollmentId, useNotes, useProgress, useSetSubject } from "@/hooks/use-progress";
 import { me } from "@/lib/api/endpoints";
 import { downloadCSV } from "@/lib/csv";
@@ -31,7 +33,7 @@ import { Searchbar } from "@/components/tremor/Searchbar";
 import { DataTable } from "@/components/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { SubjectDrawer } from "@/components/subject-drawer";
-import { num } from "@/lib/utils";
+import { cx, num } from "@/lib/utils";
 import type { GraphStatus, SubjectProgress, SubjectState } from "@/lib/api/types";
 
 const STATUS_OPTS = [
@@ -160,7 +162,7 @@ export default function DisciplinasPage() {
             {row.original.name}
           </button>
           {notedSeqs.has(row.original.seq) && (
-            <span title="tem anotação"><RiStickyNoteLine className="size-3.5 text-orange-700 dark:text-orange-400" aria-hidden="true" /><span className="sr-only">(tem anotação)</span></span>
+            <span title="tem anotação"><RiStickyNoteLine className="size-3.5 text-brand-700 dark:text-brand-400" aria-hidden="true" /><span className="sr-only">(tem anotação)</span></span>
           )}
           {row.original.groupOpt > 0 && <Badge variant="neutral">optativa</Badge>}
         </span>
@@ -243,7 +245,7 @@ export default function DisciplinasPage() {
         <Segmented label="Filtrar por núcleo" value={nucleus} onChange={setNucleus} options={[...NUC_OPTS]} />
         {filtered && (
           <Button variant="ghost" onClick={() => { setQ(""); setStatus("all"); setNucleus("all"); }}
-            className="border border-gray-200 px-2 font-semibold text-orange-700 sm:border-none sm:py-1 dark:border-gray-800 dark:text-orange-400">
+            className="border border-gray-200 px-2 font-semibold text-brand-700 sm:border-none sm:py-1 dark:border-gray-800 dark:text-brand-400">
             Limpar filtros
           </Button>
         )}
@@ -269,11 +271,26 @@ export default function DisciplinasPage() {
 
   return (
     <>
-      <h1>Disciplinas</h1>
-      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        Clique numa linha para selecionar e marcar várias de uma vez; clique no nome para ver requisitos e anotação.
-      </p>
-      <div className="mt-4 sm:mt-6 lg:mt-10">
+      <PageBanner eyebrow="Matriz curricular" icon={RiBookOpenLine} title="Disciplinas" tone="blue"
+        description="Clique numa linha para selecionar e marcar várias de uma vez; clique no nome para ver requisitos e anotação."
+        aside={prog && (
+          <ul className="grid grid-cols-2 gap-x-5 gap-y-2 text-sm">
+            {(["done", "enrolled", "avail", "lock"] as const).map((k) => {
+              const n = k === "enrolled" ? prog.subjects.filter((x) => x.state === "ENROLLED").length
+                : k === "done" ? prog.subjects.filter((x) => x.status === "done").length
+                : prog.subjects.filter((x) => x.status === k && x.state !== "ENROLLED").length;
+              return (
+                <li key={k} className="flex items-center gap-2">
+                  <span className={cx("size-2.5 rounded-full", tone(SITUATION[k].tone).dot)} aria-hidden="true" />
+                  <span className="text-gray-600 dark:text-gray-400">{SITUATION[k].label}</span>
+                  <b className="ml-auto pl-3 font-semibold tabular-nums text-gray-900 dark:text-gray-50">{n}</b>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      />
+      <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4 shadow-xs sm:p-5 dark:border-gray-800 dark:bg-gray-950">
         <DataTable
           columns={columns}
           data={rows}

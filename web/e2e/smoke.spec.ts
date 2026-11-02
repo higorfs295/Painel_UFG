@@ -36,11 +36,14 @@ const ROTAS_ALUNO = [
 
 const ROTAS_ADMIN = [
   ["Usuários", "Usuários"],
-  ["Cursos", "Cursos"],
-  ["Períodos", "Períodos"],
+  ["Cursos", "Cursos e matrizes"],
+  ["Relatórios", "Retrato do curso"],
+  ["Períodos", "Períodos letivos"],
   ["Avisos", "Avisos"],
   ["Monitor", "Monitor"],
+  ["Auditoria", "Auditoria"],
   ["Configurações", "Configurações"],
+  ["Ajustes", "Ajustes"],
   ["Visão do sistema", "Visão do sistema"],
 ] as const;
 

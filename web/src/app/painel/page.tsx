@@ -6,8 +6,19 @@
 // caixa) e, abaixo, uma seção de gráficos de linha por período. O "ciclo de cobrança"
 // virou a integralização; "Overview" virou o ritmo por período. Cada bloco carrega e
 // falha sozinho (estados do TanStack Query).
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import {
+  RiBookOpenLine, RiCheckboxCircleLine, RiDashboardLine, RiFlagLine, RiPlayCircleLine, RiSparkling2Line, RiLockUnlockLine,
+} from "@remixicon/react";
+import { useAuth } from "@/lib/auth-store";
+import { compositionTone } from "@/lib/palette";
+import { PageBanner } from "@/components/fx/page-banner";
+import { ProgressRing } from "@/components/fx/progress-ring";
+import { CountUp } from "@/components/fx/count-up";
+import { StatTile } from "@/components/fx/art";
+import { fireConfetti } from "@/components/fx/confetti";
 import { me } from "@/lib/api/endpoints";
 import { useApp } from "@/lib/auth-store";
 import { useHistory, useProgress, useRecommendations, useTasks } from "@/hooks/use-progress";
@@ -41,6 +52,8 @@ export default function VisaoGeralPage() {
   const enrollmentId = useApp((s) => s.enrollmentId);
   const { data: enrollments } = useQuery({ queryKey: ["enrollments"], queryFn: me.enrollments });
   const course = enrollments?.find((e) => e.id === enrollmentId)?.course;
+  const firstName = useAuth((s) => s.user?.name)?.split(" ")[0];
+  useMilestoneConfetti(prog?.milestones, prog?.compositions);
 
   if (isError) {
     return (
@@ -75,18 +88,42 @@ export default function VisaoGeralPage() {
 
   return (
     <>
-      <section aria-labelledby="integralizacao">
-        <h1 id="integralizacao" className="scroll-mt-10">Visão geral</h1>
-        {course && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{course.name}</p>}
+      <PageBanner
+        eyebrow={firstName ? `Olá, ${firstName}` : "Meu painel"} icon={RiDashboardLine} title="Visão geral"
+        description={course?.name}
+        actions={<>
+          <Button asChild><Link href="/painel/disciplinas"><RiBookOpenLine className="-ml-0.5 mr-1.5 size-4" aria-hidden="true" />Marcar disciplinas</Link></Button>
+          <Button asChild variant="secondary"><Link href="/painel/recomendacoes"><RiSparkling2Line className="-ml-0.5 mr-1.5 size-4" aria-hidden="true" />O que cursar</Link></Button>
+        </>}
+        aside={
+          <ProgressRing value={prog.totals.pct} size={128} stroke={12} label={`${prog.totals.pct.toFixed(1)}% integralizado`}>
+            <div>
+              <CountUp value={prog.totals.pct} decimals={1} suffix="%" className="text-xl font-semibold text-gray-900 dark:text-gray-50" />
+              <p className="text-[0.65rem] leading-tight text-gray-500 dark:text-gray-400">integralizado<br />{num(prog.totals.hours)} de {num(prog.totals.required)} h</p>
+            </div>
+          </ProgressRing>
+        }
+      />
 
-        <div className="mt-4 grid grid-cols-1 gap-14 sm:mt-8 sm:grid-cols-2 lg:mt-10 xl:grid-cols-3">
+      <div className="stagger mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatTile label="Aprovadas" value={done} icon={RiCheckboxCircleLine} tone="emerald" hint={`de ${total} na matriz`} />
+        <StatTile label="Cursando agora" value={enrolled} icon={RiPlayCircleLine} tone="blue" hint={enrolled ? "conta na projeção" : "nenhuma marcada"} />
+        <StatTile label="Disponíveis" value={avail} icon={RiLockUnlockLine} tone="amber" hint="requisitos cumpridos" />
+        <StatTile label="Marcos de horas" value={reached} suffix={` de ${prog.milestones.length}`} icon={RiFlagLine} tone="violet"
+          hint={next ? `${next.key} em ${num(Math.max(0, next.hours - prog.totals.hours))} h` : "todos alcançados"} />
+      </div>
+
+      <section aria-labelledby="integralizacao" className="mt-10">
+        <h2 id="integralizacao" className="sr-only">Integralização</h2>
+        <div className="grid grid-cols-1 gap-14 sm:grid-cols-2 xl:grid-cols-3">
           <ProgressBarCard
             title="Integralização"
             change={projecting ? `${h(prog.projected.totals.hours)} projetado` : undefined}
             value={`${prog.totals.pct.toFixed(1).replace(".", ",")}%`}
             valueDescription={`${h(prog.totals.hours)} de ${h(prog.totals.required)}`}
-            data={prog.compositions.map((c) => ({
+            data={prog.compositions.map((c, i) => ({
               title: c.label, percentage: c.pct, current: num(c.hours), allowed: num(c.required), unit: " h",
+              tone: compositionTone(c.key, i),
             }))}
             ctaDescription="Cada núcleo soma só até o mínimo exigido."
             ctaText="Ver a regra."
@@ -101,6 +138,7 @@ export default function VisaoGeralPage() {
               title: `${m.key} · ${m.description.replace(/^Destrava\s+/i, "")}`, hint: m.description,
               percentage: Math.min(100, (prog.totals.hours / m.hours) * 100),
               current: num(Math.min(prog.totals.hours, m.hours)), allowed: num(m.hours), unit: " h",
+              tone: m.reached ? "emerald" : "amber",
             }))}
             ctaDescription="Marcos destravam disciplinas que exigem horas integralizadas."
             ctaText="Abrir o mapa."
@@ -115,7 +153,7 @@ export default function VisaoGeralPage() {
             data={[
               { title: "Concluídas", percentage: pctOf(done), value: String(done), color: "bg-emerald-600 dark:bg-emerald-500" },
               { title: "Cursando", percentage: pctOf(enrolled), value: String(enrolled), color: "bg-blue-600 dark:bg-blue-500" },
-              { title: "Disponíveis", percentage: pctOf(avail), value: String(avail), color: "bg-orange-600 dark:bg-orange-500" },
+              { title: "Disponíveis", percentage: pctOf(avail), value: String(avail), color: "bg-amber-600 dark:bg-amber-500" },
               { title: "Bloqueadas ou simuladas", percentage: pctOf(rest), value: String(rest), color: "bg-gray-400 dark:bg-gray-600" },
             ]}
             ctaDescription="Marque o que já cursou em"
@@ -129,6 +167,27 @@ export default function VisaoGeralPage() {
       <ProximosPassos />
     </>
   );
+}
+
+/**
+ * Confete quando um marco de horas é alcançado ou uma composição fecha 100% DURANTE a sessão
+ * (comparando com o valor anterior) — nunca ao simplesmente abrir a página.
+ */
+function useMilestoneConfetti(
+  milestones: { key: string; reached: boolean }[] | undefined,
+  compositions: { key: string; pct: number }[] | undefined,
+) {
+  const prev = useRef<{ reached: Set<string>; full: Set<string> } | null>(null);
+  useEffect(() => {
+    if (!milestones || !compositions) return;
+    const reached = new Set(milestones.filter((m) => m.reached).map((m) => m.key));
+    const full = new Set(compositions.filter((c) => c.pct >= 100).map((c) => c.key));
+    const before = prev.current;
+    if (before && ([...reached].some((k) => !before.reached.has(k)) || [...full].some((k) => !before.full.has(k)))) {
+      fireConfetti();
+    }
+    prev.current = { reached, full };
+  }, [milestones, compositions]);
 }
 
 /** "Overview" do template: um gráfico de linha por métrica, por período letivo. */
@@ -201,7 +260,7 @@ function ProximosPassos() {
         <div className="xl:col-span-3">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-gray-900 sm:text-sm dark:text-gray-50">O que mais destrava</h3>
-            <Link href="/painel/recomendacoes" className="text-sm text-orange-700 hover:underline dark:text-orange-400">Ver todas</Link>
+            <Link href="/painel/recomendacoes" className="text-sm text-brand-700 hover:underline dark:text-brand-400">Ver todas</Link>
           </div>
           {!recs ? <div className="skeleton mt-4 h-48" /> : recs.length === 0 ? (
             <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Nada disponível no momento.</p>
@@ -234,7 +293,7 @@ function ProximosPassos() {
         <div className="xl:col-span-2">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-gray-900 sm:text-sm dark:text-gray-50">Próximos prazos</h3>
-            <Link href="/painel/agenda" className="text-sm text-orange-700 hover:underline dark:text-orange-400">Agenda</Link>
+            <Link href="/painel/agenda" className="text-sm text-brand-700 hover:underline dark:text-brand-400">Agenda</Link>
           </div>
           {!tasks ? <div className="skeleton mt-4 h-40" /> : upcoming.length === 0 ? (
             <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Nenhum prazo pendente. Cadastre provas e entregas na Agenda.</p>
