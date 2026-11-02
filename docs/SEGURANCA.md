@@ -94,9 +94,16 @@ mas tem uma consequência a considerar antes de publicar:
   ou uma rede móvel podem estourar 10 logins/minuto **coletivamente**, e aí alunos legítimos
   levam 429 sem terem feito nada de errado. Se a instância for exposta assim, avalie subir o
   teto e complementar com limite **por conta** (que é o que de fato barra força bruta dirigida).
-- A própria suíte E2E esbarra nisso: ela faz ~15 logins em série do mesmo endereço, e por isso o
-  job de E2E sobe `AUTH_RATE_LIMIT_MAX`. **Não afrouxe o valor em produção** — o padrão existe
-  para valer lá.
+- **O teto geral também é por IP — e aperta antes.** `RATE_LIMIT_MAX` (padrão **120/min**) é o
+  orçamento de *todas* as requisições de quem compartilha o endereço, não só dos logins. Medido na
+  v12, nas seis páginas principais: uma carga completa (F5 ou link aberto direto) faz de 7 a 10
+  chamadas à API; navegar pelo menu custa menos, porque parte dos dados fica em cache. Ou seja:
+  algo como 12 a 17 cargas completas por minuto, somando todo mundo atrás do mesmo IP. Para uma
+  instância aberta a um campus atrás de NAT, avalie subir esse teto (o de login é o que barra
+  força bruta; o geral segura volume).
+- A própria suíte E2E esbarra nos dois tetos: ela faz ~18 logins e ~265 requisições em ~30 s do
+  mesmo endereço, e por isso o job de E2E sobe `AUTH_RATE_LIMIT_MAX` e `RATE_LIMIT_MAX`. **Não
+  afrouxe esses valores em produção por causa dos testes** — os padrões existem para valer lá.
 
 ## 4. Senhas
 

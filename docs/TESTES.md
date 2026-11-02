@@ -122,11 +122,17 @@ nenhuma substitui a outra.
 | Job | Faz |
 | --- | --- |
 | `backend` | Postgres de serviço → `prisma migrate deploy` → typecheck → unit → integração |
-| `frontend` | `tsc --noEmit` + `vite build` |
-| `e2e` | Postgres → migrate+seed → API em background → Playwright/chromium → artefato do report em falha |
+| `web` | `npm run typecheck` (tsc) + `npm run build` (Next) |
+| `e2e` | Postgres → migrate+seed → API em background → Playwright/chromium → em falha, contagem de 429 + fim dos logs e artefato `playwright-test-results` |
 
 Verde no CI é pré-condição de merge. Se o e2e falhar só no CI, baixe o artefato
-`playwright-report` da run para ver screenshots/trace.
+`playwright-test-results` da run para ver o trace de cada teste que falhou.
+
+O job de E2E sobe dois tetos de rate limit, **só nele**: `AUTH_RATE_LIMIT_MAX` (login, convite,
+reset) e `RATE_LIMIT_MAX` (geral). Todos os testes saem do mesmo IP (127.0.0.1), e a suíte faz
+~265 requisições em ~30 segundos — mais que o dobro do teto geral padrão (120/min por IP). Com o
+padrão, testes caíam ao acaso com 429 e a suíte se arrastava por minutos esperando. Em produção
+os padrões continuam valendo (ver `docs/SEGURANCA.md` §3.1).
 
 ## 5. Escrevendo o próximo teste (receitas)
 
@@ -157,9 +163,16 @@ Nunca "conserte" drift editando migração já commitada.
 "ajustar o número": ele diz qual regra o valor codifica. Se a regra mudou de propósito, atualize
 número **e** comentário; se não mudou, o bug é seu.
 
-**E2E vermelho só no CI** → baixe o artefato `playwright-report` da run (Actions → run → Artifacts):
-tem screenshot, trace navegável (`npx playwright show-trace trace.zip`) e o passo exato da falha.
-Local, rode com `--headed` para assistir: `node node_modules/@playwright/test/cli.js test --headed`.
+**E2E vermelho só no CI** → baixe o artefato `playwright-test-results` da run (Actions → run →
+Artifacts): tem o trace navegável de cada teste que falhou (`npx playwright show-trace trace.zip`)
+e o passo exato da falha. Local, rode com `--headed` para assistir:
+`node node_modules/@playwright/test/cli.js test --headed`.
+
+**E2E que cai ao acaso, cada vez num teste diferente** → olhe primeiro a linha "respostas 429" do
+passo *Logs em caso de falha*. Se for maior que zero, a suíte estourou o rate limit por IP. Ao
+reproduzir o CI na sua máquina, cuidado: o Prisma Client carrega o `backend/.env` sozinho (sem
+sobrescrever o que já está no ambiente). Exporte os valores do job (`RATE_LIMIT_MAX`,
+`AUTH_RATE_LIMIT_MAX`), senão o teto do seu `.env` local esconde o problema.
 
 **E2E local não loga** → `E2E_USER_PASSWORD` não chegou (no git-bash do Windows use a forma
 `node node_modules/@playwright/test/cli.js`, não `npx`) ou o seed local usa outra senha.

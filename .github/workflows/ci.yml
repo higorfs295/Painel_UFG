@@ -75,9 +75,14 @@ jobs:
       JWT_SECRET: ci-secret-please-change-me-0123456789abcdef
       E2E_USER_EMAIL: painel@aluno.com
       E2E_USER_PASSWORD: ci-e2e-password-123
-      # a suíte faz ~15 logins em série de um único IP; o teto de produção (10/min) a
-      # derrubaria pela metade. Só aqui — o padrão continua valendo em produção.
+      # A suíte inteira sai de um único IP. Ela faz ~18 logins em série: o teto de produção das
+      # rotas de segredo (10/min) a derrubaria pela metade.
       AUTH_RATE_LIMIT_MAX: "200"
+      # Mesmo motivo para o teto geral (padrão 120/min por IP): sem freio, a suíte faz ~265
+      # requisições em ~30 s, mais que o dobro do padrão. Com ele, testes caíam ao acaso com 429
+      # — qual deles dependia do ritmo do runner — e o retry às vezes passava, às vezes não.
+      # Os dois valores valem só aqui; em produção, os padrões.
+      RATE_LIMIT_MAX: "1000"
       CI: "true"
     steps:
       - uses: actions/checkout@v4
@@ -122,11 +127,14 @@ jobs:
       - name: Logs em caso de falha
         if: failure()
         run: |
+          echo "respostas 429 (rate limit) da API: $(grep -c '"statusCode":429' backend/api.log || true)"
           tail -50 backend/api.log || true
           tail -50 web/web.log || true
+      # Trace e contexto de cada teste que falhou (trace: retain-on-failure). O reporter "line"
+      # do CI não gera web/playwright-report/ — o artefato antigo apontava para lá e saía vazio.
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-report
-          path: web/playwright-report/
+          name: playwright-test-results
+          path: web/test-results/
           retention-days: 7
