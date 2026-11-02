@@ -19,15 +19,16 @@ Leia primeiro `ESPECIFICACAO.md`; para entender o domínio a fundo, `docs/DOMINI
 
 | Para o aluno | Para o administrador |
 | --- | --- |
-| Integralização com regra do teto, marcos e projeção | Visão do sistema (usuários, cursos, crescimento, distribuição) |
-| Disciplinas com três estados + **nota, faltas e período** | Gestão de usuários, papéis, convites e matrículas |
-| **Histórico escolar** por período, **média ponderada por CH (MGA)** e ritmo de formatura | Catálogo e **importação de matrizes** (JSON) |
-| Recomendações por destravamento transitivo | **Calendário acadêmico global** e agendável |
-| Extras (optativas, Núcleo Livre, AC) com 3 estados e reclassificação | **Avisos** por audiência |
-| **Agenda** de provas/entregas e anotações por disciplina | **Monitor**: métricas p50/p95/p99, memória, ping do banco |
-| Cronograma semanal com códigos SIGAA, que **se preenche sozinho** a partir das disciplinas em curso | **Auditoria** de ações sensíveis |
-| **Conquistas** derivadas do progresso | Configurações, teste de SMTP e gerador de dados de teste |
+| Integralização com regra do teto, marcos e projeção | **Visão do sistema**: cadastros por semana, logins por dia, contas ativas, atividade |
+| Disciplinas com três estados + **nota, faltas e período** | Usuários: convites, **importação por CSV**, ações em lote, último login, encerrar sessões |
+| **Histórico escolar** por período, **média ponderada por CH (MGA)** e ritmo de formatura | Matrizes: importação **com prévia**, exportação do JSON, detalhe da matriz |
+| Recomendações por destravamento transitivo | **Relatórios agregados** por curso (demanda, gargalos) — sem dado individual |
+| Extras (optativas, Núcleo Livre, AC) com 3 estados e reclassificação | **Avisos** por audiência e curso, **agendados** e com validade |
+| **Agenda** de provas/entregas e anotações por disciplina | **Monitor ao vivo** (minuto a minuto) e **calendário acadêmico** com linha do tempo |
+| Cronograma semanal com códigos SIGAA, que **se preenche sozinho** a partir das disciplinas em curso | **Auditoria** com busca, datas e exportação |
+| **Conquistas** em medalhas, derivadas do progresso | **Configurações em tempo real**: cadastro aberto/fechado, domínios aceitos, faixa de aviso |
 | Paleta de comandos (**Ctrl/⌘+K**), filtros e **exportação CSV** das tabelas | **Lixeira de cursos**: exclusão em duas etapas com 7 dias para desfazer |
+| **Aparência à escolha**: cor de destaque (5 opções) e barra lateral clara, escura ou colorida | O admin também pode **acompanhar o próprio curso** com a mesma conta |
 
 Segurança: sessão com refresh rotativo (detecção de reuso), autorização por posse, auditoria e
 **cifra de campo AES-256-GCM** para PII em repouso. Detalhes em [`docs/SEGURANCA.md`](docs/SEGURANCA.md).
@@ -92,7 +93,7 @@ npm install
 npm run migrate            # prisma migrate dev --name init (na 1ª vez pede o nome)
 
 # 4) Popular o banco (curso EngComp + contas-modelo) — senha via env, nunca versionada.
-# Cria: painel@admin.com (ADMIN, sem matrícula) e as contas-aluno de src/seed/students.json
+# Cria: painel@admin.com (ADMIN; nasce sem matrícula, pode escolher um curso em "Meu painel") e as contas-aluno de src/seed/students.json
 # (painel@aluno.com de demonstração + veterano@aluno.local com a baseline de exemplo).
 # Adicione objetos em students.json para semear mais alunos. SEED_STUDENT_PASSWORD é opcional.
 SEED_ADMIN_PASSWORD='defina-uma-senha-forte' npm run seed
@@ -139,8 +140,9 @@ npm run dev                # http://localhost:5173
 
 App Router com **site público** (Server Component), tela de entrada e o painel em rotas
 protegidas: **aluno** — Visão geral, Disciplinas, Mapa curricular, Extras, Histórico,
-Recomendações, Cronograma, Agenda, Avisos; **admin** — Visão do sistema, Usuários, Cursos,
-Períodos, Avisos, Monitor, Configurações; e Ajustes/Ajuda compartilhadas.
+Recomendações, Cronograma, Agenda, Avisos; **admin** — Visão do sistema, Usuários, Cursos (e o
+detalhe de cada matriz), Relatórios, Avisos, Períodos, Monitor, Auditoria, Configurações; e
+Ajustes/Ajuda compartilhadas. Um admin também pode usar as páginas do aluno ("Meu painel").
 
 O desenho parte de templates abertos (MIT) da [Tremor](https://tremor.so): o
 **template-dashboard** no app e o **template-solar** no site — o que veio de cada um, e o que

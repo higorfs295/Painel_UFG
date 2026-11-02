@@ -194,6 +194,25 @@ mudança de papel, importação de matriz, calendário acadêmico, avisos e uso 
 **best-effort por desenho** — se a gravação da auditoria falhar, ela nunca derruba a operação em
 curso. O `meta` guarda só identificadores e contexto; segredos nunca entram ali.
 
+### 7.3 O que a administração enxerga (v12)
+
+Decisão do dono do projeto: **o admin não vê dado acadêmico individual**. Na prática:
+
+- **Vê dados de conta**, que já via antes: nome, e-mail, matrícula, turno, cursos, papel; e, na
+  v12, o último login (da trilha de auditoria) e quantas sessões estão abertas — para convidar,
+  ajustar matrículas, dar suporte e encerrar sessões de um aparelho perdido.
+- **Não vê** disciplinas marcadas, notas, faltas, anotações, agenda nem cenários de ninguém.
+- **Relatórios por curso são só agregados** (`GET /admin/reports/courses/:slug`): contagens,
+  médias e distribuições, sem uma linha por aluno e sem notas. Cursos com **menos de 5 alunos**
+  não geram relatório (`suppressed: true`): com 1 a 4 pessoas, uma média ou um histograma
+  praticamente revelaria o dado de alguém. O número 5 é uma regra prática comum de supressão de
+  células pequenas, não um valor tirado de lei — ajustável em `MIN_GROUP`
+  (`backend/src/modules/admin/analytics.ts`). O teste `v12.test.ts` confere que nenhum id, e-mail
+  ou nota sai na resposta.
+- Abrir um relatório entra na trilha de auditoria (`report.course`), assim como editar o cadastro
+  de alguém (`user.update` registra **quais** campos mudaram, nunca a matrícula em si).
+- Um admin que também cursa usa o painel do aluno como qualquer aluno: o progresso dele é dele.
+
 ## 8. Checklist de produção
 
 - [ ] `NODE_ENV=production` (cookies `Secure`, logs `info`)
@@ -213,10 +232,11 @@ curso. O `meta` guarda só identificadores e contexto; segredos nunca entram ali
 
 ## 9. Operando uma instância pública (cadastro aberto)
 
-Com `ALLOW_REGISTRATION=true` na internet, considere: o rate limit de 10/min em `/auth/register`
-já freia criação em massa por IP, mas não impede contas de e-mails descartáveis — se virar
-problema, feche o cadastro (`false`) e volte ao modo convite, ou coloque a instância atrás de
-um proxy com desafio (Cloudflare). Revise `GET /admin/stats` periodicamente (contas e convites
+Com o cadastro aberto na internet, considere: o rate limit de 10/min em `/auth/register` já freia
+criação em massa por IP, mas não impede contas de e-mails descartáveis — se virar problema,
+**restrinja os domínios aceitos** (ex.: só `discente.ufg.br`) ou **feche o cadastro** em
+Configurações (v12; vale na hora, sem redeploy — `ALLOW_REGISTRATION` passa a ser só o padrão),
+ou coloque a instância atrás de um proxy com desafio (Cloudflare). Revise `GET /admin/stats` periodicamente (contas e convites
 pendentes anômalos são o primeiro sinal), mantenha **um** ADMIN de verdade (menos superfície) e
 lembre que desmatricular/remover usuários apaga dados por cascade — exporte backup antes de
 limpezas administrativas.

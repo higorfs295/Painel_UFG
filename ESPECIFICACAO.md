@@ -75,6 +75,12 @@ Cada requisito referencia sua origem na concepção do produto.
 | RF-19 | Estado intermediário CURSANDO por disciplina, além de aprovada e simulada: não soma no progresso oficial, soma na projeção, sai das recomendações; um clique promove para aprovada quando o resultado sai. | "deveria ter um estado intermediário (cursando)" |
 | RF-20 | Período letivo corrente e férias: o sistema sugere o período pelo calendário (mar–jul = .1, ago–dez = .2, jan/fev = férias) e exibe no topo; o usuário pode fixar o período real da sua matrícula (`currentTerm`), que prevalece sobre a sugestão. | "acompanhar e mostrar o período em que estou, ou se estou de férias" |
 | RF-21 | Gestão administrativa ampliada: estatísticas da instância (usuários, convites pendentes, cursos, matrículas, atividade), alteração de papel (com guarda contra auto-rebaixamento), e matrícula/desmatrícula de usuários em cursos. | "mais algumas funções exclusivas do admin" |
+| RF-30 | Aparência por usuário, salva na conta: tema, cor de destaque (laranja, azul, violeta, verde, rosa — todas com contraste AA) e estilo da barra lateral (clara, escura, colorida). Cores de situação acadêmica são fixas. | "também acho todo o site bastante sem graça, no quesito, cor, estilo, elementos gráficos e animação" |
+| RF-31 | Configurações da instância editáveis em runtime pelo admin: cadastro público aberto/fechado, domínios de e-mail aceitos no cadastro e faixa de aviso para todos. O ambiente vale como padrão. | idem; pendência registrada na v8 |
+| RF-32 | Avisos com curso-alvo, data de publicação e validade; o feed mostra só o que está no ar para a audiência e os cursos de quem lê. | "contas de administradores deveriam ter formas diversas de usar" |
+| RF-33 | Visão do sistema com números operacionais e relatórios acadêmicos SOMENTE agregados por curso, ocultos em cursos com menos de 5 alunos; o admin não vê dado acadêmico individual (decisão do dono do projeto). | idem + escolha "Nada individual" |
+| RF-34 | Ferramentas de usuários: importação em lote por CSV, último acesso, sessões abertas e encerramento remoto, edição de matrícula/turno, ações em lote. Um admin também pode ter matrícula e usar o painel do aluno. | idem |
+| RF-35 | Matriz como arquivo: exportar o JSON, pré-visualizar uma importação (novas, alteradas, ausentes, requisitos órfãos) e editar nome/carga total. | idem |
 
 ---
 

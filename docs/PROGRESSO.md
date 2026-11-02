@@ -1,5 +1,42 @@
 # Progresso da Implementação
 
+## v12 — "Tremor vivo" e a administração completa (2026-11-02)
+
+Pedido: o site estava "bastante incompleto", as contas de admin "deveriam ter formas diversas de
+usar" e o visual estava "sem graça no quesito cor, estilo, elementos gráficos e animação". O dono
+do projeto escolheu a direção "Tremor vivo + cor à escolha" e que **o admin não veja dado
+acadêmico individual** (só agregados por curso). Detalhes visuais e contraste em `docs/DESIGN.md`
+§0; rotas novas em `docs/API.md` (seção v12); requisitos RF-30..35 em `ESPECIFICACAO.md`.
+
+- **Aparência por pessoa (RF-30)**: cor de destaque (laranja, azul, violeta, verde, rosa) e barra
+  lateral clara, escura ou colorida, salvas na conta (migração `v12_aparencia_config_avisos`).
+  Cores de situação fixas. Contraste AA conferido por script e por E2E nas cinco cores.
+- **Grafismos e movimento**: faixa de topo com o campo de pontos do Solar, anel de progresso,
+  números que contam, minigráficos, mapa de calor, rosca, faixa de estado, medalhas, confete em
+  marcos; gráficos da Tremor (área, barras) animados; tudo respeita `prefers-reduced-motion`.
+- **Admin também cursa (RF-34)**: o seletor da barra lateral vira "Administração / Meu painel";
+  o seed não apaga mais a matrícula do admin.
+- **Gestão nova**: Visão do sistema com cadastros por semana, logins por dia (26 semanas),
+  contas por papel e atividade; Usuários com seleção em lote, gaveta (cadastro, cursos, acesso,
+  atividade), convite e importação por CSV, último login e encerramento de sessões; Cursos em
+  cartões, detalhe da matriz, exportação do JSON, importação com prévia e edição do cabeçalho;
+  **Relatórios** agregados (distribuição da integralização, composições, marcos, coortes,
+  demanda, cursando agora e gargalos — ocultos com menos de 5 alunos); Avisos com curso-alvo,
+  agendamento e validade; Períodos com linha do tempo; Monitor ao vivo (minuto a minuto);
+  **Auditoria** com busca, datas e paginação; Configurações editáveis (cadastro aberto/fechado,
+  domínios aceitos, faixa de aviso — resolve a pendência "ALLOW_REGISTRATION só pelo ambiente").
+- **Aluno**: faixas de topo em todas as páginas, cartões de número, barras por composição em
+  cores próprias, medalhas no histórico, avisos em cartões (com curso e agendamento), Ajuda com
+  acordeão, legenda de cores, atalhos e "quem vê o quê"; cadastro respeita as regras novas.
+- **Site público**: seção "Para coordenações".
+- **Bugs achados no caminho**: AreaChart da Tremor sem séries com React 19 (`react-is` 18 do
+  recharts não reconhece Fragment); barra de lote fora da tela por causa de `animation-fill-mode:
+  both`; botão principal no escuro com 4,03:1 no violeta (a v11 supunha texto gray-950; é
+  gray-900) — agora `brand-400`.
+- **Testes**: backend 43 unitários e 76 de integração (10 novos em `v12.test.ts`); E2E 20/20 no
+  build de produção (5 novos: modo aluno do admin, aparência, convite/remoção, relatório,
+  contraste do botão nas cinco cores).
+
 ## Design v11 — fundação nos templates da Tremor (2026-11-02)
 
 Frontend redesenhado sobre templates abertos (MIT) da Tremor, escolhidos pelo dono do projeto:

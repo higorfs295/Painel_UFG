@@ -1,6 +1,7 @@
 # Design e origem do frontend
 
-**Versão atual: v11.** O frontend em `web/` usa como fundação dois templates abertos da
+**Versão atual: v12 ("Tremor vivo").** A v12 mantém a fundação da v11 e acrescenta cor,
+grafismos e movimento — ver a seção 0. O frontend em `web/` usa como fundação dois templates abertos da
 [Tremor](https://tremor.so) (componentes e templates para dashboards), ambos sob a licença MIT:
 
 - **[tremorlabs/template-dashboard](https://github.com/tremorlabs/template-dashboard)**: o
@@ -18,6 +19,93 @@ da mesma família e também MIT. O aviso de licença e a lista do que foi copiad
 > por designers, e não ter "cara de gerado por IA". A escolha entre Solar + Dashboard, Database +
 > Dashboard e só o Dashboard foi feita pelo dono do projeto, com as imagens dos próprios
 > repositórios.
+
+
+---
+
+## 0. v12 — "Tremor vivo"
+
+Pedido: o painel estava "sem graça no quesito cor, estilo, elementos gráficos e animação", e a
+administração tinha poucas formas de uso. Entre três direções propostas, o dono do projeto
+escolheu manter a estrutura da v11 e trazer cor e grafismos **com a cor à escolha de cada
+pessoa**. Para o admin, escolheu que ele **não vê nenhum dado acadêmico individual** — só
+agregados por curso.
+
+### Cor de destaque e barra lateral, por pessoa
+
+- A escala `brand-*` (`bg-brand-600`, `text-brand-700`…) aponta para a paleta escolhida em
+  Ajustes › Aparência: laranja (padrão, o do Solar), azul, violeta, verde ou rosa. O `<html>`
+  recebe `data-accent`, e `globals.css` troca as variáveis `--brand-50…950` de uma vez.
+- A barra lateral tem três peles (`data-sidebar`): **clara** (a do template), **escura** (a
+  barra vira uma ilha do tema escuro: `.dark` só no `<aside>`) e **colorida** (o mesmo, com a
+  escala de cinza remapeada para a do destaque dentro da barra — os utilitários do Tailwind v4
+  leem `var(--color-gray-*)`, então seletor de curso, busca, links e perfil passam a desenhar
+  em tons da cor escolhida sem nenhuma classe nova).
+- A escolha fica na conta (`PATCH /me/settings` com `accent`/`sidebar`) e num `localStorage`
+  lido por um script no `<head>` antes da primeira pintura (sem ele, a página piscaria em
+  laranja). O site público e as telas de entrada ficam sempre no laranja (`data-accent="orange"`
+  no wrapper).
+- **Cores de situação são fixas** e não seguem o destaque: aprovada = verde, cursando = azul,
+  simulada = violeta, disponível = âmbar, correquisito = céu, bloqueada = cinza. As composições
+  também têm cor própria (NC ciano, NEO índigo, OPT fúcsia, NL lima, AC rosa). Tudo em
+  `web/src/lib/palette.ts`.
+
+### Contraste por cor de destaque
+
+Calculado por script a partir dos valores oklch do `tailwindcss/theme.css` (v4), convertidos
+para sRGB com corte simples por canal. O E2E `visual.spec.ts` mede no navegador o botão
+principal nas cinco cores e nos dois temas.
+
+| Destaque | branco sobre 700 (botão/texto) | 700 sobre gray-50 | 600 como gráfico | gray-900 sobre 400 (botão no escuro) | 400 como texto sobre gray-950 |
+| --- | --- | --- | --- | --- | --- |
+| laranja | 5,23 | 5,01 | 3,59 | 7,46 | 8,46 |
+| azul | 6,82 | 6,54 | 5,26 | 6,73 | 7,63 |
+| violeta | 7,29 | 6,98 | 5,88 | 6,22 | 7,06 |
+| verde | 5,37 | 5,14 | 3,67 | 9,18 | 10,41 |
+| rosa | 6,06 | 5,80 | 4,51 | 6,21 | 7,04 |
+
+Barra colorida: texto secundário (`brand-200`) sobre `brand-800` ≥ 5,42; branco sobre
+`brand-800` ≥ 7,35; item ativo (branco sobre branco 14% + `brand-800`) ≥ 5,45. Fundo cheio com
+texto por cima (avatar, azulejo de iniciais) usa `solid`: 700 + branco no claro e 400 + gray-950
+no escuro — o 600 com branco **não** passa em âmbar, verde, ciano e lima.
+
+> **Correção da v11.** A tabela da v11 dizia "gray-950 sobre orange-500 (botão no escuro):
+> 6,96". O texto do botão no escuro é `gray-900`, não `gray-950`: no laranja dá 6,14 (passava
+> por sobra), mas no violeta daria 4,03. Na v12 o botão no escuro usa `brand-400`.
+
+### Grafismos e movimento
+
+Peças em `web/src/components/fx/`, todas desenhadas em código (nenhuma imagem):
+
+- **Faixa de topo** (`PageBanner`): degradê suave do destaque, o "Jogo da Vida" do Solar como
+  campo de pontos (pausa fora da tela e com a aba oculta), hachura diagonal e guia tracejada.
+- **Anel de progresso** com degradê e traço que se desenha; **números que contam**; **minigráfico**
+  nos cartões de número; **mapa de calor** de logins; **rosca** de várias fatias; **faixa de
+  estado** por minuto no Monitor; **medalhas** nas conquistas; arte dos estados vazios.
+- Barras crescem ao aparecer, grades entram em cascata, páginas entram subindo de leve, o
+  esqueleto de carregamento tem brilho que corre, o Monitor tem ponto "ao vivo".
+- **Confete** só em marcos de verdade: um marco de horas alcançado ou uma composição fechada em
+  100% durante a sessão — nunca ao simplesmente abrir a página.
+- Tudo desligado por `prefers-reduced-motion` (CSS global e checagem nos componentes em JS).
+
+### Componentes Tremor novos
+
+Do **template-insights** (MIT): BarChart, AreaChart, BarList, CategoryBar, Textarea, Tabs,
+Accordion, Tooltip e RadioCardGroup; do template-dashboard: Switch. Mesmo port da v11 (v3 → v4),
+com o índigo trocado pela escala `brand-*`.
+
+### Armadilhas encontradas (e o conserto)
+
+- **Gráfico de área vazio.** O recharts 2 encontra as séries pelo `react-is` (18.3 na árvore de
+  dependências), que não reconhece o `Fragment` do React 19; o AreaChart da Tremor embrulhava
+  cada `<Area>` num `<React.Fragment>`, e as áreas sumiam (só os eixos apareciam). O AreaChart
+  agora devolve `[<defs/>, <Area/>]` como array.
+- **Barra de lote fora da tela.** Com `animation-fill-mode: both`, o `transform` da animação de
+  entrada continua "preenchido" depois do fim e o Chrome passa a usar o elemento como bloco de
+  contenção dos filhos `position: fixed` — a barra de comandos em lote foi parar 1.200 px abaixo.
+  As entradas usam `backwards`.
+- **Animação no lugar errado.** A primeira tentativa de "gráficos animados" aumentou a duração
+  da animação do *tooltip*; as séries é que estavam com `isAnimationActive={false}`.
 
 ---
 
@@ -54,7 +142,7 @@ passam no WCAG AA com texto branco. Contraste calculado na paleta oklch do Tailw
 | branco sobre `orange-600` | 3,59 | não |
 | branco sobre `orange-700` | 5,23 | sim |
 | `orange-700` como texto sobre branco / `gray-50` | 5,23 / 5,01 | sim |
-| `gray-950` sobre `orange-500` (botão no escuro) | 6,96 | sim |
+| `gray-950` sobre `orange-500` (botão no escuro) — **premissa errada, ver a correção na seção 0** | 6,96 | sim |
 | `orange-400` como texto sobre `gray-950` | 8,46 | sim |
 
 Daí: **botão primário e texto de acento em `orange-700`** no claro; **`orange-500` com texto
@@ -162,7 +250,8 @@ metadados); o painel e a administração são Client Components com TanStack Que
 | v8 | volta da casca da v6, agora em Tailwind v4 | pedido de "se basear em Next.js e Tailwind" |
 | v9 | frontend novo em Next.js a partir de seis templates (paleta cerrado/poente, Fraunces + Sora) | rejeitada: "detesto o atual" |
 | v10 | "Bancada": escuro, neon ciano, grade de pontos (não publicada) | rejeitada: "exatamente como eu detesto", com cara de gerado por IA |
-| **v11 (atual)** | **templates Tremor: Dashboard no app, Solar no site, Overview no login; acento laranja** | pedido de usar um template real como fundação |
+| v11 | templates Tremor: Dashboard no app, Solar no site, Overview no login; acento laranja | pedido de usar um template real como fundação |
+| **v12 (atual)** | **v11 + cor de destaque e barra lateral à escolha, cores de situação fixas, grafismos do Solar dentro do app, gráficos e movimento** | "sem graça no quesito cor, estilo, elementos gráficos e animação" |
 
 A lição das rodadas: **desenho inventado a partir de "estilo" tende ao genérico**. Partir de um
 template real, feito por designers, e mudar só o conteúdo e o necessário (contraste, idioma,

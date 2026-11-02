@@ -101,17 +101,18 @@ Cada função registra os handlers da área. Contrato detalhado em [`API.md`](AP
 
 | Módulo | RF | Endpoints |
 | --- | --- | --- |
-| `auth` | 02/03/04/**17** | `POST /auth/{register, invite/accept, login, refresh, logout, password/forgot}` (rate limit por rota nas de segredo; register gated por `ALLOW_REGISTRATION`) |
-| `users` | 01/**21** | `GET/POST /users`, `PATCH /users/:id` (papel/nome), `POST /users/:id/invite`, `POST/DELETE /users/:id/enrollments[/:enrId]`, `DELETE /users/:id` (ADMIN; convites enviados por e-mail quando há SMTP) |
-| `courses` | 13/**28** | `GET /courses` (sem os da lixeira), `GET /courses/:slug`, `POST /courses/import` · **lixeira**: `GET /courses/:slug/impact`, `DELETE /courses/:slug`, `GET /courses/trash`, `POST /courses/trash/:id/restore`, `DELETE /courses/trash/:id` (ADMIN; dupla confirmação do slug) |
+| `auth` | 02/03/04/**17/31** | `POST /auth/{register, invite/accept, login, refresh, logout, password/forgot}` (rate limit por rota nas de segredo; register respeita as configurações da instância — aberto/fechado e domínios — com `ALLOW_REGISTRATION` como padrão) |
+| `users` | 01/**21/34** | `GET/POST /users` (lista com último login e sessões), `POST /users/import` (lote), `PATCH /users/:id` (papel/nome/matrícula/turno), `POST /users/:id/invite`, `POST /users/:id/sessions/revoke`, `POST/DELETE /users/:id/enrollments[/:enrId]`, `DELETE /users/:id` (ADMIN; convites por e-mail quando há SMTP) |
+| `courses` | 13/**28/35** | `GET /courses` (sem os da lixeira), `GET /courses/:slug`, `GET /courses/:slug/export`, `PATCH /courses/:slug`, `POST /courses/import` (`?dryRun=1` = prévia, em `matrix.ts`) · **lixeira**: `GET /courses/:slug/impact`, `DELETE /courses/:slug`, `GET /courses/trash`, `POST /courses/trash/:id/restore`, `DELETE /courses/trash/:id` (ADMIN; dupla confirmação do slug) |
 | `progress` | 05/06/07/**17/19/20** | `GET/POST /me/enrollments`, `PATCH /me/enrollments/:id` (só `startTerm`, `.strict()`), `GET .../progress`, `PUT .../subjects/:id` (APPROVED/ENROLLED/SIMULATED), `GET .../recommendations` |
 | `extras` | 08/09 | `GET/POST /me/enrollments/:id/extras`, `PATCH/DELETE /me/extras/:id` |
 | `schedules` | 10/11/12/**29** | CRUD de `scenarios`/`disciplines` (valida SIGAA) + `PUT .../paint`; exporta `SigaaError` · **cronograma inteligente**: `GET .../candidates` e `POST .../disciplines/bulk` (aluno informa só o código de horário) |
-| `account` | 15/16/**20** | `GET /me` (+período), `PATCH /me/settings`, `POST /me/password`, `GET /me/export`, `POST /me/import` |
-| `admin` | **20/21** | `GET /admin/stats` (números agregados) · `GET/POST/DELETE /admin/periods` (calendário) · `GET /admin/config` + `POST /admin/mail/test` (instância/SMTP) |
+| `account` | 15/16/**20/30** | `GET /me` (+período), `PATCH /me/settings` (tema, cor de destaque, barra lateral — `lib/prefs.ts`), `POST /me/password`, `GET /me/export`, `POST /me/import` |
+| `admin` | **20/21/33** | `GET /admin/stats` · `GET /admin/analytics` (Visão do sistema) · `GET /admin/reports/courses/:slug` (agregado; some com < 5 alunos — `analytics.ts`) · `GET/POST/DELETE /admin/periods` (calendário) · `GET /admin/config` + `POST /admin/mail/test` (instância/SMTP) |
 | `planner` | **25/26** | `GET/POST /me/enrollments/:id/tasks`, `PATCH/DELETE /me/tasks/:id` (agenda) · `GET .../notes`, `PUT/DELETE .../subjects/:sid/note` (anotações) |
-| `announcements` | **24** | `GET /announcements` (filtrado por audiência) · `GET/POST/PATCH/DELETE /admin/announcements` |
-| `observability` | **27** | `GET /admin/metrics` (p50/p95/p99, rotas, processo, ping do banco) · `GET /admin/audit` (trilha filtrável) |
+| `announcements` | **24/32** | `GET /announcements` (no ar, por audiência e curso) · `GET/POST/PATCH/DELETE /admin/announcements` (curso-alvo, agendamento, validade, `status`) |
+| `settings` | **31** | `GET /settings/public` · `GET/PATCH /admin/settings` (cadastro, domínios, faixa de aviso; `lib/settings.ts` com cache curto) |
+| `observability` | **27** | `GET /admin/metrics` (p50/p95/p99, rotas, processo, ping do banco, linha do tempo por minuto) · `GET /admin/audit` (busca, datas, cursor) · `GET /admin/audit/actions` |
 | `devtools` | — | `POST/DELETE /admin/dev/students`, `POST /admin/dev/announcements` — massa de dados; **só com `DEV_TOOLS=true` fora de produção** |
 
 ## Dados e testes
@@ -120,7 +121,7 @@ Cada função registra os handlers da área. Contrato detalhado em [`API.md`](AP
   `AcademicPeriod` guarda o calendário global. `@@unique`/`@@index` nas FKs consultadas
   (`RefreshToken.userId/expiresAt`, `Requisite.subjectId/requiresSubjectId`, `ExtraComponent.enrollmentId`,
   `Scenario.enrollmentId`, `ScenarioDiscipline.scenarioId`, `InviteToken.userId`, `AcademicPeriod.startsAt`).
-- `seed/seed.ts`: `importCourse` para a matriz, cria o **admin sem matrícula** (painel@admin.com) e
+- `seed/seed.ts`: `importCourse` para a matriz, cria o **admin** (painel@admin.com; nasce sem matrícula e, desde a v12, pode cursar — o seed não a apaga) e
   itera `students.json` (modelo extensível de contas-aluno: painel@aluno.com de demonstração +
   veterano@aluno.local com a baseline fictícia de `perfil-exemplo.json`); semeia o calendário exemplo.
   Exige `SEED_ADMIN_PASSWORD`; `SEED_STUDENT_PASSWORD` opcional.
@@ -141,13 +142,17 @@ src/
 ├─ app/                    rotas do App Router
 │  ├─ page.tsx             site público (Server Component, template-solar)
 │  ├─ (auth)/              entrar · cadastro · convite/[token]  (login do template-overview)
-│  ├─ painel/              9 páginas do aluno (inclui mapa/ e avisos/)
-│  ├─ admin/               7 páginas de gestão
+│  ├─ painel/              9 páginas do aluno (inclui mapa/ e avisos/) — o admin também usa (v12)
+│  ├─ admin/               10 telas de gestão (visão, usuários, cursos + cursos/[slug], relatórios,
+│  │                       avisos, períodos, monitor, auditoria, configurações)
 │  ├─ config/ · ajuda/     compartilhadas pelos dois papéis
 │  ├─ icon.svg             ícone da aba (a marca)
 │  └─ globals.css          tokens + keyframes da Tremor + @layer components
 ├─ components/
-│  ├─ tremor/              componentes Tremor Raw portados (v3→v4, acento laranja)
+│  ├─ tremor/              componentes Tremor Raw portados (v3→v4, acento = escala brand-*)
+│  ├─ fx/                  grafismos e movimento (v12): faixa de topo, anel, contagem, minigráfico,
+│  │                       mapa de calor, rosca, faixa de estado, medalha, confete
+│  ├─ admin/               peças da gestão (painel, diálogos de convite/CSV/matriz, gaveta do usuário)
 │  ├─ layout/              sidebar, gaveta, seletor de curso, perfil, paleta de comandos
 │  ├─ overview/            cartões da visão geral (ProgressBar/CategoryBar/ChartCard)
 │  ├─ data-table/          DataTable (TanStack) + cabeçalho ordenável + paginação
@@ -156,7 +161,8 @@ src/
 │  ├─ subject-drawer.tsx   gaveta da disciplina (requisitos, libera, marcações, anotação)
 │  └─ schedule/            "puxar do meu semestre" (RF-29)
 ├─ hooks/                  use-progress (queryKey centralizadas) · use-announcements
-└─ lib/                    api · auth-store · curriculum-graph · chart-utils · csv · sigaa · utils
+└─ lib/                    api · auth-store · appearance · palette · audit-labels · csv(-parse) ·
+                           curriculum-graph · chart-utils · sigaa · utils
 e2e/                       Playwright (smoke + fluxos + visual)
 ```
 
@@ -169,8 +175,10 @@ e2e/                       Playwright (smoke + fluxos + visual)
 | `lib/api/client.ts` | HTTP | access token em memória, refresh único compartilhado em 401, `ApiError` com status |
 | `lib/api/session-hint.ts` | marca local | evita um POST `/auth/refresh` inútil (e um 401 no console) para quem nunca teve sessão |
 | `lib/auth-store.ts` | Zustand | `status: loading \| in \| out` (sem isso um F5 pisca a tela de login) e a matrícula selecionada |
-| `components/layout/app-shell.tsx` | casca autenticada | guarda de rota por papel; escolha de curso (RF-17) só quando a lista VEIO vazia — erro de rede/429 mostra "tentar novamente" |
-| `components/layout/nav-data.ts` | mapa de navegação | dado, não JSX — sidebar, gaveta e paleta de comandos leem a MESMA fonte |
+| `components/layout/app-shell.tsx` | casca autenticada | guarda de rota (aluno não entra em /admin; admin entra em /painel — v12); escolha de curso (RF-17) só quando a lista VEIO vazia — erro de rede/429 mostra "tentar novamente"; faixa de aviso da instância; entrada suave por rota |
+| `lib/appearance.ts` | aparência (v12) | `data-accent`/`data-sidebar` no `<html>`, script do `<head>` contra o "pisca em laranja", sincronização com a conta |
+| `lib/palette.ts` | cores com significado (v12) | situação, composição, tipo de tarefa e público de aviso — fixas; `solid` para texto sobre cor |
+| `components/layout/nav-data.ts` | mapa de navegação | dado, não JSX — sidebar, gaveta e paleta leem a MESMA fonte; `navFor(papel, rota)` troca a lista do admin entre gestão e "Meu painel" |
 | `hooks/use-progress.ts` | dados do aluno | `keys` centralizadas; `useSetSubject` invalida progresso, recomendações, histórico e conquistas de uma vez; `useNotes`/`useSaveNote` (RF-26) |
 | `hooks/use-announcements.ts` | avisos | feed + marcador "não lido" no navegador (contador na sidebar, página `/painel/avisos`) |
 | `lib/curriculum-graph.ts` | topologia da matriz | requisitos/liberadas por disciplina, profundidade (maior cadeia de PRÉ, protegida contra ciclo) e fecho transitivo para o mapa e a gaveta |
@@ -179,12 +187,14 @@ e2e/                       Playwright (smoke + fluxos + visual)
 
 | Grupo | O que tem |
 | --- | --- |
-| `tremor/` | Button, Badge, Divider, Label, Input, Checkbox, Dropdown, Drawer, Dialog, TabNavigation, Table, ProgressBar, ProgressCircle, LineChart (recharts), Searchbar, CommandBar |
+| `tremor/` | Button, Badge, Divider, Label, Input, Checkbox, Dropdown, Drawer, Dialog, TabNavigation, Table, ProgressBar, ProgressCircle, LineChart/AreaChart/BarChart (recharts), BarList, CategoryBar, Searchbar, CommandBar, Switch, Textarea, Tabs, Accordion, Tooltip, RadioCardGroup |
+| `fx/` | `PageBanner`, `DotField`, `ProgressRing`, `CountUp`, `Sparkline`, `Heatmap`, `Donut`/`DonutLegend`, `Tracker`, `StatTile`, `Medal`, `EmptyArt`, `fireConfetti` |
+| `admin/` | `Panel`/`Pill`, `UserDrawer`/`Avatar`, `InviteDialog`, `ImportUsersDialog`, `CourseImportDialog` |
 | `layout/` | `Sidebar` (fixa em `lg`, barra superior + `MobileSidebar` abaixo), `CourseSwitcher*`, `UserProfile*` (tema salvo na conta), `NavLinks`, `CommandPalette` |
 | `overview/` | `ProgressBarCard`, `CategoryBarCard`, `ChartCard` |
 | `data-table/` | `DataTable` (seleção por clique, filete na linha selecionada, barra de lote), `DataTableColumnHeader` (botão ordenável), `DataTablePagination` |
 | `site/` | `NavBar`, `Hero` + `GameOfLife`, `Features` (+ `Orbit`, `ChipViz`), `RuleQuote`, `CurriculumMap`, `Analytics` (+ `StickerCard`), `CallToAction`, `Footer` |
-| `ui/` | API antiga (`Card`, `Section`, `PageHead`, `StatCard`, `Chip`/`StatusChip`, `Badge`, `Bar`, `Segmented`, `Field`, `inputCls`/`selectCls`, `DataTable` por colunas-dado, `ExportButton`, `DangerDialog` sobre o Dialog da Tremor, ícones Remix) |
+| `ui/` | API antiga (`Card`, `Section`, `PageHead` — que agora desenha a `PageBanner`, `StatCard`, `Chip`/`StatusChip`, `Badge`, `Bar`, `Segmented`, `Field`, `inputCls`/`selectCls`, `DataTable` por colunas-dado, `ExportButton`, `DangerDialog` sobre o Dialog da Tremor, ícones Remix) |
 | `charts/` | `ChartTitle`, `MetricCard`, `DonutProgress` (ProgressCircle), `BarList`, `StackedBar` |
 
 O `DataTable` de `ui/` recebe as colunas como dado (`header`/`cell`/`value`): a mesma definição
