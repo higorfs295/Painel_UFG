@@ -11,7 +11,7 @@ export const backupSchema = z.object({
   user: z.object({
     name: z.string().optional(),
     email: z.string().email().optional(),
-    theme: z.enum(["dark", "light"]).optional(),
+    theme: z.enum(["dark", "light", "system"]).optional(),
   }),
   enrollments: z.array(z.object({
     courseSlug: z.string(),
@@ -60,7 +60,7 @@ export async function exportUser(prisma: PrismaClient, userId: string): Promise<
   return {
     version: BACKUP_VERSION,
     exportedAt: new Date().toISOString(),
-    user: { name: user.name, email: user.email, theme: user.theme as "dark" | "light" },
+    user: { name: user.name, email: user.email, theme: user.theme as "dark" | "light" | "system" },
     enrollments: enrollments.map(e => ({
       courseSlug: e.course.slug,
       startTerm: e.startTerm,

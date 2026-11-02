@@ -355,7 +355,7 @@ curl -X PUT http://localhost:3333/me/scenarios/$SID/paint \
 Perfil do usuário logado + período letivo **global** (RF-20 v2), resolvido do calendário
 acadêmico (ver `/admin/periods`); sem calendário, cai na heurística de meses:
 ```json
-{ "id":"...", "name":"...", "email":"...", "role":"USER", "theme":"dark",
+{ "id":"...", "name":"...", "email":"...", "role":"USER", "theme":"system",
   "matricula":"20240010000", "shift":"matutino",
   "period": { "term":"2026.1", "onBreak":false, "label":"2026.1",
               "nextTerm":"2026.2", "source":"calendar", "nextStartsAt":"2026-07-06T03:00:00.000Z" } }
@@ -365,7 +365,8 @@ Em férias: `{ "term":null, "onBreak":true, "label":"Férias", "nextTerm":"2026.
 `matricula` (nº de matrícula, opcional) e `shift` (turno) podem ser `null`.
 
 ### PATCH /me/settings
-Perfil do próprio usuário (`.strict()`): `theme` (RF-15), `name`, `matricula` (opcional, `""`/`null`
+Perfil do próprio usuário (`.strict()`): `theme` (RF-15: `"dark" | "light" | "system"`; contas
+novas começam em `"system"`), `name`, `matricula` (opcional, `""`/`null`
 limpa) e `shift` (`matutino|vespertino|noturno|integral` ou `null`). `{ "matricula":"20240010000",
 "shift":"noturno" }` → `200` com o perfil atualizado.
 

@@ -49,7 +49,7 @@ export async function accountRoutes(app: FastifyInstance) {
   // `null` limpa o campo opcional; chave ausente não toca (semântica de PATCH via stripUndefined).
   app.patch("/settings", { preHandler: app.requireAuth }, async (req) => {
     const patch = z.object({
-      theme: z.enum(["dark", "light"]).optional(),
+      theme: z.enum(["dark", "light", "system"]).optional(),
       name: z.string().min(2).optional(),
       matricula: z.string().trim().max(30).transform((v) => v || null).nullable().optional(),
       shift: z.enum(["matutino", "vespertino", "noturno", "integral"]).nullable().optional(),

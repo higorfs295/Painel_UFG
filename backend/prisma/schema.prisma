@@ -68,7 +68,7 @@ model User {
   email        String   @unique
   passwordHash String?                          // null até o usuário definir a própria senha (RF-02)
   role         Role     @default(USER)
-  theme        String   @default("dark")          // validado como "dark"|"light" no zod da rota
+  theme        String   @default("system")        // "dark"|"light"|"system" (zod da rota); system = segue o SO
   matricula    String?                            // nº de matrícula do aluno (opcional, RF-01)
   shift        String?                            // turno: matutino|vespertino|noturno|integral (aluno)
   createdAt    DateTime @default(now())
