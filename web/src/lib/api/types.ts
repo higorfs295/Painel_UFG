@@ -1,6 +1,6 @@
 // Tipos das respostas da API (espelham o backend).
 export type Role = "ADMIN" | "USER";
-export type Theme = "dark" | "light";
+export type Theme = "dark" | "light" | "system";
 export type SubjectState = "APPROVED" | "SIMULATED" | "ENROLLED";
 export type GraphStatus = "done" | "avail" | "co" | "lock";
 export type ExtraCategory = "NC" | "NE" | "OPT" | "NL" | "AC" | "NONE";

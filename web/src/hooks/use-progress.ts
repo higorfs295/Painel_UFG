@@ -18,6 +18,7 @@ export const keys = {
   scenarios: (id: string) => ["scenarios", id] as const,
   candidates: (sid: string) => ["candidates", sid] as const,
   courseDetail: (slug: string) => ["course", slug] as const,
+  notes: (id: string) => ["notes", id] as const,
 };
 
 /** A matrícula selecionada; as páginas do painel só renderizam quando ela existe. */
@@ -95,5 +96,20 @@ export function useSetSubject() {
       }
       qc.invalidateQueries({ queryKey: ["candidates"] }); // a grade puxa de cursando/simuladas
     },
+  });
+}
+
+/** Anotações por disciplina (RF-26). */
+export function useNotes() {
+  const id = useEnrollmentId();
+  return useQuery({ queryKey: keys.notes(id ?? ""), queryFn: () => planner.notes(id!), enabled: !!id });
+}
+
+export function useSaveNote() {
+  const id = useEnrollmentId();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { subjectId: string; text: string }) => planner.saveNote(id!, v.subjectId, v.text),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.notes(id!) }),
   });
 }

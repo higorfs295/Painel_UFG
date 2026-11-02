@@ -33,26 +33,26 @@ export default function AdminHomePage() {
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <ChartTitle icon={IconUsers} title="Usuários" />
-          <p className="font-display mt-3 text-4xl font-semibold tracking-tight">{s ? num(s.users.total) : "…"}</p>
+          <p className="num mt-3 text-3xl font-semibold">{s ? num(s.users.total) : "…"}</p>
           <p className="text-subtle-foreground mt-1 text-xs">
             {s ? `${s.users.admins} admin(s) · ${s.users.pendingInvites} convite(s) pendente(s)` : ""}
           </p>
         </Card>
         <Card>
           <ChartTitle icon={IconSprout} title="Novos (30 dias)" />
-          <p className="font-display text-savanna mt-3 text-4xl font-semibold tracking-tight">
+          <p className="num text-savanna mt-3 text-3xl font-semibold">
             {s ? `+${num(s.users.newUsers30d)}` : "…"}
           </p>
           <p className="text-subtle-foreground mt-1 text-xs">crescimento recente de contas</p>
         </Card>
         <Card>
           <ChartTitle icon={IconBook} title="Cursos" />
-          <p className="font-display mt-3 text-4xl font-semibold tracking-tight">{s ? num(s.courses) : "…"}</p>
+          <p className="num mt-3 text-3xl font-semibold">{s ? num(s.courses) : "…"}</p>
           <p className="text-subtle-foreground mt-1 text-xs">{s ? `${num(s.enrollments)} matrícula(s)` : ""}</p>
         </Card>
         <Card>
           <ChartTitle icon={IconFlame} title="Disciplinas marcadas" />
-          <p className="font-display mt-3 text-4xl font-semibold tracking-tight">
+          <p className="num mt-3 text-3xl font-semibold">
             {s ? num(s.activity.subjectStatuses) : "…"}
           </p>
           <p className="text-subtle-foreground mt-1 text-xs">
@@ -96,12 +96,11 @@ export default function AdminHomePage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ATALHOS.map(({ href, icon: Icon, title, text }) => (
             <Link key={href} href={href} className="group">
-              <Card interactive className="flex h-full flex-col gap-1.5 p-5 sm:p-5">
-                <span className="text-primary"><Icon /></span>
-                <strong className="font-display text-foreground text-lg font-semibold tracking-tight">{title}</strong>
-                <span className="text-muted-foreground text-sm">{text}</span>
-                <span className="text-primary mt-2 text-xs font-semibold tracking-[0.12em] uppercase transition-transform group-hover:translate-x-1">
-                  abrir →
+              <Card interactive className="flex h-full items-start gap-3 p-4">
+                <Icon className="mt-0.5 size-5 shrink-0 text-gray-500 group-hover:text-orange-700 dark:text-gray-400 dark:group-hover:text-orange-400" />
+                <span className="min-w-0">
+                  <strong className="block text-sm font-semibold text-gray-900 dark:text-gray-50">{title}</strong>
+                  <span className="mt-0.5 block text-sm text-gray-500 dark:text-gray-400">{text}</span>
                 </span>
               </Card>
             </Link>

@@ -1,93 +1,169 @@
 # Design e origem do frontend
 
-O frontend em `web/` foi construído a partir de **seis templates Next.js** de referência.
-Este documento registra o que veio de cada um, o que foi deliberadamente deixado de fora e
-por quê — para que a próxima pessoa saiba onde procurar o "porquê" de cada convenção.
+**Versão atual: v11.** O frontend em `web/` usa como fundação dois templates abertos da
+[Tremor](https://tremor.so) (componentes e templates para dashboards), ambos sob a licença MIT:
+
+- **[tremorlabs/template-dashboard](https://github.com/tremorlabs/template-dashboard)**: o
+  **app** (painel do aluno e administração);
+- **[tremorlabs/template-solar](https://github.com/tremorlabs/template-solar)**: o **site
+  público** (a página inicial).
+
+A tela de entrada vem do **[tremorlabs/template-overview](https://github.com/tremorlabs/template-overview)**,
+da mesma família e também MIT. O aviso de licença e a lista do que foi copiado estão em
+[`web/THIRD_PARTY_NOTICES.md`](../web/THIRD_PARTY_NOTICES.md).
+
+> Por que templates prontos, e estes: a versão anterior (v10) foi desenhada "do zero" e caiu
+> no visual genérico de interface gerada por IA (fundo escuro com neon, grade de pontos, brilho
+> borrado, cartões com ícone em azulejo, bento). O pedido foi partir de um template real, feito
+> por designers, e não ter "cara de gerado por IA". A escolha entre Solar + Dashboard, Database +
+> Dashboard e só o Dashboard foi feita pelo dono do projeto, com as imagens dos próprios
+> repositórios.
 
 ---
 
-## 1. De onde veio cada peça
+## 1. O que veio de cada template
 
-| Template | O que foi aproveitado |
-| --- | --- |
-| **nextjs-admin-dashboard** | O esqueleto do painel: grupos de rota separando telas com e sem casca; `Sidebar` com seções, contexto próprio (`sticky` no desktop, `fixed` + overlay no mobile, `inert` quando fechada); barra superior com o cluster de ações à direita; navegação declarada como **dado** (`nav-data.ts`) em vez de JSX; `cn()` para compor classes; tokens no `@theme` do CSS, sem `tailwind.config.js`; tabelas e elementos de formulário como componentes reaproveitáveis |
-| **visactor-next-template** | A **composição dos blocos de gráfico**: título com ícone + cartões de métrica ao lado do desenho (`ChartTitle` + `MetricCard`); nomes semânticos de token no estilo shadcn (`background`/`foreground`/`card`/`muted`/`border`/`primary`/`ring`); a API de variantes do `Button`; provedores de tema isolados num único componente |
-| **next-partial-prerendering** | A divisão **casca estática + ilhas dinâmicas**: a landing e os layouts são Server Components, e cada bloco do painel carrega e falha sozinho, com esqueleto próprio — uma consulta lenta não segura a página |
-| **solid-nextjs** | A **página pública**: cabeçalho fixo que muda ao rolar, herói, grade de recursos, passos, FAQ em acordeão, CTA e rodapé; animações com framer-motion sempre em `whileInView`; `next-themes` para o tema; `react-hot-toast` para retorno de ação |
-| **rollbar-vercel** | O **provedor de monitoramento de erros** no cliente, ligado à fronteira `error.tsx` |
-| **sanity-template-nextjs-clean** | A convenção de repositório: o app web num diretório próprio ao lado do backend, com README, `.env.example` e workflow de CI dedicados |
+| Template | Peça | Onde está |
+| --- | --- | --- |
+| Dashboard | Componentes **Tremor Raw**: Button, Badge, Divider, Label, Input, Checkbox, Dropdown, Drawer, Dialog, TabNavigation, Table, ProgressBar, ProgressCircle, LineChart (recharts), Searchbar, CommandBar (o desenho do Card vive em `components/ui`) | `src/components/tremor/` |
+| Dashboard | Sidebar fixa de 18 rem (`lg:w-72`), branca com borda; barra superior no mobile com a gaveta | `src/components/layout/sidebar.tsx`, `mobile-sidebar.tsx`, `nav-links.tsx` |
+| Dashboard | "Workspace dropdown", que virou o **seletor de curso** (matrícula), com o período letivo no subtítulo | `layout/course-switcher.tsx` |
+| Dashboard | Menu de perfil com **tema Claro / Escuro / Sistema**, agora salvo na conta | `layout/user-profile.tsx` |
+| Dashboard | Overview: `ProgressBarCard`, `CategoryBarCard` e `ChartCard`, em seções sem caixa (gap-14) | `components/overview/cards.tsx`, `app/painel/page.tsx` |
+| Dashboard | Details: **DataTable** (TanStack) com seleção, ordenação, paginação, ações por linha e barra de comandos em lote | `components/data-table/`, `app/painel/disciplinas/page.tsx` |
+| Dashboard | Settings: abas (`TabNavigation`) e seções com título à esquerda e formulário em 2/3 | `app/config/page.tsx` |
+| Solar | Barra flutuante, herói com o "Jogo da Vida" em pontos, título de 8xl com tracking apertado, botão em degradê | `components/site/navbar.tsx`, `hero.tsx`, `game-of-life.tsx` |
+| Solar | Grade de recursos com guias tracejadas, hachura diagonal, órbita, grade de sensores e chip pulsante | `components/site/features.tsx`, `orbit.tsx`, `chip-viz.tsx`, `feature-divider.tsx` |
+| Solar | Seção escura com bordas hachuradas, painel inclinado em 3D, StickerCards, chamada final e rodapé | `components/site/curriculum-map.tsx`, `analytics.tsx`, `sticker-card.tsx`, `cta.tsx`, `footer.tsx` |
+| Overview | Tela de entrada: coluna estreita, grade de quadradinhos com máscara radial, placa com quatro parafusos | `app/(auth)/layout.tsx` |
 
-## 2. O que foi deixado de fora, e por quê
+O **conteúdo** foi trocado pelo do Painel: os veículos que orbitam no Solar viraram disciplinas
+com sua situação; os sensores de temperatura viraram disciplinas na grade; o mapa da fazenda
+virou um mapa curricular; o "ciclo de cobrança" do Dashboard virou a integralização.
 
-**As bibliotecas de gráfico** (ApexCharts no admin dashboard, VisActor no visactor-next-template).
-Ambas tocam `window` na importação e, no App Router, exigem `dynamic(..., { ssr: false })` —
-o que atrasa o primeiro desenho e soma centenas de KB ao bundle. O que este painel precisa
-desenhar é modesto: anel de progresso, barras por período, linha de ritmo e uma barra
-empilhada. Em SVG isso sai em ~150 linhas (`components/charts/`), renderiza no servidor,
-herda as cores do tema por variável CSS e não custa JavaScript extra. **A composição dos
-blocos veio do visactor; a biblioteca, não.**
+## 2. O que mudou em relação aos templates, e por quê
 
-**O `better-auth` + Prisma do admin dashboard.** A autenticação deste projeto já existe no
-backend Fastify (JWT curto + refresh opaco rotativo com detecção de reuso, documentado em
-`SEGURANCA.md`). Trocar isso por um segundo sistema de sessão dentro do Next significaria
-duas fontes de verdade sobre quem está logado.
+### Acento: índigo → laranja, em tons escolhidos por contraste
 
-**O Sanity (CMS).** Não há conteúdo editorial para gerir: os textos da landing são do
-produto e vivem no código.
+O Dashboard usa índigo; o Solar, laranja. Ficou o laranja nos dois. Os tons do template não
+passam no WCAG AA com texto branco. Contraste calculado na paleta oklch do Tailwind v4:
 
-**As fontes e a paleta dos templates.** A identidade do projeto — cerrado, pôr do sol e
-povos indígenas, com Fraunces (display) e Sora (interface) — foi preservada. Dos templates
-veio a *gramática* (nomes de token, escala de espaçamento, convenções de componente), não a
-aparência.
+| Combinação | Contraste | AA (≥ 4,5) |
+| --- | --- | --- |
+| branco sobre `orange-500` (botão do Solar) | 2,89 | não |
+| branco sobre `orange-600` | 3,59 | não |
+| branco sobre `orange-700` | 5,23 | sim |
+| `orange-700` como texto sobre branco / `gray-50` | 5,23 / 5,01 | sim |
+| `gray-950` sobre `orange-500` (botão no escuro) | 6,96 | sim |
+| `orange-400` como texto sobre `gray-950` | 8,46 | sim |
 
----
+Daí: **botão primário e texto de acento em `orange-700`** no claro; **`orange-500` com texto
+`gray-950`** e texto em `orange-400` no escuro; barras e marcas gráficas em `orange-600`
+(3,59:1, acima dos 3:1 exigidos para elementos gráficos). O degradê do botão do herói vai de
+`orange-600` a `orange-700` com `via-orange-700`: o meio, onde fica o texto, é o tom que passa.
+
+### Texto secundário no escuro
+
+A Tremor usa `gray-500` para texto secundário também no escuro, o que dá 4,16:1 sobre `gray-950`.
+Nos componentes portados e nas páginas ele virou `gray-400` (7,73:1). Placeholder: de `gray-400`
+(2,6:1) para `gray-500` no claro.
+
+### Sem as imagens do Solar e sem depoimento inventado
+
+As ilustrações do Solar (fazenda solar, nuvens, drone) **não** foram usadas. Elas mostram a
+marca do template e têm justamente o estilo de pintura que lembra imagem gerada por IA. A seção
+"Testimonial" trazia a citação de uma pessoa fictícia; no lugar dela entrou o mesmo desenho
+(aspas penduradas, frase em negrito com continuação esmaecida) com uma afirmação verificável:
+a regra de cálculo do próprio painel (RN-03). O painel inclinado mostra um histórico **de
+exemplo**, identificado como tal.
+
+### Portando do Tailwind v3 para o v4
+
+O Dashboard é Tailwind v3; o Painel já era v4. O port renomeou a escala deslocada
+(`shadow-sm` → `shadow-xs`, `rounded` → `rounded-sm`, `outline-none` → `outline-hidden`,
+`ring` → `ring-3`, `placeholder-*` → `placeholder:text-*`) e os nomes de animação para
+kebab-case, com as keyframes declaradas em `@theme` (`globals.css`).
+
+Um caso que não é renomeação: o `Dialog` centraliza com `-translate-x-1/2`, que no v4 vira a
+**propriedade** `translate`, e a keyframe original animava `transform: translate(-50%, …)`. As
+duas se somariam e o diálogo pularia ao abrir. A keyframe agora anima `translate` e `scale`.
+
+### Outros ajustes
+
+- **Barra de comandos em lote**: os atalhos de uma letra do template escutam o documento
+  inteiro. Com linhas selecionadas, digitar "e" na busca acionava "Edit". Agora ignoram teclas
+  digitadas em campos e combinações com Ctrl/Alt/⌘; os botões têm nome acessível exato e
+  `aria-keyshortcuts`.
+- **Cabeçalho de coluna ordenável**: era `<div onClick>`; virou `<button>` (teclado).
+- **Gaveta**: o botão de fechar não tinha rótulo; ganhou `aria-label="Fechar"`.
+- **StickerCard**: era um `<a>` sem destino; virou bloco estático.
+- **`motion` → CSS**: o `<Fade>` e o pulso do `ChipViz` usavam a biblioteca `motion`. Foram
+  refeitos com `@keyframes` (`fadeBlurUp`, `chipPulse`), e o conteúdo termina visível mesmo sem
+  JavaScript.
+- **Jogo da Vida**: com `prefers-reduced-motion` desenha um quadro e para; fora da tela, pausa.
+- **Site sempre claro**: o Solar não tem modo escuro, mas usa componentes Tremor com variantes
+  `dark:`. Com o sistema no escuro, isso poria texto claro em fundo claro. A rota `/` força o
+  tema claro (`forcedTheme` do next-themes).
 
 ## 3. Decisões estruturais
 
+### Tema: segue o sistema
+
+`ThemeProvider defaultTheme="system"`, como no Dashboard. A escolha da pessoa (Claro / Escuro /
+Sistema), no menu de perfil ou em Ajustes, é salva na conta (`PATCH /me/settings`,
+`theme: "dark" | "light" | "system"`). O padrão de **contas novas** passou a ser `"system"`
+(migração `20261102040000_tema_sistema`). Contas antigas mantêm o valor que já tinham: não dá
+para distinguir quem escolheu "escuro" de quem só herdou o padrão anterior.
+
+### Duas gerações de componentes, um desenho só
+
+As telas reescritas usam os componentes Tremor direto (`components/tremor/*`, paleta `gray-*`).
+As páginas que não foram reescritas usam as primitivas de `components/ui/`, que mantêm a API
+antiga mas agora desenham com as mesmas classes. Os tokens semânticos do `globals.css`
+(`bg-card`, `text-muted-foreground`…) apontam para os mesmos cinzas da Tremor.
+
+> **`@theme inline` continua obrigatório.** Sem o `inline`, o Tailwind resolve a cor no build e
+> os utilitários com opacidade congelam no valor de um dos temas.
+
+### Fontes
+
+**Inter** no app (como o Dashboard) e **Geist** no site (como o Solar), ambas auto-hospedadas
+por `next/font`.
+
+### Gráficos
+
+O `LineChart` da Tremor usa **recharts** (v2, a versão do template). As peças pequenas
+(BarList, barra empilhada, anel) continuam sem biblioteca, em `components/charts`.
+
 ### Por que o painel roda no cliente
 
-O refresh da sessão vive num cookie `httpOnly` emitido pela API, que está em **outra
-origem** (`:3333`). Um Server Component do Next não recebe esse cookie — logo, não teria
-como renovar a sessão nem buscar dados autenticados no servidor. A divisão adotada:
-
-- **Server Components**: landing, layouts, metadados, `not-found` — tudo que é casca;
-- **Client Components**: painel e administração, com TanStack Query cuidando de cache,
-  revalidação e estados de carregamento.
-
-É a mesma divisão que o visactor-next-template usa para um dashboard sobre uma API externa.
-
-### Tokens de tema
-
-`app/globals.css` tem três blocos: variáveis por tema (`:root` claro, `.dark` escuro) →
-`@theme inline` mapeando cada uma para um token (`--color-*`) → `@layer components` com o
-punhado de classes do produto.
-
-> **`@theme inline` é obrigatório.** Sem o `inline`, o Tailwind resolve a cor em tempo de
-> build e todo utilitário com opacidade (`bg-muted/60`, `border-lock/40`) congela no valor
-> de um dos temas. O sintoma engana: só *algumas* cores param de trocar.
+O refresh da sessão vive num cookie `httpOnly` emitido pela API, em **outra origem** (`:3333`).
+Um Server Component do Next não recebe esse cookie, então não teria como renovar a sessão nem
+buscar dados autenticados no servidor. Server Components cuidam da casca (site, layouts,
+metadados); o painel e a administração são Client Components com TanStack Query.
 
 ### Acessibilidade
 
-- `Field` associa rótulo e controle por `htmlFor`/`id` (id gerado com `useId`). Com
-  `<label>` apenas **envolvendo** um `<select>`, o nome acessível vira o texto da opção
-  selecionada — "Concluído" em vez de "Situação".
-- O `aria-label` da navegação fica no `<nav>`, não no `<aside>`.
-- A grade de horário implementa o padrão ARIA `grid` com *roving tabindex*: setas movem o
-  foco, Enter/Espaço pintam.
+- `Field` e os formulários associam rótulo e controle por `htmlFor`/`id`.
+- Navegação principal em `<nav aria-label="Navegação principal">`, item atual com `aria-current`.
+- Componentes Radix (Dropdown, Dialog, Drawer, Popover da barra de lote) trazem foco preso, Esc e papéis ARIA.
+- A grade do cronograma implementa o padrão ARIA `grid` com *roving tabindex*.
 - Toda animação respeita `prefers-reduced-motion`.
-
----
+- O E2E `visual.spec.ts` cobra o contraste do texto secundário nos dois temas (convertendo a
+  cor oklch para sRGB pelo próprio navegador) e o destaque do item ativo.
 
 ## 4. Histórico das versões de design
 
 | Versão | O que era | Por que mudou |
 | --- | --- | --- |
 | v4–v5 | SPA Vite, mosaico bento, numerais fantasma | pedidos sucessivos de "mudança drástica" |
-| v6 | barra lateral em gradiente + "app-card" flutuante, CSS à mão | referência da qual o usuário gostou |
-| v7 | trilho superior, tela cheia, cantos vivos | **rejeitada**: "muito pior, inferior à v6" |
+| v6 | barra lateral em gradiente + "app-card" flutuante | referência da qual o usuário gostou |
+| v7 | trilho superior, tela cheia, cantos vivos | rejeitada: "muito pior, inferior à v6" |
 | v8 | volta da casca da v6, agora em Tailwind v4 | pedido de "se basear em Next.js e Tailwind" |
-| **v9 (atual)** | **frontend novo em Next.js**, a partir dos seis templates | pedido de criar um frontend novo a partir deles |
+| v9 | frontend novo em Next.js a partir de seis templates (paleta cerrado/poente, Fraunces + Sora) | rejeitada: "detesto o atual" |
+| v10 | "Bancada": escuro, neon ciano, grade de pontos (não publicada) | rejeitada: "exatamente como eu detesto", com cara de gerado por IA |
+| **v11 (atual)** | **templates Tremor: Dashboard no app, Solar no site, Overview no login; acento laranja** | pedido de usar um template real como fundação |
 
-A lição que se repete: **mudar a estrutura** (posição da navegação, densidade, escala
-tipográfica) conta como redesenho; trocar tokens de cor, não. E a barra lateral com o
-gradiente do poente é a peça que o projeto mantém desde a v6.
+A lição das rodadas: **desenho inventado a partir de "estilo" tende ao genérico**. Partir de um
+template real, feito por designers, e mudar só o conteúdo e o necessário (contraste, idioma,
+acessibilidade) preserva o que dá personalidade a ele.

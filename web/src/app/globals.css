@@ -1,83 +1,72 @@
 /* ══════════════════════════════════════════════════════════════════════════════
-   Painel Acadêmico — folha de estilo do frontend Next.js (Tailwind CSS v4)
+   Painel Acadêmico — design v11 (Tailwind CSS v4)
 
-   Os tokens seguem a convenção do `nextjs-admin-dashboard` (tudo em @theme, sem
-   tailwind.config.js) e a nomenclatura semântica que o `visactor-next-template`
-   usa via shadcn — background/foreground/card/muted/border/primary/ring — só que
-   preenchida com a paleta do projeto: cerrado, pôr do sol e povos indígenas.
+   Fundação: dois templates abertos da Tremor (MIT, © 2025 Tremor Labs, Inc.):
+     • tremorlabs/template-dashboard → o app (sidebar branca de 18rem, seções sem
+       cartão, barras de progresso finas, cinzas do Tailwind, Inter);
+     • tremorlabs/template-solar     → o site público (fundo gray-50, títulos grandes
+       e apertados, guias tracejadas, Geist).
+   O acento índigo do Dashboard foi trocado pelo laranja do Solar, em tons escolhidos
+   por contraste (docs/DESIGN.md §2): texto e botão em orange-700 no claro (5,23:1 com
+   branco), orange-400/500 no escuro com texto gray-950.
 
-   O tema é trocado pelo `next-themes`, que escreve `class="dark"` no <html>
-   (mesmo mecanismo do solid-nextjs e do admin dashboard).
+   Os componentes portados (components/tremor/*) usam a paleta `gray-*` direto, como
+   no template. As páginas antigas usam tokens semânticos (bg-card, text-muted-
+   foreground…); eles foram reapontados para os MESMOS cinzas da Tremor, então as duas
+   gerações de código desenham igual.
    ══════════════════════════════════════════════════════════════════════════════ */
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ── Tokens: claro é o padrão; .dark sobrescreve ─────────────────────────── */
+/* ── Tokens semânticos (claro) — valores = cinzas do Tailwind v4 usados pela Tremor ── */
 :root {
-  /* cerrado ao meio-dia: barro claro, areia e papel */
-  --background: #faf6ee;
-  --foreground: #241b13;
+  --background: #ffffff;                 /* white   — app */
+  --foreground: var(--color-gray-900);
   --card: #ffffff;
-  --card-foreground: #241b13;
+  --card-foreground: var(--color-gray-900);
   --popover: #ffffff;
-  --muted: #f1e9da;
-  --muted-foreground: #6b5946;
-  --subtle-foreground: #82694f; /* AA sobre cartão (5.14:1) e sobre o fundo (4.77:1) */
-  --border: #e4d9c6;
-  --input: #d6c8b1;
+  --muted: var(--color-gray-50);
+  --muted-foreground: var(--color-gray-600);
+  --subtle-foreground: var(--color-gray-500); /* 4,84:1 sobre branco, 4,63:1 sobre gray-50 */
+  --border: var(--color-gray-200);
+  --input: var(--color-gray-300);
 
-  --primary: #b85427;
-  --primary-foreground: #fff7ee;
-  --ring: #c07c18;
+  --primary: var(--color-orange-700);     /* texto/botão: 5,23:1 com branco */
+  --primary-foreground: #ffffff;
+  --accent-fill: var(--color-orange-600); /* barras e marcas gráficas (3,59:1 sobre branco) */
 
-  --sun: #c07c18;
-  --ember: #b23a2e;
-  --dusk: #6c4a94;
-  --savanna: #6f8135;
-  --jenipapo: #2e7286;
-
-  --done: #5f7a2c;
-  --avail: #b0741a;
-  --co: #2e7286;
-  --lock: #b23a2e;
-  --sim: #7a4fa6;
+  --done: var(--color-emerald-700);
+  --avail: var(--color-orange-700);
+  --co: var(--color-blue-700);
+  --lock: var(--color-gray-500);
+  --sim: var(--color-violet-700);
+  --danger: var(--color-red-700);
 }
 
+/* ── Escuro — o modo escuro da própria Tremor (gray-950, cartão #090E1A) ── */
 .dark {
-  /* entardecer no cerrado: superfícies terrosas e quentes */
-  --background: #14100a;
-  --foreground: #f5eadb;
-  --card: #1c1710;
-  --card-foreground: #f5eadb;
-  --popover: #241d15;
-  --muted: #241d15;
-  --muted-foreground: #b9a088;
-  --subtle-foreground: #9b8067; /* AA sobre cartão (4.81:1) e sobre o fundo (5.12:1) */
-  --border: #322619;
-  --input: #3d2e20;
+  --background: var(--color-gray-950);
+  --foreground: var(--color-gray-50);
+  --card: #090e1a;
+  --card-foreground: var(--color-gray-50);
+  --popover: var(--color-gray-950);
+  --muted: var(--color-gray-900);
+  --muted-foreground: var(--color-gray-400);
+  --subtle-foreground: var(--color-gray-400); /* 7,73:1 sobre gray-950 (gray-500 dá só 4,16) */
+  --border: var(--color-gray-800);
+  --input: var(--color-gray-800);
 
-  --primary: #db6b33;
-  --primary-foreground: #fff6ea;
-  --ring: #f0a83c;
+  --primary: var(--color-orange-400);
+  --primary-foreground: var(--color-gray-950);
+  --accent-fill: var(--color-orange-500);
 
-  --sun: #f0a83c;
-  --ember: #d25440;
-  --dusk: #8c63b0;
-  --savanna: #9db05a;
-  --jenipapo: #5f9db2;
-
-  --done: #9db05a;
-  --avail: #f0a83c;
-  --co: #5f9db2;
-  --lock: #d8604c;
-  --sim: #a87bd0;
-}
-
-:root {
-  /* o trilho lateral é uma ilha com o gradiente do poente — igual nos dois temas */
-  --sidebar-gradient: linear-gradient(168deg, #3b2a4e 0%, #6c3a50 34%, #a8492a 70%, #dd8a34 100%);
-  --sidebar-foreground: #fbefe0;
+  --done: var(--color-emerald-400);
+  --avail: var(--color-orange-400);
+  --co: var(--color-blue-400);
+  --lock: var(--color-gray-400);
+  --sim: var(--color-violet-400);
+  --danger: var(--color-red-400);
 }
 
 /* `inline` é obrigatório: sem ele o Tailwind resolve a cor no build e os utilitários
@@ -95,31 +84,69 @@
   --color-input: var(--input);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-ring: var(--ring);
-
-  --color-sun: var(--sun);
-  --color-ember: var(--ember);
-  --color-dusk: var(--dusk);
-  --color-savanna: var(--savanna);
-  --color-jenipapo: var(--jenipapo);
+  --color-accent-fill: var(--accent-fill);
+  --color-ring: var(--color-orange-500);
 
   --color-done: var(--done);
   --color-avail: var(--avail);
   --color-co: var(--co);
   --color-lock: var(--lock);
   --color-sim: var(--sim);
+  --color-danger: var(--danger);
 
-  --color-sidebar-foreground: var(--sidebar-foreground);
+  /* apelidos das versões antigas (ainda usados em páginas e testes) */
+  --color-sun: var(--avail);
+  --color-ember: var(--danger);
+  --color-dusk: var(--sim);
+  --color-savanna: var(--done);
+  --color-jenipapo: var(--co);
+  --color-sidebar-foreground: var(--foreground);
 
-  --font-sans: var(--font-sora), ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
-  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-geist: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+}
 
-  --ease-silk: cubic-bezier(0.16, 1, 0.3, 1);
+/* ── Animações dos componentes Tremor (lista do template-solar, já em Tailwind v4) ── */
+@theme {
+  --animate-hide: hide 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-down-and-fade: slideDownAndFade 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-left-and-fade: slideLeftAndFade 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-up-and-fade: slideUpAndFade 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-right-and-fade: slideRightAndFade 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dialog-overlay-show: dialogOverlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dialog-content-show: dialogContentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-drawer-slide-left-and-fade: drawerSlideLeftAndFade 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-drawer-slide-right-and-fade: drawerSlideRightAndFade 150ms ease-in;
+  --animate-dashes: dashes 0.8s linear infinite;
+  --animate-hover: hover 4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+
+  @keyframes hide { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes slideDownAndFade { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideLeftAndFade { from { opacity: 0; transform: translateX(6px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes slideUpAndFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideRightAndFade { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes dialogOverlayShow { from { opacity: 0; } to { opacity: 1; } }
+  /* No v4 o `-translate-x-1/2` do diálogo usa a PROPRIEDADE `translate` (não `transform`).
+     A keyframe original animava `transform: translate(-50%, …)`, que se somava ao
+     posicionamento e fazia o diálogo pular ao abrir. Aqui ela anima a mesma propriedade. */
+  @keyframes dialogContentShow {
+    from { opacity: 0; translate: -50% -45%; scale: 0.95; }
+    to { opacity: 1; translate: -50% -50%; scale: 1; }
+  }
+  @keyframes drawerSlideLeftAndFade { from { opacity: 0; transform: translateX(50%); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes drawerSlideRightAndFade { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(50%); } }
+  @keyframes dashes { 0% { stroke-dashoffset: -7; } 100% { stroke-dashoffset: 0; } }
+  @keyframes hover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 }
 
 @layer base {
-  * {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
     border-color: var(--color-border);
   }
   html {
@@ -127,60 +154,72 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-size: 15px;
-    line-height: 1.6;
-  }
-  h1 {
-    @apply font-display text-3xl/tight font-semibold tracking-tight sm:text-4xl/tight;
-  }
-  h2 {
-    @apply font-display text-xl font-semibold tracking-tight;
-  }
-  code {
-    @apply bg-muted text-foreground rounded px-1.5 py-0.5 font-mono text-[0.85em];
-  }
-  :focus-visible {
-    @apply ring-ring outline-none ring-2 ring-offset-2;
-    --tw-ring-offset-color: var(--color-background);
   }
   ::selection {
-    background: color-mix(in srgb, var(--color-primary) 32%, transparent);
+    @apply bg-orange-100 text-orange-800;
   }
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-input) transparent;
+  .dark ::selection {
+    @apply bg-orange-500/30 text-orange-50;
+  }
+  h1 {
+    @apply text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50;
+  }
+  h2 {
+    @apply text-base font-semibold text-gray-900 dark:text-gray-50;
+  }
+  code {
+    @apply rounded-sm bg-gray-100 px-1.5 py-0.5 font-mono text-[0.85em] text-gray-900 dark:bg-gray-800 dark:text-gray-50;
   }
 }
 
 @layer components {
-  /* rótulo de seção — o "ChartTitle" do visactor virou uma classe reaproveitável */
+  /* título de bloco (as páginas que o usam inline pedem `!mb-0`) */
   .section-label {
-    @apply text-muted-foreground text-xs font-semibold tracking-[0.14em] uppercase;
+    @apply mb-4 text-sm font-semibold text-gray-900 dark:text-gray-50;
   }
   .eyebrow {
-    @apply text-primary text-xs font-semibold tracking-[0.18em] uppercase;
+    @apply text-sm font-medium text-gray-500 dark:text-gray-400;
   }
-  /* esqueleto de carregamento dos limites de Suspense (padrão do next-partial-prerendering) */
+  .num {
+    @apply tabular-nums;
+  }
   .skeleton {
-    @apply bg-muted rounded-lg;
-    background-image: linear-gradient(
-      90deg,
-      transparent 25%,
-      color-mix(in srgb, var(--color-foreground) 6%, transparent) 50%,
-      transparent 75%
-    );
-    background-size: 240% 100%;
-    animation: skeleton-sweep 1.4s linear infinite;
+    @apply animate-pulse rounded-md bg-gray-100 dark:bg-gray-800;
+  }
+  /* a máscara radial do template-solar (fundo "Game of Life" do herói) */
+  .mask {
+    mask-image: radial-gradient(rgba(0, 0, 0, 1) 0%, transparent 80%);
   }
 }
 
-@keyframes skeleton-sweep {
-  from { background-position: 120% 0; }
-  to { background-position: -40% 0; }
+/* Entrada do herói do site: o efeito do <Fade> do Solar (opacidade + 16px + desfoque),
+   feito em CSS em vez de `motion`. Termina SEMPRE visível — mesmo sem JavaScript. */
+@keyframes fadeBlurUp {
+  from { opacity: 0; transform: translateY(16px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
 }
-@keyframes silk-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: none; }
+.fade-in {
+  animation: fadeBlurUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* linhas que correm pelas trilhas do chip (gridMovingLine do Solar) */
+@keyframes gridMovingLine {
+  0% { transform: translateX(100%); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateX(-100%); opacity: 1; }
+}
+/* pontos do divisor de seção (FeatureDivider do Solar referencia `wave`) */
+@keyframes wave {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(-2px); opacity: 1; }
+}
+/* usadas por animações arbitrárias do site (animate-[ping_7s_…], animate-[spin_8s_…]):
+   o Tailwind só emite as keyframes padrão quando `animate-ping`/`animate-spin` aparece */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+/* pulso do chip central (substitui as variantes de `motion` do ChipViz) */
+@keyframes chipPulse {
+  0%, 100% { scale: 1; }
+  20% { scale: var(--pulse, 1.06); }
 }
 
 @media (prefers-reduced-motion: reduce) {

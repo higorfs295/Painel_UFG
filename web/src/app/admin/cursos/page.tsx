@@ -171,9 +171,9 @@ export default function AdminCursosPage() {
             </p>
             {impact.data && (
               <ul className="bg-background mt-3 flex flex-col gap-1 rounded-lg border p-3">
-                <li><b className="font-display text-foreground text-base">{impact.data.enrollments}</b> matrícula(s)</li>
-                <li><b className="font-display text-foreground text-base">{impact.data.subjects}</b> disciplina(s) na matriz</li>
-                <li><b className="font-display text-foreground text-base">{impact.data.statuses}</b> registro(s) de progresso de alunos</li>
+                <li><b className="num text-foreground text-base">{impact.data.enrollments}</b> matrícula(s)</li>
+                <li><b className="num text-foreground text-base">{impact.data.subjects}</b> disciplina(s) na matriz</li>
+                <li><b className="num text-foreground text-base">{impact.data.statuses}</b> registro(s) de progresso de alunos</li>
               </ul>
             )}
           </>

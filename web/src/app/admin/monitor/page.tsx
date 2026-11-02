@@ -62,14 +62,14 @@ export default function AdminMonitorPage() {
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <ChartTitle icon={IconCheck} title="Banco de dados" />
-              <p className={`font-display mt-3 text-3xl font-semibold tracking-tight ${m.db.ok ? "text-savanna" : "text-lock"}`}>
+              <p className={`num mt-3 text-2xl font-semibold ${m.db.ok ? "text-savanna" : "text-lock"}`}>
                 {m.db.ok ? "OK" : "FALHA"}
               </p>
               <p className="text-subtle-foreground mt-1 text-xs">ping {m.db.pingMs} ms</p>
             </Card>
             <Card>
               <ChartTitle icon={IconClock} title="Latência p95" />
-              <p className="font-display mt-3 text-3xl font-semibold tracking-tight">
+              <p className="num mt-3 text-2xl font-semibold">
                 {m.http.latencyMs.p95 ?? "—"}<span className="text-muted-foreground text-base"> ms</span>
               </p>
               <p className="text-subtle-foreground mt-1 text-xs">
@@ -78,7 +78,7 @@ export default function AdminMonitorPage() {
             </Card>
             <Card>
               <ChartTitle icon={IconFlame} title="Erros 5xx" />
-              <p className={`font-display mt-3 text-3xl font-semibold tracking-tight ${errRate > 1 ? "text-lock" : ""}`}>
+              <p className={`num mt-3 text-2xl font-semibold ${errRate > 1 ? "text-lock" : ""}`}>
                 {errRate}<span className="text-muted-foreground text-base">%</span>
               </p>
               <p className="text-subtle-foreground mt-1 text-xs">
@@ -87,7 +87,7 @@ export default function AdminMonitorPage() {
             </Card>
             <Card>
               <ChartTitle icon={IconServer} title="Processo" />
-              <p className="font-display mt-3 text-3xl font-semibold tracking-tight">{uptime(m.uptimeSec)}</p>
+              <p className="num mt-3 text-2xl font-semibold">{uptime(m.uptimeSec)}</p>
               <p className="text-subtle-foreground mt-1 text-xs">
                 node {m.process.node} · RSS {m.process.rssMb} MB · heap {m.process.heapUsedMb} MB
               </p>
@@ -117,7 +117,7 @@ export default function AdminMonitorPage() {
                ["4xx", m.http.status.s4xx, "avail"], ["5xx", m.http.status.s5xx, "lock"]] as const).map(([k, v, tone]) => (
               <Card key={k} className="flex items-center justify-between">
                 <Chip tone={tone}>{k}</Chip>
-                <span className="font-display text-2xl font-semibold tracking-tight">{num(v)}</span>
+                <span className="num text-2xl font-semibold">{num(v)}</span>
               </Card>
             ))}
           </div>

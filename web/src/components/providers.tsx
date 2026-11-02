@@ -2,10 +2,11 @@
 
 // Provedores do cliente, montados uma vez no layout raiz.
 //
-// Estrutura herdada do visactor-next-template (mode-theme-provider + client providers) e
-// do solid-nextjs (next-themes + toaster). Acrescenta o que este projeto precisa:
-// TanStack Query e o bootstrap de sessão contra a API Fastify.
+// next-themes com `defaultTheme="system"`, como no tremorlabs/template-dashboard: sem
+// escolha salva, o painel segue o tema do sistema operacional. A escolha da pessoa
+// (Claro/Escuro/Sistema) vive na conta (RF-15) e é aplicada ao entrar.
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider, useTheme } from "next-themes";
 import { Toaster } from "react-hot-toast";
@@ -51,14 +52,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
     }),
   );
 
+  // o site público (template-solar) é claro por desenho: componentes Tremor dentro dele
+  // têm variantes `dark:` que, com o sistema no escuro, poriam texto claro em fundo claro
+  const pathname = usePathname();
+
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange
+      forcedTheme={pathname === "/" ? "light" : undefined}>
       <QueryClientProvider client={queryClient}>
         <SessionBootstrap>{children}</SessionBootstrap>
         <Toaster
           position="bottom-right"
           toastOptions={{
-            className: "!bg-popover !text-foreground !border !border-border !shadow-lg !text-sm",
+            className: "!rounded-md !border !border-gray-200 !bg-white !text-sm !text-gray-900 !shadow-lg dark:!border-gray-800 dark:!bg-gray-950 dark:!text-gray-50",
             duration: 4000,
           }}
         />

@@ -51,10 +51,10 @@ export default function CadastroPage() {
 
   return (
     <>
-      <h1 className="text-3xl">Criar conta</h1>
-      <p className="text-muted-foreground mt-2 text-sm">Depois você escolhe o curso a acompanhar.</p>
+      <h1 className="mt-4 text-center text-xl font-semibold">Criar conta</h1>
+      <p className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">Depois você escolhe o curso a acompanhar.</p>
 
-      <form onSubmit={submit} className="mt-8 flex flex-col gap-4">
+      <form onSubmit={submit} className="mt-10 flex flex-col gap-4">
         <Field label="Nome">
           <input required autoComplete="name" value={form.name} onChange={set("name")} className={inputCls} placeholder="Seu nome" />
         </Field>
@@ -71,13 +71,13 @@ export default function CadastroPage() {
             onChange={set("confirm")} className={inputCls} placeholder="••••••••••" />
         </Field>
 
-        {err && <p className="text-lock text-sm" role="alert">{err}</p>}
+        {err && <p className="text-sm text-red-700 dark:text-red-400" role="alert">{err}</p>}
 
         <Button type="submit" variant="primary" disabled={busy}>{busy ? "Criando…" : "Criar conta"}</Button>
       </form>
 
-      <p className="text-muted-foreground mt-8 text-sm">
-        Já tem conta? <Link href="/entrar" className="text-primary font-medium hover:underline">Entrar</Link>
+      <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+        Já tem conta? <Link href="/entrar" className="font-medium text-orange-700 hover:underline dark:text-orange-400">Entrar</Link>
       </p>
     </>
   );

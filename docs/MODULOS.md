@@ -131,61 +131,74 @@ Cada função registra os handlers da área. Contrato detalhado em [`API.md`](AP
 
 # Frontend (`web/`) — Next.js
 
-Aplicação **Next.js 15 (App Router)** + TypeScript + **Tailwind CSS v4**, construída a partir
-de seis templates de referência (ver `docs/DESIGN.md`). Substitui o SPA em Vite das versões
-anteriores.
+Aplicação **Next.js 15 (App Router)** + TypeScript + **Tailwind CSS v4**. Desde a v11 o
+desenho parte de templates abertos da Tremor (MIT): `template-dashboard` no app,
+`template-solar` no site e `template-overview` no login — ver `docs/DESIGN.md` e
+`web/THIRD_PARTY_NOTICES.md`.
 
 ```
 src/
 ├─ app/                    rotas do App Router
-│  ├─ page.tsx             landing pública (Server Component)
-│  ├─ (auth)/              entrar · cadastro · convite/[token]  — tela dividida
-│  ├─ painel/              9 páginas do aluno
+│  ├─ page.tsx             site público (Server Component, template-solar)
+│  ├─ (auth)/              entrar · cadastro · convite/[token]  (login do template-overview)
+│  ├─ painel/              9 páginas do aluno (inclui mapa/ e avisos/)
 │  ├─ admin/               7 páginas de gestão
 │  ├─ config/ · ajuda/     compartilhadas pelos dois papéis
-│  ├─ error.tsx            fronteira de erro (reporta ao monitoramento)
-│  └─ globals.css          @theme (tokens) + base + @layer components
-├─ components/{layout,ui,charts,marketing,schedule}
-├─ hooks/use-progress.ts   queries do aluno, com as queryKey centralizadas
-└─ lib/{api,auth-store,monitoring,csv,sigaa,utils}
-e2e/                       Playwright (smoke + fluxos)
+│  ├─ icon.svg             ícone da aba (a marca)
+│  └─ globals.css          tokens + keyframes da Tremor + @layer components
+├─ components/
+│  ├─ tremor/              componentes Tremor Raw portados (v3→v4, acento laranja)
+│  ├─ layout/              sidebar, gaveta, seletor de curso, perfil, paleta de comandos
+│  ├─ overview/            cartões da visão geral (ProgressBar/CategoryBar/ChartCard)
+│  ├─ data-table/          DataTable (TanStack) + cabeçalho ordenável + paginação
+│  ├─ site/                seções do site público
+│  ├─ ui/ · charts/        primitivas das páginas antigas, desenhadas com as classes da Tremor
+│  ├─ subject-drawer.tsx   gaveta da disciplina (requisitos, libera, marcações, anotação)
+│  └─ schedule/            "puxar do meu semestre" (RF-29)
+├─ hooks/                  use-progress (queryKey centralizadas) · use-announcements
+└─ lib/                    api · auth-store · curriculum-graph · chart-utils · csv · sigaa · utils
+e2e/                       Playwright (smoke + fluxos + visual)
 ```
 
 ## Núcleo
 
 | Arquivo | Papel | Pontos-chave |
 | --- | --- | --- |
-| `app/layout.tsx` | casca HTML | `next/font` auto-hospeda Fraunces+Sora; `<Providers>`; `suppressHydrationWarning` por causa do next-themes |
-| `components/providers.tsx` | provedores do cliente | ThemeProvider (next-themes) + QueryClient + bootstrap de sessão + Toaster |
+| `app/layout.tsx` | casca HTML | `next/font` auto-hospeda Inter (app) e Geist (site); `<Providers>`; `suppressHydrationWarning` por causa do next-themes |
+| `components/providers.tsx` | provedores do cliente | next-themes (`defaultTheme="system"`, claro forçado em `/`) + QueryClient + bootstrap de sessão + Toaster |
 | `lib/api/client.ts` | HTTP | access token em memória, refresh único compartilhado em 401, `ApiError` com status |
 | `lib/api/session-hint.ts` | marca local | evita um POST `/auth/refresh` inútil (e um 401 no console) para quem nunca teve sessão |
 | `lib/auth-store.ts` | Zustand | `status: loading \| in \| out` (sem isso um F5 pisca a tela de login) e a matrícula selecionada |
-| `components/layout/app-shell.tsx` | casca autenticada | guarda de rota por papel, escolha de curso (RF-17), sidebar + header + paleta |
-| `components/layout/nav-data.ts` | mapa de navegação | dado, não JSX — a sidebar e a paleta de comandos leem a MESMA fonte |
-| `hooks/use-progress.ts` | dados do aluno | `keys` centralizadas; `useSetSubject` invalida progresso, recomendações, histórico e conquistas de uma vez |
+| `components/layout/app-shell.tsx` | casca autenticada | guarda de rota por papel; escolha de curso (RF-17) só quando a lista VEIO vazia — erro de rede/429 mostra "tentar novamente" |
+| `components/layout/nav-data.ts` | mapa de navegação | dado, não JSX — sidebar, gaveta e paleta de comandos leem a MESMA fonte |
+| `hooks/use-progress.ts` | dados do aluno | `keys` centralizadas; `useSetSubject` invalida progresso, recomendações, histórico e conquistas de uma vez; `useNotes`/`useSaveNote` (RF-26) |
+| `hooks/use-announcements.ts` | avisos | feed + marcador "não lido" no navegador (contador na sidebar, página `/painel/avisos`) |
+| `lib/curriculum-graph.ts` | topologia da matriz | requisitos/liberadas por disciplina, profundidade (maior cadeia de PRÉ, protegida contra ciclo) e fecho transitivo para o mapa e a gaveta |
 
 ## Componentes
 
 | Grupo | O que tem |
 | --- | --- |
-| `ui/` | `Button` (variantes/tamanhos), `Card`, `Section`, `PageHead`, `Chip`/`StatusChip`, `Badge`, `Bar`, `Segmented`, `Field`, `DataTable`, `ExportButton`, `DangerDialog`, ícones |
-| `charts/` | `DonutProgress`, `BarList`, `AreaSpark`, `StackedBar` + `ChartTitle`/`MetricCard` — **SVG puro** |
-| `layout/` | `Sidebar` (colapsável; gaveta abaixo de 1024px), `Header`, `ThemeToggle`, `CommandPalette` (Ctrl/⌘+K) |
-| `marketing/` | seções da landing com framer-motion (`whileInView`) |
-| `schedule/` | `SmartFill` — "puxar do meu semestre" (RF-29) |
+| `tremor/` | Button, Badge, Divider, Label, Input, Checkbox, Dropdown, Drawer, Dialog, TabNavigation, Table, ProgressBar, ProgressCircle, LineChart (recharts), Searchbar, CommandBar |
+| `layout/` | `Sidebar` (fixa em `lg`, barra superior + `MobileSidebar` abaixo), `CourseSwitcher*`, `UserProfile*` (tema salvo na conta), `NavLinks`, `CommandPalette` |
+| `overview/` | `ProgressBarCard`, `CategoryBarCard`, `ChartCard` |
+| `data-table/` | `DataTable` (seleção por clique, filete na linha selecionada, barra de lote), `DataTableColumnHeader` (botão ordenável), `DataTablePagination` |
+| `site/` | `NavBar`, `Hero` + `GameOfLife`, `Features` (+ `Orbit`, `ChipViz`), `RuleQuote`, `CurriculumMap`, `Analytics` (+ `StickerCard`), `CallToAction`, `Footer` |
+| `ui/` | API antiga (`Card`, `Section`, `PageHead`, `StatCard`, `Chip`/`StatusChip`, `Badge`, `Bar`, `Segmented`, `Field`, `inputCls`/`selectCls`, `DataTable` por colunas-dado, `ExportButton`, `DangerDialog` sobre o Dialog da Tremor, ícones Remix) |
+| `charts/` | `ChartTitle`, `MetricCard`, `DonutProgress` (ProgressCircle), `BarList`, `StackedBar` |
 
-`DataTable` recebe as colunas como dado (`header`/`cell`/`value`): a mesma definição
+O `DataTable` de `ui/` recebe as colunas como dado (`header`/`cell`/`value`): a mesma definição
 renderiza a tabela e alimenta o CSV, então filtro na tela é filtro no arquivo.
 
 ## Estilos
 
-`app/globals.css`, em três blocos: variáveis por tema (`:root` claro, `.dark` escuro) →
-`@theme inline` mapeando para tokens semânticos (`--color-background/foreground/card/
-muted/border/primary/ring`) → `@layer components` com o punhado de classes utilitárias do
-produto (`.section-label`, `.eyebrow`, `.skeleton`). Sem `tailwind.config.js`.
+`app/globals.css`: variáveis por tema (`:root` claro, `.dark` escuro) apontando para os cinzas
+do Tailwind usados pela Tremor → `@theme inline` com os tokens semânticos → `@theme` com as
+animações dos componentes Radix → `@layer base/components` → keyframes do site. Sem
+`tailwind.config.js`.
 
 **O `inline` do `@theme` não é decorativo**: sem ele o Tailwind resolve a cor no build e todo
-utilitário com opacidade (`bg-muted/60`, `border-lock/40`) congela no valor de um dos temas.
+utilitário com opacidade (`bg-muted/60`) congela no valor de um dos temas.
 
 # Anatomia de uma requisição (rastreamento completo)
 

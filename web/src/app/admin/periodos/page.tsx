@@ -62,7 +62,7 @@ export default function AdminPeriodosPage() {
       {current && (
         <Card className="border-l-primary border-l-4">
           <span className="eyebrow">agora, para todos</span>
-          <p className="font-display mt-1 text-2xl font-semibold tracking-tight">
+          <p className="num mt-1 text-2xl font-semibold">
             {current.onBreak ? "Férias" : current.label}
           </p>
           <p className="text-muted-foreground mt-2 text-sm">

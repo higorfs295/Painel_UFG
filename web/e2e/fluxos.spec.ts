@@ -16,11 +16,54 @@ test("simular disciplina marca a linha e limpar desmarca", async ({ page }) => {
   await page.getByRole("tab", { name: "Disponíveis" }).click();
   const linha = page.locator("tbody tr").first();
 
-  await linha.getByRole("button", { name: "Simular" }).click();
+  // as marcações ficam no menu de ações da linha (padrão do DataTable da Tremor)
+  await linha.getByRole("button", { name: /^Ações de / }).click();
+  await page.getByRole("menuitem", { name: /^Simular/ }).click();
   await expect(linha.getByText("Simulada")).toBeVisible({ timeout: 15_000 });
 
-  await linha.getByRole("button", { name: "Limpar" }).click();
+  await linha.getByRole("button", { name: /^Ações de / }).click();
+  await page.getByRole("menuitem", { name: "Limpar marcação" }).click();
   await expect(linha.getByText("Disponível")).toBeVisible({ timeout: 15_000 });
+});
+
+test("seleção em lote: simula duas disciplinas de uma vez e desfaz", async ({ page }) => {
+  await login(page);
+  await nav(page).getByRole("link", { name: "Disciplinas", exact: true }).click();
+  await page.getByRole("tab", { name: "Disponíveis" }).click();
+
+  const linhas = page.locator("tbody tr");
+  const primeira = linhas.nth(0), segunda = linhas.nth(1);
+  await primeira.getByRole("checkbox").click();
+  await segunda.getByRole("checkbox").click();
+  await expect(page.getByText("2 selecionada(s)").first()).toBeVisible();
+
+  // barra de comandos em lote (CommandBar)
+  await page.getByRole("button", { name: "Simular", exact: true }).click();
+  await expect(primeira.getByText("Simulada")).toBeVisible({ timeout: 15_000 });
+  await expect(segunda.getByText("Simulada")).toBeVisible({ timeout: 15_000 });
+
+  await primeira.getByRole("checkbox").click();
+  await segunda.getByRole("checkbox").click();
+  await page.getByRole("button", { name: "Limpar", exact: true }).click();
+  await expect(primeira.getByText("Disponível")).toBeVisible({ timeout: 15_000 });
+  await expect(segunda.getByText("Disponível")).toBeVisible({ timeout: 15_000 });
+});
+
+test("anotação de disciplina: salva pela gaveta e remove", async ({ page }) => {
+  const texto = `E2E nota ${Date.now()}`;
+  await login(page);
+  await nav(page).getByRole("link", { name: "Disciplinas", exact: true }).click();
+  await page.locator("tbody tr").first().locator("td").nth(3).getByRole("button").click();
+
+  const gaveta = page.getByRole("dialog");
+  await expect(gaveta).toBeVisible();
+  await gaveta.getByLabel("Anotação").fill(texto);
+  await gaveta.getByRole("button", { name: "Salvar anotação" }).click();
+  await expect(page.getByText("Anotação salva.")).toBeVisible({ timeout: 15_000 });
+
+  await gaveta.getByLabel("Anotação").fill("");
+  await gaveta.getByRole("button", { name: "Salvar anotação" }).click();
+  await expect(page.getByText("Anotação removida.")).toBeVisible({ timeout: 15_000 });
 });
 
 test("extra em andamento: cria, reclassifica a categoria e remove", async ({ page }) => {

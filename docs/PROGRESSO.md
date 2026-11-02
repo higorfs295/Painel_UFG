@@ -1,5 +1,33 @@
 # Progresso da Implementação
 
+## Design v11 — fundação nos templates da Tremor (2026-11-02)
+
+Frontend redesenhado sobre templates abertos (MIT) da Tremor, escolhidos pelo dono do projeto:
+**template-dashboard** no app, **template-solar** no site público e o login do
+**template-overview**. Racional, tabela de contraste e lista de mudanças em `docs/DESIGN.md`;
+licença em `web/THIRD_PARTY_NOTICES.md`.
+
+- **App**: sidebar fixa com seletor de curso (o "workspace" do template) e menu de perfil com
+  tema Claro / Escuro / Sistema salvo na conta; visão geral com os cartões do Overview
+  (integralização, marcos, situação das disciplinas, ritmo por período em gráfico de linha,
+  estimativa de formatura); Disciplinas como o "Details" do template (DataTable com busca,
+  filtros, ordenação, paginação, ações por linha e **marcação em lote**); Ajustes no layout de
+  Settings (abas + seções em duas colunas).
+- **Funções novas**: Mapa curricular (camadas de pré-requisito, realce da cadeia exigida e do que
+  é liberado); gaveta da disciplina com requisitos, liberadas e **anotação pessoal** (RF-26, que o
+  backend já tinha e a interface não expunha); página de Avisos com contador de não lidos;
+  "Marcar como cursando" em Recomendações passou a marcar de verdade.
+- **Backend**: tema aceita `"system"`, que passa a ser o padrão de contas novas (migração
+  `20261102040000_tema_sistema`; contas antigas mantêm o valor).
+- **Correções encontradas no caminho**: o painel mostrava "Escolha seu curso" quando a lista de
+  matrículas falhava (rede/429) — agora mostra erro com "tentar novamente"; `inert=""` era ignorado
+  no React 19 (a gaveta fechada do mobile continuava focável); as seções da landing antiga começavam invisíveis
+  (`whileInView`); a página não tinha ícone de aba (404 em `/favicon.ico`); a animação do Dialog da
+  Tremor pularia no Tailwind v4; atalhos da barra de lote disparavam enquanto se digitava.
+- **Testes**: 43 unitários e 66 de integração no backend; E2E atualizado para a nova interface
+  (menu de ações por linha, lote, anotação, rotas novas, contraste calculado em sRGB a partir de
+  oklch).
+
 ## Design v4 — "Cerrado dashboard" (2026-07-10)
 
 Reforma **estrutural** do frontend, mesclando de verdade os 5 templates de referência (Luminary,

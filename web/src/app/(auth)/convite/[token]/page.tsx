@@ -40,21 +40,21 @@ export default function ConvitePage({ params }: { params: Promise<{ token: strin
   if (done) {
     return (
       <div className="text-center">
-        <span className="bg-savanna/15 text-savanna mx-auto grid size-12 place-items-center rounded-full">
+        <span className="mx-auto grid size-12 place-items-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-400">
           <IconCheck />
         </span>
-        <h1 className="mt-5 text-2xl">Senha definida</h1>
-        <p className="text-muted-foreground mt-2 text-sm">Levando você para a tela de entrada…</p>
+        <h1 className="mt-5 text-center text-xl font-semibold">Senha definida</h1>
+        <p className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">Levando você para a tela de entrada…</p>
       </div>
     );
   }
 
   return (
     <>
-      <h1 className="text-3xl">Definir senha</h1>
-      <p className="text-muted-foreground mt-2 text-sm">Escolha a senha da sua conta para concluir o convite.</p>
+      <h1 className="mt-4 text-center text-xl font-semibold">Definir senha</h1>
+      <p className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">Escolha a senha da sua conta para concluir o convite.</p>
 
-      <form onSubmit={submit} className="mt-8 flex flex-col gap-4">
+      <form onSubmit={submit} className="mt-10 flex flex-col gap-4">
         <Field label="Nova senha (mínimo 10 caracteres)">
           <input type="password" required minLength={10} autoComplete="new-password" value={password}
             onChange={(e) => setPassword(e.target.value)} className={inputCls} placeholder="••••••••••" />
@@ -64,13 +64,13 @@ export default function ConvitePage({ params }: { params: Promise<{ token: strin
             onChange={(e) => setConfirm(e.target.value)} className={inputCls} placeholder="••••••••••" />
         </Field>
 
-        {err && <p className="text-lock text-sm" role="alert">{err}</p>}
+        {err && <p className="text-sm text-red-700 dark:text-red-400" role="alert">{err}</p>}
 
         <Button type="submit" variant="primary" disabled={busy}>{busy ? "Salvando…" : "Definir senha"}</Button>
       </form>
 
-      <p className="text-muted-foreground mt-8 text-sm">
-        <Link href="/entrar" className="text-primary font-medium hover:underline">Voltar para a entrada</Link>
+      <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+        <Link href="/entrar" className="font-medium text-orange-700 hover:underline dark:text-orange-400">Voltar para a entrada</Link>
       </p>
     </>
   );

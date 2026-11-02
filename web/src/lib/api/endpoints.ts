@@ -108,8 +108,13 @@ export const announcements = {
 };
 
 // ---- cursos ----
+export type CourseRequisite = {
+  id: string; subjectId: string; requiresSubjectId: string | null; milestoneKey: string | null; type: "PRE" | "CO";
+};
 export type CourseSubject = {
   id: string; seq: number; code: string; name: string; hours: number; nucleus: "NC" | "NE"; groupOpt: number;
+  /** requisitos desta disciplina (disciplina ou marco de horas) */
+  requires: CourseRequisite[];
 };
 export type CourseDetail = {
   id: string; slug: string; name: string; totalHours: number;

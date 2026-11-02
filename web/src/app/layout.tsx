@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Sora } from "next/font/google";
+import { Geist, Inter } from "next/font/google";
 import { APP_NAME, APP_TAGLINE } from "@/lib/branding";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
-// next/font baixa e auto-hospeda as fontes: sem requisição ao Google no runtime e sem
-// o flash de troca que o <link> do app Vite tinha.
-const sora = Sora({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], variable: "--font-sora", display: "swap" });
-const fraunces = Fraunces({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-fraunces", display: "swap" });
+// As fontes dos dois templates de base: Inter no app (tremorlabs/template-dashboard) e
+// Geist no site público (tremorlabs/template-solar). next/font auto-hospeda as duas.
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans", display: "swap" });
 
 export const metadata: Metadata = {
   title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
@@ -17,16 +17,16 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf6ee" },
-    { media: "(prefers-color-scheme: dark)", color: "#14100a" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#030712" },
   ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     // suppressHydrationWarning: o next-themes escreve a classe do tema antes da hidratação
-    <html lang="pt-BR" className={`${sora.variable} ${fraunces.variable}`} suppressHydrationWarning>
-      <body>
+    <html lang="pt-BR" className={`${inter.variable} ${geist.variable}`} suppressHydrationWarning>
+      <body className="overflow-y-scroll scroll-auto">
         <Providers>{children}</Providers>
       </body>
     </html>

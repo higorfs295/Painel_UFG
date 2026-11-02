@@ -137,15 +137,17 @@ npm run dev                # http://localhost:5173
 # login: painel@admin.com (admin) ou painel@aluno.com (aluno) com a senha do SEED
 ```
 
-App Router com **landing pública** (Server Component), autenticação em tela dividida e o
-painel em rotas protegidas: **aluno** — Visão geral, Disciplinas, Extras, Cronograma,
-Recomendações, Histórico, Agenda; **admin** — Visão do sistema, Usuários, Cursos, Períodos,
-Avisos, Monitor, Configurações; e Ajustes/Ajuda compartilhadas.
+App Router com **site público** (Server Component), tela de entrada e o painel em rotas
+protegidas: **aluno** — Visão geral, Disciplinas, Mapa curricular, Extras, Histórico,
+Recomendações, Cronograma, Agenda, Avisos; **admin** — Visão do sistema, Usuários, Cursos,
+Períodos, Avisos, Monitor, Configurações; e Ajustes/Ajuda compartilhadas.
 
-Gráficos em SVG puro (sem biblioteca de chart), tema claro/escuro por `next-themes` com
-tokens semânticos, paleta de comandos (**Ctrl/⌘+K**), exportação CSV das tabelas e
-notificações com `react-hot-toast`. O frontend foi construído a partir de seis templates
-Next.js — o que veio de cada um está em [`docs/DESIGN.md`](docs/DESIGN.md).
+O desenho parte de templates abertos (MIT) da [Tremor](https://tremor.so): o
+**template-dashboard** no app e o **template-solar** no site — o que veio de cada um, e o que
+mudou, está em [`docs/DESIGN.md`](docs/DESIGN.md) e em
+[`web/THIRD_PARTY_NOTICES.md`](web/THIRD_PARTY_NOTICES.md). Tema claro/escuro/sistema salvo na
+conta, tabela de disciplinas com seleção e marcação em lote, gaveta com requisitos e anotação
+por disciplina, mapa de pré-requisitos, paleta de comandos (**Ctrl/⌘+K**) e exportação CSV.
 
 ## Batizando o sistema (nome próprio em 1 linha)
 

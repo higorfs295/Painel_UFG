@@ -1,18 +1,24 @@
 // Guardas de acabamento visual — as coisas que quebram em silêncio e ninguém percebe
-// até alguém reclamar: contraste do texto secundário e o indicador do item ativo.
+// até alguém reclamar: contraste do texto secundário e o destaque do item ativo.
 import { test, expect, type Page } from "@playwright/test";
 import { login, requireCredentials } from "./helpers";
 
 test.beforeAll(() => requireCredentials());
 
-/** Razão de contraste WCAG entre duas cores `rgb(...)` já computadas. */
+/** Razão de contraste WCAG entre a cor do texto e a do fundo opaco mais próximo. */
 async function contraste(page: Page, seletor: string) {
   return page.evaluate((sel) => {
     const el = document.querySelector(sel);
     if (!el) return null;
-    const lum = (rgb: string) => {
-      const [r, g, b] = rgb.match(/\d+/g)!.slice(0, 3).map((n) => {
-        const v = Number(n) / 255;
+    // A paleta do Tailwind v4 é oklch(): em vez de interpretar a string, o próprio
+    // navegador converte a cor para sRGB pintando 1 px num canvas.
+    const ctx = document.createElement("canvas").getContext("2d", { willReadFrequently: true })!;
+    const lum = (css: string) => {
+      ctx.clearRect(0, 0, 1, 1);
+      ctx.fillStyle = css;
+      ctx.fillRect(0, 0, 1, 1);
+      const [r, g, b] = Array.from(ctx.getImageData(0, 0, 1, 1).data).slice(0, 3).map((n) => {
+        const v = n / 255;
         return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
       });
       return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
@@ -34,24 +40,27 @@ test("o texto secundário passa em AA nos dois temas", async ({ page }) => {
     .getByRole("link", { name: "Histórico", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Histórico acadêmico" })).toBeVisible();
 
+  // texto secundário do desenho Tremor: gray-500 no claro, gray-400 no escuro
   for (const tema of ["dark", "light"] as const) {
     await page.evaluate((t) => {
       document.documentElement.classList.toggle("dark", t === "dark");
       document.documentElement.style.colorScheme = t;
     }, tema);
 
-    const r = await contraste(page, ".text-subtle-foreground");
+    const r = await contraste(page, "main p.text-gray-500");
     expect(r, `contraste do texto secundário no tema ${tema}`).toBeGreaterThanOrEqual(4.5);
   }
 });
 
-test("o item ativo da barra lateral tem indicador visível", async ({ page }) => {
+test("o item ativo da barra lateral se distingue dos demais", async ({ page }) => {
   await login(page);
-  const ativo = page.getByRole("navigation", { name: "Navegação principal" })
-    .getByRole("link", { name: "Visão geral", exact: true });
+  const navegacao = page.getByRole("navigation", { name: "Navegação principal" });
+  const ativo = navegacao.getByRole("link", { name: "Visão geral", exact: true });
+  const inativo = navegacao.getByRole("link", { name: "Disciplinas", exact: true });
   await expect(ativo).toHaveAttribute("aria-current", "page");
+  await expect(inativo).not.toHaveAttribute("aria-current", "page");
 
-  // o pseudo-elemento ::before é o filete; inativo fica com escala 0
-  const escala = await ativo.evaluate((el) => getComputedStyle(el, "::before").transform);
-  expect(escala, "o indicador do item ativo não está visível").not.toBe("matrix(1, 0, 0, 0, 0, 0)");
+  // no template da Tremor o indicador é a cor de acento no texto do item ativo
+  const cor = (el: HTMLElement | SVGElement) => getComputedStyle(el).color;
+  expect(await ativo.evaluate(cor), "o item ativo precisa ter cor própria").not.toBe(await inativo.evaluate(cor));
 });
