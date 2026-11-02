@@ -4,14 +4,21 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { TERM_RE, resolvePeriod } from "../../domain/period.js";
 import { env, mailerConfigured, allowRegistration, devToolsEnabled, docsEnabled } from "../../env.js";
+import { getSettings, storedKeys } from "../../lib/settings.js";
 import { sendTestEmail } from "../../lib/mailer.js";
 import { audit } from "../../lib/audit.js";
 import { fieldCryptoEnabled } from "../../lib/fieldCrypto.js";
+import { courseReport, overview } from "./analytics.js";
 
 export async function adminRoutes(app: FastifyInstance) {
   // Configurações da instância (somente leitura — vêm do ambiente) + estado do e-mail.
   app.get("/config", { preHandler: app.requireAdmin }, async () => ({
-    registration: { allowed: allowRegistration },
+    // efetivo (banco por cima do ambiente) + o valor do ambiente, para a tela explicar a origem
+    registration: {
+      allowed: (await getSettings(app.prisma)).registrationOpen,
+      envDefault: allowRegistration,
+      source: (await storedKeys(app.prisma)).includes("registrationOpen") ? "settings" : "env",
+    },
     invite: { expiresHours: env.INVITE_EXPIRES_HOURS },
     appUrl: env.APP_URL,
     env: env.NODE_ENV,
@@ -77,6 +84,22 @@ export async function adminRoutes(app: FastifyInstance) {
       byCourse,
       activity: { subjectStatuses: statuses, extras, scenarios },
     };
+  });
+
+  // v12 — Visão do sistema: séries de cadastros/acessos, ativos, cursos e atividade recente.
+  // Só números OPERACIONAIS (ver analytics.ts): nada de progresso ou nota de aluno.
+  app.get("/analytics", { preHandler: app.requireAdmin }, async () => overview(app.prisma));
+
+  // v12 — relatório ACADÊMICO AGREGADO de um curso. Some quando o curso tem menos de
+  // MIN_GROUP alunos (`suppressed: true`): com poucos alunos, o agregado revelaria alguém.
+  app.get("/reports/courses/:slug", { preHandler: app.requireAdmin }, async (req, reply) => {
+    const { slug } = z.object({ slug: z.string().min(1) }).parse(req.params);
+    const report = await courseReport(app.prisma, slug);
+    if (!report) return reply.code(404).send({ error: "curso não encontrado" });
+    await audit(app.prisma, {
+      userId: req.user.sub, action: "report.course", entity: "Course", entityId: slug, ip: req.ip,
+    });
+    return report;
   });
 
   // Calendário acadêmico: lista as entradas agendadas + o período resolvido agora.

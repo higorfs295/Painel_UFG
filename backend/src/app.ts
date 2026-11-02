@@ -22,6 +22,7 @@ import { metricsPlugin } from "./plugins/metrics.js";
 import { observabilityRoutes } from "./modules/observability/routes.js";
 import { plannerRoutes } from "./modules/planner/routes.js";
 import { announcementRoutes } from "./modules/announcements/routes.js";
+import { settingsRoutes } from "./modules/settings/routes.js";
 import { devToolsRoutes } from "./modules/devtools/routes.js";
 
 export async function buildApp() {
@@ -96,6 +97,7 @@ export async function buildApp() {
   await app.register(accountRoutes, { prefix: "/me" });      // perfil, tema, backup (RF-15/16)
   await app.register(plannerRoutes, { prefix: "/me" });      // agenda + anotações (RF-25/26)
   await app.register(announcementRoutes);                    // avisos (RF-24): /announcements + /admin/announcements
+  await app.register(settingsRoutes);                        // v12: /settings/public + /admin/settings
   await app.register(adminRoutes,   { prefix: "/admin" });   // estatísticas e visão geral (RF-21)
   await app.register(observabilityRoutes, { prefix: "/admin" }); // métricas + auditoria (RF-27)
   await app.register(devToolsRoutes, { prefix: "/admin/dev" });  // gerador de massa (só DEV_TOOLS)

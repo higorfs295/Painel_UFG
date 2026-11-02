@@ -6,7 +6,8 @@ import argon2 from "argon2";
 import { consumeInvite, issueInvite } from "../../lib/invite.js";
 import { issueRefreshToken, rotateRefreshToken, revokeRefreshToken } from "../../lib/session.js";
 import { sendInviteEmail } from "../../lib/mailer.js";
-import { allowRegistration, env } from "../../env.js";
+import { env } from "../../env.js";
+import { emailDomainAllowed, getSettings } from "../../lib/settings.js";
 import { REFRESH_COOKIE, refreshCookieOptions, refreshCookiePath, type AccessClaims } from "../../plugins/auth.js";
 import { toPublicUser } from "../../lib/userView.js";
 import { audit } from "../../lib/audit.js";
@@ -38,16 +39,23 @@ export async function authRoutes(app: FastifyInstance) {
     return reply.code(204).send();
   });
 
-  // RF-17: cadastro público (auto-registro). Desligável por instância via ALLOW_REGISTRATION=false.
-  // Já autentica na resposta (mesmo shape do login) para a UX de "cadastrar e entrar".
+  // RF-17: cadastro público (auto-registro). Desligável por instância — na v12 pela tela de
+  // Configurações (banco), com ALLOW_REGISTRATION valendo como padrão; e restringível a domínios
+  // de e-mail (ex.: só @discente.ufg.br). Já autentica na resposta (mesmo shape do login).
   app.post("/register", strict, async (req, reply) => {
-    if (!allowRegistration)
+    const settings = await getSettings(app.prisma);
+    if (!settings.registrationOpen)
       return reply.code(403).send({ error: "cadastro público desabilitado nesta instância" });
     const body = z.object({
       name: z.string().min(2).max(120),
       email: z.string().email(),
       password: z.string().min(10),
     }).parse(req.body);
+    if (!emailDomainAllowed(body.email, settings.registrationDomains))
+      return reply.code(403).send({
+        error: `cadastro restrito a e-mails de: ${settings.registrationDomains.join(", ")}`,
+        domains: settings.registrationDomains,
+      });
 
     const exists = await app.prisma.user.findUnique({ where: { email: body.email } });
     if (exists) return reply.code(409).send({ error: "e-mail já cadastrado" });
